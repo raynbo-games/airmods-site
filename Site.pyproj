@@ -30,20 +30,24 @@
   <ItemGroup>
     <Compile Include="runserver.py" />
     <Compile Include="Site\__init__.py" />
-    <Compile Include="Site\views.py" />
+    <Compile Include="Site\code\root.py" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Site\" />
+    <Folder Include="Site\code\" />
     <Folder Include="Site\static\" />
     <Folder Include="Site\static\content\" />
     <Folder Include="Site\static\fonts\" />
+    <Folder Include="Site\static\images\" />
     <Folder Include="Site\static\scripts\" />
     <Folder Include="Site\templates\" />
+    <Folder Include="Site\templates\root\" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="LICENSE" />
     <Content Include="readme.md" />
     <Content Include="requirements.txt" />
+    <Content Include="Site\.env" />
     <Content Include="Site\static\content\bootstrap.css" />
     <Content Include="Site\static\content\bootstrap.min.css" />
     <Content Include="Site\static\content\site.css" />
@@ -51,6 +55,7 @@
     <Content Include="Site\static\fonts\glyphicons-halflings-regular.svg" />
     <Content Include="Site\static\fonts\glyphicons-halflings-regular.ttf" />
     <Content Include="Site\static\fonts\glyphicons-halflings-regular.woff" />
+    <Content Include="Site\static\images\favicon.png" />
     <Content Include="Site\static\scripts\bootstrap.js" />
     <Content Include="Site\static\scripts\bootstrap.min.js" />
     <Content Include="Site\static\scripts\jquery-1.10.2.intellisense.js" />
@@ -66,9 +71,10 @@
     <Content Include="Site\static\scripts\respond.js" />
     <Content Include="Site\static\scripts\respond.min.js" />
     <Content Include="Site\static\scripts\_references.js" />
-    <Content Include="Site\templates\about.html" />
-    <Content Include="Site\templates\contact.html" />
-    <Content Include="Site\templates\index.html" />
+    <Content Include="Site\templates\root\about.html" />
+    <Content Include="Site\templates\root\contact.html" />
+    <Content Include="Site\templates\root\privacy.html" />
+    <Content Include="Site\templates\root\index.html" />
     <Content Include="Site\templates\layout.html" />
   </ItemGroup>
   <ItemGroup>
