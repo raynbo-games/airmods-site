@@ -1,0 +1,15 @@
+{% extends "layout.html" %}
+
+{% block content %}
+
+<h1>Airspy API Information</h1>
+
+<p>Below is the format for the airspy api for use in external apps</p>
+
+<ul>
+    <li><a href="{{ url_for('airspy.api') }}">raynbo.games/airspy/api</a><p>shows the format for the airspy api (you are here)</p></li>
+    <li><a href="{{ url_for('airspy.games') }}">raynbo.games/airspy/api/games</a><p>lists all tracked game ids</p></li>
+    <li><p>raynbo.games/airspy/api/games/{gameId}</p><p>contains the information and stats of a game</p></li>
+</ul>
+
+{% endblock %}

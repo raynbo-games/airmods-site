@@ -10,6 +10,11 @@ def create_app():
     import Site.code.root as root
     app.register_blueprint(root.bp)
 
+    import Site.code.airspy as airspy
+    app.register_blueprint(airspy.bp)
+
+    airspy.Start(app)
+
     return app
 
 app = create_app()

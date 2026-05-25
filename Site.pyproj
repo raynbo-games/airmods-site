@@ -32,18 +32,25 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="runserver.py" />
+    <Compile Include="Site\code\airspy\tracker.py" />
+    <Compile Include="Site\code\airspy\__init__.py" />
     <Compile Include="Site\__init__.py" />
     <Compile Include="Site\code\root.py" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Site\" />
+    <Folder Include="Site\bin\airspy\" />
+    <Folder Include="Site\bin\airspy\games\" />
     <Folder Include="Site\code\" />
+    <Folder Include="Site\code\airspy\" />
+    <Folder Include="Site\bin\" />
     <Folder Include="Site\static\" />
     <Folder Include="Site\static\content\" />
     <Folder Include="Site\static\fonts\" />
     <Folder Include="Site\static\images\" />
     <Folder Include="Site\static\scripts\" />
     <Folder Include="Site\templates\" />
+    <Folder Include="Site\templates\Airspy\" />
     <Folder Include="Site\templates\root\" />
   </ItemGroup>
   <ItemGroup>
@@ -74,6 +81,8 @@
     <Content Include="Site\static\scripts\respond.js" />
     <Content Include="Site\static\scripts\respond.min.js" />
     <Content Include="Site\static\scripts\_references.js" />
+    <Content Include="Site\templates\Airspy\api.html" />
+    <Content Include="Site\templates\Airspy\index.html" />
     <Content Include="Site\templates\root\about.html" />
     <Content Include="Site\templates\root\privacy.html" />
     <Content Include="Site\templates\root\index.html" />
