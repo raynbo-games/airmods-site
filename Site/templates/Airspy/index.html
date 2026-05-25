@@ -1,5 +1,33 @@
 {% extends "layout.html" %}
 
+{% block head %}
+
+<link rel="stylesheet" href="https://cloudflare.com">
+<script src="https://cloudflare.com"></script>
+<script src="https://cloudflare.com"></script>
+
+{% endblock %}
+
 {% block content %}
+
+<h1>Live Game Data::</h1>
+<pre id="json-display">Loading...</pre>
+
+<script>
+    function fetchJsonData() {
+        fetch('/airspy/api/games/57615770-0de5-4990-b9b8-29fe65087b4a')
+            .then(response => response.json())
+            .then(data => {
+                const codeElement = document.getElementById('json-display');
+                codeElement.textContent = JSON.stringify(data, null, 2);
+                codeElement.removeAttribute('data-highlighted');
+                hljs.highlightElement(codeElement);
+            })
+            .catch(error => console.error('Error fetching data:', error));
+    }
+
+    fetchJsonData();
+    setInterval(fetchJsonData, 60000);
+</script>
 
 {% endblock %}

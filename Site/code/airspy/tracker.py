@@ -51,7 +51,11 @@ def serializeGameData(gameData, minute):
             },
             "firstTracked": gameStats["minute"],
             "lastTracked": gameStats["minute"],
-            "stats": [],
+            "stats": {
+                "minutes": [],
+                "hours": [],
+                "days": [],
+            },
         }
 
     gameData["info"] = gameInfo
@@ -60,8 +64,46 @@ def serializeGameData(gameData, minute):
     gameData["topStats"]["uniquePlays24h"] = max(gameData["topStats"]["uniquePlays24h"], gameStats["uniquePlays24h"])
     gameData["topStats"]["players"] = max(gameData["topStats"]["players"], gameStats["players"])
     gameData["lastTracked"] = gameStats["minute"]
-    gameData["stats"].append(gameStats)
+    gameData["stats"]["minutes"].append(gameStats)
+
+    while len(gameData["stats"]["minutes"]) > 60:
+        del gameData["stats"]["minutes"][0]
+
+    if minute % 60 == 0:
+        hourStats = {
+            "minute": gameData["stats"]["minutes"][-1]["minute"],
+            "plays": gameData["stats"]["minutes"][-1]["plays"],
+            "plays24h": gameData["stats"]["minutes"][-1]["plays24h"],
+            "uniquePlays24h": gameData["stats"]["minutes"][-1]["uniquePlays24h"],
+            "players": [],
+        }
+
+        for minuteData in gameData["stats"]["minutes"]:
+            hourStats["players"].append(minuteData["players"])
+        
+        hourStats["players"] = round(sum(hourStats["players"]) / len(hourStats["players"]))
+        gameData["stats"]["hours"].append(hourStats)
+
+        while len(gameData["stats"]["hours"]) > 24:
+            del gameData["stats"]["hours"][0]
     
+    if minute % 1440 == 0:
+        dayStats = {
+            "minute": gameData["stats"]["minutes"][-1]["minute"],
+            "plays": gameData["stats"]["minutes"][-1]["plays"],
+            "plays24h": gameData["stats"]["minutes"][-1]["plays24h"],
+            "uniquePlays24h": gameData["stats"]["minutes"][-1]["uniquePlays24h"],
+            "players": [],
+        }
+
+        for hourData in gameData["stats"]["hours"]:
+            dayStats["players"].append(hourData["players"])
+        
+        dayStats["players"] = round(sum(dayStats["players"]) / len(dayStats["players"]))
+        gameData["stats"]["days"].append(dayStats)
+
+        while len(gameData["stats"]["days"]) > 365:
+            del gameData["stats"]["days"][0]
 
     with open(filePath, 'w') as f:
         json.dump(gameData, f)
@@ -69,6 +111,7 @@ def serializeGameData(gameData, minute):
 
 def startTracker():
     while True:
+        startTime = datetime.now().timestamp()
         minute = math.floor(datetime.now().timestamp() / 60)
         try:
             response = requests.get(GAMES_URL, timeout=10)
@@ -95,8 +138,8 @@ def startTracker():
 
         except requests.exceptions.RequestException as e:
             warning(f"[{minute}] Error connecting to API: {e}")
-
-        time.sleep(60)
+        elaspedTime = datetime.now().timestamp() - startTime
+        time.sleep(60 - elaspedTime)
 
 
 def startTrackerThread():
