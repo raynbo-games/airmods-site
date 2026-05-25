@@ -72,7 +72,6 @@
     <Content Include="Site\static\scripts\respond.min.js" />
     <Content Include="Site\static\scripts\_references.js" />
     <Content Include="Site\templates\root\about.html" />
-    <Content Include="Site\templates\root\contact.html" />
     <Content Include="Site\templates\root\privacy.html" />
     <Content Include="Site\templates\root\index.html" />
     <Content Include="Site\templates\layout.html" />

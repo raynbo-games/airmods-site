@@ -17,15 +17,6 @@ def home():
         year=datetime.now().year,
     )
 
-@bp.route('/contact')
-def contact():
-    """Renders the contact page."""
-    return render_template(
-        'root/contact.html',
-        title="Contact",
-        year=datetime.now().year,
-    )
-
 @bp.route('/about')
 def about():
     """Renders the about page."""
