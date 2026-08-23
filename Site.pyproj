@@ -66,6 +66,7 @@
   <ItemGroup>
     <Content Include=".gitignore" />
     <Content Include="LICENSE" />
+    <Content Include="project.toml" />
     <Content Include="readme.md" />
     <Content Include="requirements.txt" />
     <Content Include="Site\.env" />
