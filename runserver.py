@@ -5,8 +5,6 @@ This script runs the Site application using a development server.
 from subprocess import Popen
 from os import environ
 from Site import app
-
-import subprocess
 import os
 
 os.system("taskkill /f /im cloudflared.exe 2>nul")
@@ -21,4 +19,5 @@ if __name__ == '__main__':
         PORT = int(environ.get('SERVER_PORT', '5000'))
     except ValueError:
         PORT = 5000
+    
     app.run(HOST, PORT)

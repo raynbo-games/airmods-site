@@ -1,7 +1,3 @@
-"""
-Routes and views for the flask application.
-"""
-
 from flask import Blueprint, redirect, render_template
 from datetime import datetime
 

@@ -1,0 +1,181 @@
+from Site.code.database.main import get_db, convert_to_timestamp
+import json
+from Site.code.config import AIRSPY_UPDATE_TIMEOUT, STORED_TICKS, STORED_DAILY_TICKS, STORED_MONTHLY_TICKS
+
+default_stats = {
+    "playerCounts": [-1] * STORED_TICKS,
+    "plays": [-1] * STORED_TICKS,
+    "plays24h": [-1] * STORED_TICKS,
+    "uniquePlays24h": [-1] * STORED_TICKS,
+    "dailyPlayerCounts": [-1] * STORED_DAILY_TICKS,
+    "dailyPlays": [-1] * STORED_DAILY_TICKS,
+    "dailyPlays24h": [-1] * STORED_DAILY_TICKS,
+    "dailyUniquePlays24h": [-1] * STORED_DAILY_TICKS,
+    "monthlyPlayerCounts": [-1] * STORED_MONTHLY_TICKS,
+    "monthlyPlays": [-1] * STORED_MONTHLY_TICKS,
+    "monthlyPlays24h": [-1] * STORED_MONTHLY_TICKS,
+    "monthlyUniquePlays24h": [-1] * STORED_MONTHLY_TICKS,
+    "athPlayerCount": 0,
+    "athPlays24h": 0,
+    "athUniquePlays24h": 0,
+}
+
+def get_game_ids():
+    db = get_db()
+    cursor = db.cursor()
+    cursor.execute("SELECT id FROM game")
+    rows = cursor.fetchall()
+    return [row["id"] for row in rows]
+
+def get_game_by_id(game_id):
+    db = get_db()
+    cursor = db.cursor()
+    cursor.execute("SELECT * FROM game WHERE id = ?", (game_id,))
+    row = cursor.fetchone()
+    return row
+
+def get_organization_by_id(organization_id):
+    db = get_db()
+    cursor = db.cursor()
+    cursor.execute("SELECT * FROM organization WHERE id = ?", (organization_id,))
+    row = cursor.fetchone()
+    return row
+
+def insert_game(raw_data):
+    game_data = raw_data["game"]
+    live_stats = game_data["liveStats"]
+    organization = game_data["organization"]
+
+    db = get_db()
+    cursor = db.cursor()
+    cursor.execute(
+        "INSERT INTO game (id, slug, slugProperCase, name, description, iconImageId, organizationId, createdAt, visibility, lastVersionUpdate, archivedAt, loadingScreenImageId, logoImageId, videoId, links, plays, favorites, plays24h, uniquePlays24h, platforms, liveStats, gameStats) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+        (game_data["id"], game_data["slug"], game_data["slugProperCase"], game_data["name"], game_data["description"], game_data["iconImageId"], organization["id"], game_data["createdAt"], game_data["visibility"], game_data["lastVersionUpdate"], game_data["archivedAt"], game_data["loadingScreenImageId"], game_data["logoImageId"], game_data["videoId"], json.dumps(game_data["links"]), game_data["plays"], game_data["favorites"], game_data["plays24h"], game_data["uniquePlays24h"], json.dumps(game_data["platforms"]), json.dumps(live_stats), json.dumps(default_stats))
+    )
+    db.commit()
+    return f"Inserted game: {game_data["id"]}"
+
+def get_organization_ids():
+    db = get_db()
+    cursor = db.cursor()
+    cursor.execute("SELECT id FROM organization")
+    rows = cursor.fetchall()
+    return [row["id"] for row in rows]
+
+def organize_game_data(raw_data):
+    game_data = raw_data["game"]
+    live_stats = game_data["liveStats"]
+    organization = game_data["organization"]
+    return {
+        "id": game_data.get("id"),
+        "slug": game_data.get("slug"),
+        "slugProperCase": game_data.get("slugProperCase"),
+        "name": game_data.get("name"),
+        "description": game_data.get("description"),
+        "iconImageId": game_data.get("iconImageId"),
+        "organizationId": organization.get("id"),
+        "createdAt": convert_to_timestamp(game_data.get("createdAt")),
+        "visibility": game_data.get("visibility"),
+        "lastVersionUpdate": convert_to_timestamp(game_data.get("lastVersionUpdate")),
+        "archivedAt": convert_to_timestamp(game_data.get("archivedAt")),
+        "loadingScreenImageId": game_data.get("loadingScreenImageId"),
+        "logoImageId": game_data.get("logoImageId"),
+        "videoId": game_data.get("videoId"),
+        "links": game_data.get("links"),
+        "plays": game_data.get("plays"),
+        "favorites": game_data.get("favorites"),
+        "plays24h": game_data.get("plays24h"),
+        "uniquePlays24h": game_data.get("uniquePlays24h"),
+        "platforms": game_data.get("platforms"),
+        "liveStats": live_stats
+    }
+
+def update_game(raw_data):
+    game_data = raw_data["game"]
+    db = get_db()
+    cursor = db.cursor()
+
+    cursor.execute(f"SELECT * FROM game WHERE id = ?", (game_data["id"],))
+    existing_row = cursor.fetchone()
+
+    if not existing_row:
+        return insert_game(raw_data)
+
+    changed_fields = {}
+    new_data = organize_game_data(raw_data)
+
+    for key, new_value in new_data.items():
+        if key in existing_row.keys() and existing_row[key] != new_value:
+            changed_fields[key] = new_value
+
+    if not changed_fields:
+        return f"No changes detected for game: {game_data["id"]}"
+
+    set_clause = ", ".join([f"{column} = ?" for column in changed_fields.keys()])
+        
+    query_params = list(changed_fields.values()) + [game_data["id"]]
+        
+    sql_query = f"UPDATE game SET {set_clause} WHERE id = ?"
+    cursor.execute(sql_query, query_params)
+
+    db.commit()
+    return f"Updated game: {game_data["id"]}, {json.dumps(changed_fields)}"
+
+
+def organize_organization_data(raw_data):
+    return {
+        "id": raw_data.get("id"),
+        "slug": raw_data.get("slug"),
+        "slugProperCase": raw_data.get("slugProperCase"),
+        "name": raw_data.get("name"),
+        "description": raw_data.get("description"),
+        "iconImageId": raw_data.get("iconImageId"),
+        "createdAt": convert_to_timestamp(raw_data.get("createdAt")),
+        "adminBanned": raw_data.get("adminBanned")
+    }
+
+def insert_organization(raw_data):
+    db = get_db()
+    cursor = db.cursor()
+    cursor.execute(
+        "INSERT INTO organization (id, slug, slugProperCase, name, description, iconImageId, createdAt, adminBanned, orgStats) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
+        (raw_data["id"], raw_data["slug"], raw_data["slugProperCase"], raw_data["name"], raw_data["description"], raw_data["iconImageId"], raw_data["createdAt"], raw_data["adminBanned"], json.dumps(default_stats))
+    )
+    db.commit()
+
+    return f"Inserted organization: {raw_data["id"]}"
+
+def update_organization(raw_data):
+    db = get_db()
+    cursor = db.cursor()
+    cursor.execute(f"SELECT * FROM organization WHERE id = ?", (raw_data["id"],))
+    existing_row = cursor.fetchone()
+    if not existing_row:
+        return insert_organization(raw_data)
+    changed_fields = {}
+    new_data = organize_organization_data(raw_data)
+    for key, new_value in new_data.items():
+        if key in existing_row.keys() and existing_row[key] != new_value:
+            changed_fields[key] = new_value
+    if not changed_fields:
+        return f"No changes detected for organization: {raw_data['id']}"
+    set_clause = ", ".join([f"{column} = ?" for column in changed_fields.keys()])
+        
+    query_params = list(changed_fields.values()) + [raw_data["id"]]
+        
+    sql_query = f"UPDATE organization SET {set_clause} WHERE id = ?"
+    cursor.execute(sql_query, query_params)
+    db.commit()
+    return f"Updated organization {raw_data["id"]}, {json.dumps(changed_fields)}"
+
+def update_game_stats(game_id, stats):
+    db = get_db()
+    cursor = db.cursor()
+    cursor.execute(f"UPDATE game SET gameStats = ? WHERE id = ?", (json.dumps(stats), game_id))
+    db.commit()
+
+def update_organization_stats(org_id, stats):
+    db = get_db()
+    cursor = db.cursor()
+    cursor.execute(f"UPDATE organization SET orgStats = ? WHERE id = ?", (json.dumps(stats), org_id))
+    db.commit()
