@@ -1,7 +1,6 @@
-import sqlite3, click
+import sqlite3, click, json
 from flask import current_app, g
 from datetime import datetime
-import json
 
 def get_db():
     if 'db' not in g:

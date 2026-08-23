@@ -25,7 +25,16 @@
                 <ul class="nav navbar-nav">
                     <li><a href="{{ url_for('root.home') }}">Home</a></li>
                     <li><a href="{{ url_for('root.about') }}">About</a></li>
+                    <li><a href="{{ url_for('airspy.airspy') }}">Airspy</a></li>
                 </ul>
+                {% if request.blueprint == 'airspy' %}
+                <div class="search-wrapper">
+                    <div class="search-container">
+                        <input type="text" id="search-input" autocomplete="off" placeholder="Search...">
+                        <div id="suggestions" class="suggestions-box"></div>
+                    </div>
+                </div>
+                {% endif %}
             </div>
         </div>
     </div>
@@ -40,17 +49,19 @@
             <div class="centered-content">
                 <p>
                     <a href="/privacy">Privacy Policy</a>
-                     | 
+                    |
                     <a href="/tos">Terms of Service</a>
                 </p>
             </div>
-</footer>
+        </footer>
     </div>
 
     <script src="/static/scripts/jquery-1.10.2.js"></script>
     <script src="/static/scripts/bootstrap.js"></script>
     <script src="/static/scripts/respond.js"></script>
+    {% if request.blueprint == 'airspy' %}
+    <script src="{{ url_for('static', filename='scripts/search.js') }}"></script>
+    {% endif %}
     {% block scripts %}{% endblock %}
-
 </body>
 </html>

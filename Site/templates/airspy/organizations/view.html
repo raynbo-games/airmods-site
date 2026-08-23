@@ -1,0 +1,49 @@
+{% extends "layout.html" %}
+
+{% block content %}
+
+<div id="org-info"></div>
+
+<div class="dashboard-wrapper">
+    <h2>Organization Statistics</h2>
+    <h3>All Time Highs</h3>
+    <p id="ath">Loading...</p>
+    <div class="chart-filter-tabs">
+        <h3>Charts</h3>
+        <button class="tab-btn active" onclick="switchTimeframe('day', this)">Day</button>
+        <button class="tab-btn" onclick="switchTimeframe('month', this)">Month</button>
+        <button class="tab-btn" onclick="switchTimeframe('year', this)">Year</button>
+    </div>
+
+    <div class="graphs-grid">
+        <div class="graph-card">
+            <h4 id="title-0">Loading...</h4>
+            <canvas id="canvas-0"></canvas>
+        </div>
+        <div class="graph-card">
+            <h4 id="title-1">Loading...</h4>
+            <canvas id="canvas-1"></canvas>
+        </div>
+        <div class="graph-card">
+            <h4 id="title-2">Loading...</h4>
+            <canvas id="canvas-2"></canvas>
+        </div>
+        <div class="graph-card">
+            <h4 id="title-3">Loading...</h4>
+            <canvas id="canvas-3"></canvas>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.4/Chart.js"></script>
+<script>
+    const rawDataMap = {{ chart_data | tojson }};
+    const ath_data = {{ ath_data | tojson }};
+    const org_data = {{ org_data | tojson }};
+    window.org_image = "data:image/png;base64,{{ org_image }}";
+</script>
+<script src="{{ url_for('static', filename='scripts/stats-chart.js') }}"></script>
+<script src="{{ url_for('static', filename='scripts/org-data.js') }}"></script>
+{% endblock %}

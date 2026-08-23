@@ -1,7 +1,7 @@
 from flask import Flask
 import json, time, math, os
 from Site.code.airspy.airship_urls import request_games, request_game_id
-from Site.code.airspy.database import get_game_ids, insert_game, get_game_by_id, update_game, get_organization_ids, get_organization_by_id, update_organization, update_organization_stats, update_game_stats
+from Site.code.airspy.database import insert_game, update_game, update_organization, update_organization_stats, update_game_stats, get_matching_row, get_property_values
 from Site.code.config import AIRSPY_UPDATE_TIMEOUT,STORED_TICKS, STORED_DAILY_TICKS, STORED_MONTHLY_TICKS, AIRSPY_SPEED
 from datetime import datetime
 
@@ -32,8 +32,8 @@ def tick_airspy(app: Flask):
         app.logger.warn("Failed to fetch games.")
         return
 
-    game_ids = get_game_ids()
-    organization_ids = get_organization_ids()
+    game_ids = get_property_values("game", "id")
+    organization_ids = get_property_values("organization", "id")
 
     def process_game_data(gameData):
         if gameData["id"] not in game_ids:
@@ -57,7 +57,7 @@ def tick_airspy(app: Flask):
             continue
 
         app.logger.debug(update_game(raw_data))
-        gameData = get_game_by_id(game_id)
+        gameData = get_matching_row("game", {"id": game_id})
 
         playerCount = raw_data["game"]["liveStats"]["playerCount"]
         plays = raw_data["game"]["plays"]
@@ -108,7 +108,7 @@ def tick_airspy(app: Flask):
     for orgId, current in organization_data.items():
         raw_data = current["data"]
         app.logger.debug(update_organization(raw_data))
-        orgData = get_organization_by_id(raw_data["id"])
+        orgData = get_matching_row("organization", {"id": raw_data["id"]})
 
         playerCount = current["orgStats"]["playerCounts"]
         plays = current["orgStats"]["plays"]
@@ -153,7 +153,7 @@ def tick_airspy(app: Flask):
     missedDays = days - 1
     
     for game_id in game_ids:
-        gameData = get_game_by_id(game_id)
+        gameData = get_matching_row("game", {"id": game_id})
 
         if missedDays > 0:
             gameData['gameStats']["dailyPlayerCounts"].extend([-1] * missedDays)
@@ -189,7 +189,7 @@ def tick_airspy(app: Flask):
         update_game_stats(game_id, gameData['gameStats'])
 
     for org_id in organization_ids:
-        orgData = get_organization_by_id(org_id)
+        orgData = get_matching_row("organization", {"id": org_id})
 
         if missedDays > 0:
             orgData['orgStats']["dailyPlayerCounts"].extend([-1] * missedDays)
@@ -237,7 +237,7 @@ def tick_airspy(app: Flask):
     missedMonths = months - 1
 
     for game_id in game_ids:
-        gameData = get_game_by_id(game_id)
+        gameData = get_matching_row("game", {"id": game_id})
 
         if missedMonths > 0:
             gameData['gameStats']["monthlyPlayerCounts"].extend([-1] * missedMonths)
@@ -273,7 +273,7 @@ def tick_airspy(app: Flask):
         update_game_stats(game_id, gameData['gameStats'])
 
     for org_id in organization_ids:
-        orgData = get_organization_by_id(org_id)
+        orgData = get_matching_row("organization", {"id": org_id})
 
         if missedMonths > 0:
             orgData['orgStats']["monthlyPlayerCounts"].extend([-1] * missedMonths)

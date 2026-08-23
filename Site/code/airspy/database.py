@@ -20,26 +20,24 @@ default_stats = {
     "athUniquePlays24h": 0,
 }
 
-def get_game_ids():
+def get_matching_row(table_name, properties_dict, multiple=False):
     db = get_db()
     cursor = db.cursor()
-    cursor.execute("SELECT id FROM game")
+    
+    conditions = [f'"{col}" = ?' for col in properties_dict.keys()]
+    where_clause = " AND ".join(conditions)
+    
+    query = f"SELECT * FROM {table_name} WHERE {where_clause}"
+
+    if multiple: return cursor.execute(query, list(properties_dict.values())).fetchall()
+    return cursor.execute(query, list(properties_dict.values())).fetchone()
+
+def get_property_values(table_name, property_key):
+    db = get_db()
+    cursor = db.cursor()
+    cursor.execute(f"SELECT {property_key} FROM {table_name}")
     rows = cursor.fetchall()
-    return [row["id"] for row in rows]
-
-def get_game_by_id(game_id):
-    db = get_db()
-    cursor = db.cursor()
-    cursor.execute("SELECT * FROM game WHERE id = ?", (game_id,))
-    row = cursor.fetchone()
-    return row
-
-def get_organization_by_id(organization_id):
-    db = get_db()
-    cursor = db.cursor()
-    cursor.execute("SELECT * FROM organization WHERE id = ?", (organization_id,))
-    row = cursor.fetchone()
-    return row
+    return [row[property_key] for row in rows]
 
 def insert_game(raw_data):
     game_data = raw_data["game"]
@@ -54,13 +52,6 @@ def insert_game(raw_data):
     )
     db.commit()
     return f"Inserted game: {game_data["id"]}"
-
-def get_organization_ids():
-    db = get_db()
-    cursor = db.cursor()
-    cursor.execute("SELECT id FROM organization")
-    rows = cursor.fetchall()
-    return [row["id"] for row in rows]
 
 def organize_game_data(raw_data):
     game_data = raw_data["game"]
