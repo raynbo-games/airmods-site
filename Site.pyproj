@@ -64,10 +64,7 @@
     <Folder Include="Site\templates\root\" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="instance\database.sqlite" />
-    <Content Include="instance\game.json" />
-    <Content Include="instance\organization.json" />
-    <Content Include="instance\tick_airspy.json" />
+    <Content Include=".gitignore" />
     <Content Include="LICENSE" />
     <Content Include="readme.md" />
     <Content Include="requirements.txt" />
