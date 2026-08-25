@@ -64,12 +64,12 @@
     <Folder Include="Site\templates\root\" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="Site\.env" />
     <Content Include=".gitignore" />
     <Content Include="LICENSE" />
     <Content Include="project.toml" />
     <Content Include="readme.md" />
     <Content Include="requirements.txt" />
-    <Content Include="Site\.env" />
     <Content Include="Site\code\database\schemas\database.sql" />
     <Content Include="Site\static\content\bootstrap.css" />
     <Content Include="Site\static\content\bootstrap.min.css" />

@@ -1,14 +1,14 @@
-import sqlite3, click, json
+import click
 from flask import current_app, g
-from datetime import datetime
+import psycopg
+from psycopg.rows import dict_row
 
 def get_db():
     if 'db' not in g:
-        g.db = sqlite3.connect(
-            current_app.config['DATABASE'],
-            detect_types=sqlite3.PARSE_DECLTYPES
+        g.db = psycopg.connect(
+            current_app.config['DATABASE_URL'],
+            row_factory=dict_row
         )
-        g.db.row_factory = sqlite3.Row
     return g.db
 
 def close_db(e=None):
@@ -20,29 +20,17 @@ def init_db():
     db = get_db()
 
     with current_app.open_resource('code/database/schemas/database.sql') as f:
-        db.executescript(f.read().decode('utf8'))
-
+        sql_script = f.read().decode('utf8')
+        
+    with db.cursor() as cursor:
+        cursor.execute(sql_script)
+    db.commit()
 
 @click.command('init-db')
 def init_db_command():
     init_db()
-    click.echo('Initialized the database.')
-
-timestamp_converter = lambda v: datetime.fromisoformat(v.decode().replace('Z', '+00:00'))
-
-sqlite3.register_converter(
-    "timestamp", timestamp_converter
-)
-
-sqlite3.register_converter("JSON", json.loads)
-
-def convert_to_timestamp(v):
-    if not v:
-        return None
-    return timestamp_converter(v.encode())
+    click.echo('Initialized the managed PostgreSQL database.')
 
 def init_app(app):
     app.teardown_appcontext(close_db)
     app.cli.add_command(init_db_command)
-
-    #python -m flask --app Site init-db

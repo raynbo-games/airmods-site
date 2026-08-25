@@ -16,14 +16,14 @@ CREATE TABLE game (
 	loadingScreenImageId TEXT,
 	logoImageId TEXT,
 	videoId TEXT,
-	links JSON NOT NULL,
-	plays INT NOT NULL,
-	favorites INT NOT NULL,
-	plays24h INT NOT NULL,
-	uniquePlays24h INT NOT NULL,
-	platforms JSON NOT NULL,
-	liveStats JSON NOT NULL,
-	gameStats JSON NOT NULL
+	links JSONB NOT NULL,
+	plays INTEGER NOT NULL,
+	favorites INTEGER NOT NULL,
+	plays24h INTEGER NOT NULL,
+	uniquePlays24h INTEGER NOT NULL,
+	platforms JSONB NOT NULL,
+	liveStats JSONB NOT NULL,
+	gameStats JSONB NOT NULL
 );
 
 CREATE TABLE organization (
@@ -35,5 +35,5 @@ CREATE TABLE organization (
 	iconImageId TEXT NOT NULL,
 	createdAt TIMESTAMP NOT NULL,
 	adminBanned BOOLEAN NOT NULL,
-	orgStats JSON NOT NULL
+	orgStats JSONB NOT NULL
 );

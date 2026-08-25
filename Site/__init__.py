@@ -9,7 +9,7 @@ def create_app():
     app.logger.setLevel(logging.DEBUG)
     app.config.from_mapping(
         SECRET_KEY=os.getenv("SECRET_KEY"),
-        DATABASE=os.path.join(app.instance_path, 'database.sqlite'),
+        DATABASE_URL = os.environ.get('DATABASE_URL'),
     )
 
     os.makedirs(app.instance_path, exist_ok=True)
