@@ -9,7 +9,7 @@ load_dotenv()
 
 def create_app():
     app = Flask(__name__, instance_relative_config=True)
-    app.logger.setLevel(logging.DEBUG)
+    app.logger.setLevel(logging.WARN)
     app.config.from_mapping(
         SECRET_KEY="MooCow2804",
         DATABASE_URL = os.environ.get('DATABASE_URL'),

@@ -1,4 +1,3 @@
-import json
 import os, io, requests
 
 DOMAIN = "airship.gg"

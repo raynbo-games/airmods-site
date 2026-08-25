@@ -1,7 +1,7 @@
 from flask import Blueprint, request, jsonify, current_app, url_for
 from Site.code.airspy.airship_urls import request_image
 from Site.code.airspy.database import get_matching_row, get_property_values
-from Site.code.config import AIRSPY_UPDATE_TIMEOUT, STORED_TICKS, STORED_DAILY_TICKS, STORED_MONTHLY_TICKS
+from Site.code.config import STORED_TICKS, STORED_DAILY_TICKS, STORED_MONTHLY_TICKS
 import base64
 
 bp = Blueprint('airspy-api', __name__, url_prefix='/api')

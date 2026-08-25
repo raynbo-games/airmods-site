@@ -1,8 +1,7 @@
 from datetime import datetime
-from flask import Blueprint, render_template, request, redirect, url_for, jsonify
-from Site.code.airspy.airship_urls import get_image_url, get_headers
+from flask import Blueprint, render_template, request, redirect, url_for
 from Site.code.airspy.api import bp as api_bp, get_image, get_search_items, get_dashboard_data
-from Site.code.airspy.database import get_matching_row, get_property_values
+from Site.code.airspy.database import get_matching_row
 
 bp = Blueprint('airspy', __name__, url_prefix='/airspy')
 

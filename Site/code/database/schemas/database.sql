@@ -1,5 +1,6 @@
 DROP TABLE IF EXISTS "game";
 DROP TABLE IF EXISTS "organization";
+DROP TABLE IF EXISTS "json";
 
 CREATE TABLE "game" (
 	"id" TEXT PRIMARY KEY UNIQUE,
@@ -36,4 +37,9 @@ CREATE TABLE "organization" (
 	"createdAt" TIMESTAMP NOT NULL,
 	"adminBanned" BOOLEAN NOT NULL,
 	"orgStats" JSONB NOT NULL
+);
+
+CREATE TABLE "json" (
+	"id" TEXT PRIMARY KEY UNIQUE,
+	"data" JSONB NOT NULL
 );
