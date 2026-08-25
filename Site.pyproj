@@ -64,7 +64,6 @@
     <Folder Include="Site\templates\root\" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="Site\.env" />
     <Content Include=".gitignore" />
     <Content Include="LICENSE" />
     <Content Include="project.toml" />

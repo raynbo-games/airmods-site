@@ -1,6 +1,6 @@
-from Site.code.database.main import get_db, convert_to_timestamp
-import json
-from Site.code.config import AIRSPY_UPDATE_TIMEOUT, STORED_TICKS, STORED_DAILY_TICKS, STORED_MONTHLY_TICKS
+from Site.code.database.main import get_db
+from Site.code.config import STORED_TICKS, STORED_DAILY_TICKS, STORED_MONTHLY_TICKS
+from psycopg.types.json import Jsonb
 
 default_stats = {
     "playerCounts": [-1] * STORED_TICKS,
@@ -24,10 +24,10 @@ def get_matching_row(table_name, properties_dict, multiple=False):
     db = get_db()
     cursor = db.cursor()
     
-    conditions = [f'"{col}" = ?' for col in properties_dict.keys()]
+    conditions = [f'"{col}" = %s' for col in properties_dict.keys()]
     where_clause = " AND ".join(conditions)
     
-    query = f"SELECT * FROM {table_name} WHERE {where_clause}"
+    query = f'SELECT * FROM "{table_name}" WHERE {where_clause}'
 
     if multiple: return cursor.execute(query, list(properties_dict.values())).fetchall()
     return cursor.execute(query, list(properties_dict.values())).fetchone()
@@ -35,7 +35,7 @@ def get_matching_row(table_name, properties_dict, multiple=False):
 def get_property_values(table_name, property_key):
     db = get_db()
     cursor = db.cursor()
-    cursor.execute(f"SELECT {property_key} FROM {table_name}")
+    cursor.execute(f'SELECT "{property_key}" FROM "{table_name}"')
     rows = cursor.fetchall()
     return [row[property_key] for row in rows]
 
@@ -47,8 +47,8 @@ def insert_game(raw_data):
     db = get_db()
     cursor = db.cursor()
     cursor.execute(
-        "INSERT INTO game (id, slug, slugProperCase, name, description, iconImageId, organizationId, createdAt, visibility, lastVersionUpdate, archivedAt, loadingScreenImageId, logoImageId, videoId, links, plays, favorites, plays24h, uniquePlays24h, platforms, liveStats, gameStats) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
-        (game_data["id"], game_data["slug"], game_data["slugProperCase"], game_data["name"], game_data["description"], game_data["iconImageId"], organization["id"], game_data["createdAt"], game_data["visibility"], game_data["lastVersionUpdate"], game_data["archivedAt"], game_data["loadingScreenImageId"], game_data["logoImageId"], game_data["videoId"], json.dumps(game_data["links"]), game_data["plays"], game_data["favorites"], game_data["plays24h"], game_data["uniquePlays24h"], json.dumps(game_data["platforms"]), json.dumps(live_stats), json.dumps(default_stats))
+        'INSERT INTO "game" ("id", "slug", "slugProperCase", "name", "description", "iconImageId", "organizationId", "createdAt", "visibility", "lastVersionUpdate", "archivedAt", "loadingScreenImageId", "logoImageId", "videoId", "links", "plays", "favorites", "plays24h", "uniquePlays24h", "platforms", "liveStats", "gameStats") VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)',
+        (game_data["id"], game_data["slug"], game_data["slugProperCase"], game_data["name"], game_data["description"], game_data["iconImageId"], organization["id"], game_data["createdAt"], game_data["visibility"], game_data["lastVersionUpdate"], game_data["archivedAt"], game_data["loadingScreenImageId"], game_data["logoImageId"], game_data["videoId"], Jsonb(game_data["links"]), game_data["plays"], game_data["favorites"], game_data["plays24h"], game_data["uniquePlays24h"], Jsonb(game_data["platforms"]), Jsonb(live_stats), Jsonb(default_stats))
     )
     db.commit()
     return f"Inserted game: {game_data["id"]}"
@@ -65,10 +65,10 @@ def organize_game_data(raw_data):
         "description": game_data.get("description"),
         "iconImageId": game_data.get("iconImageId"),
         "organizationId": organization.get("id"),
-        "createdAt": convert_to_timestamp(game_data.get("createdAt")),
+        "createdAt": game_data.get("createdAt"),
         "visibility": game_data.get("visibility"),
-        "lastVersionUpdate": convert_to_timestamp(game_data.get("lastVersionUpdate")),
-        "archivedAt": convert_to_timestamp(game_data.get("archivedAt")),
+        "lastVersionUpdate": game_data.get("lastVersionUpdate"),
+        "archivedAt": game_data.get("archivedAt"),
         "loadingScreenImageId": game_data.get("loadingScreenImageId"),
         "logoImageId": game_data.get("logoImageId"),
         "videoId": game_data.get("videoId"),
@@ -86,7 +86,7 @@ def update_game(raw_data):
     db = get_db()
     cursor = db.cursor()
 
-    cursor.execute(f"SELECT * FROM game WHERE id = ?", (game_data["id"],))
+    cursor.execute('SELECT * FROM "game" WHERE "id" = %s', (game_data["id"],))
     existing_row = cursor.fetchone()
 
     if not existing_row:
@@ -102,15 +102,15 @@ def update_game(raw_data):
     if not changed_fields:
         return f"No changes detected for game: {game_data["id"]}"
 
-    set_clause = ", ".join([f"{column} = ?" for column in changed_fields.keys()])
+    set_clause = ", ".join([f'"{column}" = %s' for column in changed_fields.keys()])
         
     query_params = list(changed_fields.values()) + [game_data["id"]]
         
-    sql_query = f"UPDATE game SET {set_clause} WHERE id = ?"
+    sql_query = f'UPDATE "game" SET {set_clause} WHERE "id" = %s'
     cursor.execute(sql_query, query_params)
 
     db.commit()
-    return f"Updated game: {game_data["id"]}, {json.dumps(changed_fields)}"
+    return f"Updated game: {game_data["id"]}, {Jsonb(changed_fields)}"
 
 
 def organize_organization_data(raw_data):
@@ -121,7 +121,7 @@ def organize_organization_data(raw_data):
         "name": raw_data.get("name"),
         "description": raw_data.get("description"),
         "iconImageId": raw_data.get("iconImageId"),
-        "createdAt": convert_to_timestamp(raw_data.get("createdAt")),
+        "createdAt": raw_data.get("createdAt"),
         "adminBanned": raw_data.get("adminBanned")
     }
 
@@ -129,8 +129,8 @@ def insert_organization(raw_data):
     db = get_db()
     cursor = db.cursor()
     cursor.execute(
-        "INSERT INTO organization (id, slug, slugProperCase, name, description, iconImageId, createdAt, adminBanned, orgStats) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
-        (raw_data["id"], raw_data["slug"], raw_data["slugProperCase"], raw_data["name"], raw_data["description"], raw_data["iconImageId"], raw_data["createdAt"], raw_data["adminBanned"], json.dumps(default_stats))
+        'INSERT INTO "organization" ("id", "slug", "slugProperCase", "name", "description", "iconImageId", "createdAt", "adminBanned", "orgStats") VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)',
+        (raw_data["id"], raw_data["slug"], raw_data["slugProperCase"], raw_data["name"], raw_data["description"], raw_data["iconImageId"], raw_data["createdAt"], raw_data["adminBanned"], Jsonb(default_stats))
     )
     db.commit()
 
@@ -139,7 +139,7 @@ def insert_organization(raw_data):
 def update_organization(raw_data):
     db = get_db()
     cursor = db.cursor()
-    cursor.execute(f"SELECT * FROM organization WHERE id = ?", (raw_data["id"],))
+    cursor.execute(f'SELECT * FROM "organization" WHERE "id" = %s', (raw_data["id"],))
     existing_row = cursor.fetchone()
     if not existing_row:
         return insert_organization(raw_data)
@@ -150,23 +150,23 @@ def update_organization(raw_data):
             changed_fields[key] = new_value
     if not changed_fields:
         return f"No changes detected for organization: {raw_data['id']}"
-    set_clause = ", ".join([f"{column} = ?" for column in changed_fields.keys()])
+    set_clause = ", ".join([f'"{column}" = %s' for column in changed_fields.keys()])
         
     query_params = list(changed_fields.values()) + [raw_data["id"]]
         
-    sql_query = f"UPDATE organization SET {set_clause} WHERE id = ?"
+    sql_query = f'UPDATE "organization" SET {set_clause} WHERE "id" = %s'
     cursor.execute(sql_query, query_params)
     db.commit()
-    return f"Updated organization {raw_data["id"]}, {json.dumps(changed_fields)}"
+    return f'Updated organization {raw_data["id"]}, {Jsonb(changed_fields)}'
 
 def update_game_stats(game_id, stats):
     db = get_db()
     cursor = db.cursor()
-    cursor.execute(f"UPDATE game SET gameStats = ? WHERE id = ?", (json.dumps(stats), game_id))
+    cursor.execute(f'UPDATE "game" SET "gameStats" = %s WHERE "id" = %s', (Jsonb(stats), game_id))
     db.commit()
 
 def update_organization_stats(org_id, stats):
     db = get_db()
     cursor = db.cursor()
-    cursor.execute(f"UPDATE organization SET orgStats = ? WHERE id = ?", (json.dumps(stats), org_id))
+    cursor.execute(f'UPDATE "organization" SET "orgStats" = %s WHERE id = %s', (Jsonb(stats), org_id))
     db.commit()
