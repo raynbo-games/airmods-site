@@ -7,12 +7,6 @@ from os import environ
 from Site import app
 import os
 
-#os.system("taskkill /f /im cloudflared.exe 2>nul")
-#log_path = os.path.join(os.path.dirname(__file__), "cloudflared.log")
-#cmd = f'start /min cmd /c "cloudflared tunnel run --url http://localhost:8080 site > "{log_path}" 2>&1"'
-#Popen(cmd, shell=True)
-
-
 if __name__ == '__main__':
     HOST = environ.get('SERVER_HOST', 'localhost')
     try:

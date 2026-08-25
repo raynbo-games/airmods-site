@@ -1,15 +1,18 @@
 import os, logging, click
 from flask import Flask
+from flask.cli import load_dotenv
 from flask_apscheduler import APScheduler
 from Site.code.airspy.processes import tick_airspy
 from Site.code.config import AIRSPY_UPDATE_TIMEOUT, AIRSPY_SPEED
+
+load_dotenv()
 
 def create_app():
     app = Flask(__name__, instance_relative_config=True)
     app.logger.setLevel(logging.DEBUG)
     app.config.from_mapping(
-        SECRET_KEY=os.getenv("SECRET_KEY"),
-        DATABASE=os.path.join(app.instance_path, 'database.sqlite'),
+        SECRET_KEY="MooCow2804",
+        DATABASE_URL = os.environ.get('DATABASE_URL'),
     )
 
     os.makedirs(app.instance_path, exist_ok=True)
