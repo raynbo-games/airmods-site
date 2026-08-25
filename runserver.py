@@ -5,7 +5,6 @@ This script runs the Site application using a development server.
 from subprocess import Popen
 from os import environ
 from Site import app
-import os
 
 if __name__ == '__main__':
     HOST = environ.get('SERVER_HOST', 'localhost')
