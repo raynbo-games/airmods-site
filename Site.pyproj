@@ -99,7 +99,6 @@
     <Content Include="Site\static\scripts\search.js" />
     <Content Include="Site\static\scripts\_references.js" />
     <Content Include="Site\templates\airspy\games\view.html" />
-    <Content Include="Site\templates\airspy\search.html" />
     <Content Include="Site\templates\airspy\organizations\index.html" />
     <Content Include="Site\templates\airspy\games\index.html" />
     <Content Include="Site\templates\airspy\index.html" />
