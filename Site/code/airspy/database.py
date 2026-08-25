@@ -1,6 +1,9 @@
+import time
+
 from Site.code.database.main import get_db
-from Site.code.config import STORED_TICKS, STORED_DAILY_TICKS, STORED_MONTHLY_TICKS
+from Site.code.config import AIRSPY_SPEED, STORED_TICKS, STORED_DAILY_TICKS, STORED_MONTHLY_TICKS
 from psycopg.types.json import Jsonb
+from datetime import datetime
 
 default_stats = {
     "playerCounts": [-1] * STORED_TICKS,
@@ -53,6 +56,39 @@ def insert_game(raw_data):
     db.commit()
     return f"Inserted game: {game_data["id"]}"
 
+def get_tick_data():
+    tick_data = get_matching_row("json", {"id": "airship_tick_data"})
+    if tick_data:
+        tick_data = tick_data["data"]
+    if not tick_data:
+        db = get_db()
+        cursor = db.cursor()
+        tick_data = {
+            "tick": 0,
+            "lastTick": time.time() * AIRSPY_SPEED,
+            "dailyTick": 0,
+            "lastDailyTick": time.time() * AIRSPY_SPEED,
+            "monthlyTick": 0,
+            "lastMonthlyTick": time.time() * AIRSPY_SPEED
+        }
+        cursor.execute(
+            'INSERT INTO "json" ("id", "data") VALUES (%s, %s)',
+            ("airship_tick_data", Jsonb(tick_data))
+        )
+        db.commit()
+
+    return tick_data
+
+
+def set_tick_data(tick_data):
+    db = get_db()
+    cursor = db.cursor()
+    cursor.execute(
+        'UPDATE "json" SET "data" = %s WHERE "id" = %s',
+        (Jsonb(tick_data), "airship_tick_data")
+    )
+    db.commit()
+
 def organize_game_data(raw_data):
     game_data = raw_data["game"]
     live_stats = game_data["liveStats"]
@@ -65,10 +101,10 @@ def organize_game_data(raw_data):
         "description": game_data.get("description"),
         "iconImageId": game_data.get("iconImageId"),
         "organizationId": organization.get("id"),
-        "createdAt": game_data.get("createdAt"),
+        "createdAt": datetime.fromisoformat(game_data.get("createdAt").replace('Z', '+00:00')).strftime("%Y-%m-%d %H:%M:%S.%f") if game_data.get("createdAt") else None,
         "visibility": game_data.get("visibility"),
-        "lastVersionUpdate": game_data.get("lastVersionUpdate"),
-        "archivedAt": game_data.get("archivedAt"),
+        "lastVersionUpdate": datetime.fromisoformat(game_data.get("lastVersionUpdate").replace('Z', '+00:00')).strftime("%Y-%m-%d %H:%M:%S.%f") if game_data.get("lastVersionUpdate") else None,
+        "archivedAt": datetime.fromisoformat(game_data.get("archivedAt").replace('Z', '+00:00')).strftime("%Y-%m-%d %H:%M:%S.%f") if game_data.get("archivedAt") else None,
         "loadingScreenImageId": game_data.get("loadingScreenImageId"),
         "logoImageId": game_data.get("logoImageId"),
         "videoId": game_data.get("videoId"),
@@ -96,7 +132,7 @@ def update_game(raw_data):
     new_data = organize_game_data(raw_data)
 
     for key, new_value in new_data.items():
-        if key in existing_row.keys() and existing_row[key] != new_value:
+        if key in existing_row.keys() and str(existing_row[key]) != str(new_value):
             changed_fields[key] = new_value
 
     if not changed_fields:
@@ -110,7 +146,7 @@ def update_game(raw_data):
     cursor.execute(sql_query, query_params)
 
     db.commit()
-    return f"Updated game: {game_data["id"]}, {Jsonb(changed_fields)}"
+    return f"Updated game: {game_data["id"]}, {changed_fields}"
 
 
 def organize_organization_data(raw_data):
@@ -121,7 +157,7 @@ def organize_organization_data(raw_data):
         "name": raw_data.get("name"),
         "description": raw_data.get("description"),
         "iconImageId": raw_data.get("iconImageId"),
-        "createdAt": raw_data.get("createdAt"),
+        "createdAt": datetime.fromisoformat(raw_data.get("createdAt").replace('Z', '+00:00')).strftime("%Y-%m-%d %H:%M:%S.%f") if raw_data.get("createdAt") else None,
         "adminBanned": raw_data.get("adminBanned")
     }
 
@@ -146,7 +182,7 @@ def update_organization(raw_data):
     changed_fields = {}
     new_data = organize_organization_data(raw_data)
     for key, new_value in new_data.items():
-        if key in existing_row.keys() and existing_row[key] != new_value:
+        if key in existing_row.keys() and str(existing_row[key]) != str(new_value):
             changed_fields[key] = new_value
     if not changed_fields:
         return f"No changes detected for organization: {raw_data['id']}"
@@ -157,7 +193,7 @@ def update_organization(raw_data):
     sql_query = f'UPDATE "organization" SET {set_clause} WHERE "id" = %s'
     cursor.execute(sql_query, query_params)
     db.commit()
-    return f'Updated organization {raw_data["id"]}, {Jsonb(changed_fields)}'
+    return f"Updated organization: {raw_data["id"]}, {changed_fields}"
 
 def update_game_stats(game_id, stats):
     db = get_db()

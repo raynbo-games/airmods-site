@@ -1,28 +1,12 @@
 from flask import Flask
 import json, time, math, os
 from Site.code.airspy.airship_urls import request_games, request_game_id
-from Site.code.airspy.database import insert_game, update_game, update_organization, update_organization_stats, update_game_stats, get_matching_row, get_property_values
-from Site.code.config import AIRSPY_UPDATE_TIMEOUT,STORED_TICKS, STORED_DAILY_TICKS, STORED_MONTHLY_TICKS, AIRSPY_SPEED
-from datetime import datetime
-
-default_data = {
-    "tick": 0,
-    "lastTick": time.time() * AIRSPY_SPEED,
-    "dailyTick": 0,
-    "lastDailyTick": time.time() * AIRSPY_SPEED,
-    "monthlyTick": 0,
-    "lastMonthlyTick": time.time() * AIRSPY_SPEED
-}
+from Site.code.airspy.database import update_game, update_organization, update_organization_stats, update_game_stats, get_matching_row, get_property_values, get_tick_data, set_tick_data
+from Site.code.config import AIRSPY_UPDATE_TIMEOUT, AIRSPY_SPEED
 
 def tick_airspy(app: Flask):
     data_path = os.path.join(app.instance_path, 'tick_airspy.json')
-    try:
-        with open(data_path, "r") as file:
-            data = json.load(file)
-    except FileNotFoundError:
-        with open(data_path, "w") as file:
-            json.dump(default_data, file, indent=4)
-        data = default_data
+    data = get_tick_data()
 
     missedTicks = math.floor(((time.time() * AIRSPY_SPEED - data["lastTick"]) / 60) / AIRSPY_UPDATE_TIMEOUT)
     tickCount = 1 + missedTicks
@@ -146,8 +130,7 @@ def tick_airspy(app: Flask):
     days = math.floor((time.time() * AIRSPY_SPEED - data["lastDailyTick"]) / 86400)
 
     if days < 1:
-        with open(data_path, "w") as file:
-            json.dump(data, file)
+        set_tick_data(data)
         return
 
     missedDays = days - 1
@@ -230,8 +213,7 @@ def tick_airspy(app: Flask):
     months = math.floor((time.time() * AIRSPY_SPEED - data["lastMonthlyTick"]) / 2592000)
 
     if months < 1:
-        with open(data_path, "w") as file:
-            json.dump(data, file)
+        set_tick_data(data)
         return
 
     missedMonths = months - 1
@@ -311,8 +293,7 @@ def tick_airspy(app: Flask):
     data["monthlyTick"] += months
     data["lastMonthlyTick"] = time.time() * AIRSPY_SPEED
 
-    with open(data_path, "w") as file:
-        json.dump(data, file)
+    set_tick_data(data)
 
     return
 
