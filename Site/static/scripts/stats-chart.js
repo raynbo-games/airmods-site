@@ -1,7 +1,11 @@
 let chartInstances = [];
+let timeframe = "day";
+let rawDataMap = undefined;
 
-function initCharts(timeframe) {
+function initCharts() {
     const dataset = rawDataMap[timeframe];
+
+    console.log(rawDataMap);
 
     document.getElementById("ath").innerText = `Player Count: ${ath_data["playerCount"]}
     Plays 24h: ${ath_data["plays24h"]}
@@ -86,12 +90,16 @@ function initCharts(timeframe) {
     }
 }
 
-function switchTimeframe(timeframe, element) {
+function switchTimeframe(new_timeframe, element) {
+    timeframe = new_timeframe;
     document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
     element.classList.add('active');
-    initCharts(timeframe);
+    initCharts();
+}
+function doTick() {
+    fetch(chart_url).then((raw) => raw.json().then((value) => { rawDataMap = value; initCharts(); }));
+    setTimeout(() => doTick(), 60000);
 }
 
-document.addEventListener("DOMContentLoaded", () => {
-    initCharts('day');
-});
+doTick();
+

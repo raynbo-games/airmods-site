@@ -39,7 +39,7 @@
 {% block scripts %}
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.4/Chart.js"></script>
 <script>
-    const rawDataMap = {{ chart_data | tojson }};
+    const chart_url = "{{ chart_url }}";
     const ath_data = {{ ath_data | tojson }};
     const game_data = {{ game_data | tojson }};
     window.game_image = "data:image/png;base64,{{ game_image }}";

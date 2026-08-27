@@ -34,8 +34,9 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="runserver.py" />
+    <Compile Include="Site\code\airmods\main.py" />
     <Compile Include="Site\code\airspy\airship_urls.py" />
-    <Compile Include="Site\code\airspy\api.py" />
+    <Compile Include="Site\code\airspy\utility.py" />
     <Compile Include="Site\code\airspy\database.py" />
     <Compile Include="Site\code\airspy\main.py" />
     <Compile Include="Site\code\airspy\processes.py" />
@@ -52,6 +53,7 @@
     <Folder Include="Site\code\main\" />
     <Folder Include="Site\code\database\" />
     <Folder Include="Site\code\airspy\" />
+    <Folder Include="Site\code\airmods\" />
     <Folder Include="Site\static\" />
     <Folder Include="Site\static\content\" />
     <Folder Include="Site\static\fonts\" />

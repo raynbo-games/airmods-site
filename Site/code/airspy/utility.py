@@ -4,8 +4,6 @@ from Site.code.airspy.database import get_matching_row, get_property_values
 from Site.code.config import STORED_TICKS, STORED_DAILY_TICKS, STORED_MONTHLY_TICKS
 import base64
 
-bp = Blueprint('airspy-api', __name__, url_prefix='/api')
-
 def get_search_items():
     items = []
     game_names = get_property_values("game", "name")
@@ -61,20 +59,6 @@ def get_dashboard_data(stats):
         "chart_data": chart_data,
         "ath_data": ath_data
     }
-
-@bp.route('/search')
-def search_api():
-    query = request.args.get('q', '').strip().lower()
-    current_app.logger.info(query)
-    search_items = get_search_items()
-    current_app.logger.info(search_items)
-    
-    if not query:
-        return jsonify([])
-
-    matches = [item for item in search_items if query in item["title"].lower()]
-    current_app.logger.info(matches)
-    return jsonify(matches)
 
 
 def get_image(image_id):

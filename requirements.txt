@@ -22,3 +22,4 @@ gunicorn==23.0.0
 psycopg2-binary==2.9.12
 packaging==26.3
 psycopg==3.3.4
+psycopg-binary==3.3.4
