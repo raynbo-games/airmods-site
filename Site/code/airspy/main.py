@@ -1,16 +1,22 @@
 from datetime import datetime
 from flask import Blueprint, render_template, request, redirect, url_for, current_app, jsonify
 from Site.code.airspy.utility import get_image, get_search_items, get_dashboard_data
-from Site.code.airspy.database import get_matching_row
+from Site.code.airspy.database import get_matching_row, get_multiple_property_values
+from Site.code.database.cdn import get_image_cdn_url
 
 bp = Blueprint('airspy', __name__, url_prefix='/airspy')
 
 @bp.route('/')
 def root():
+    game_data = get_multiple_property_values("game", "id", "name", "iconImageId")
+    org_data = get_multiple_property_values("organization", "id", "name", "iconImageId")
+
     return render_template(
         'airspy/index.html',
         title="Airspy",
         year=datetime.now().year,
+        games=game_data,
+        orgs=org_data
     )
 
 @bp.route('/games')
@@ -33,7 +39,7 @@ def game(game_id):
         chart_url=url_for("airspy.game_chart", game_id=game_id),
         ath_data=data["ath_data"],
         game_data=dict(gameData),
-        game_image=get_image(gameData["iconImageId"])
+        image_url=get_image_cdn_url("airspy", gameData["iconImageId"])
     )
 
 @bp.route('/games/chart/<game_id>')
@@ -67,7 +73,7 @@ def organization(organization_id):
         chart_url=url_for("airspy.organization_chart", organization_id=organization_id),
         ath_data=data["ath_data"],
         org_data=dict(orgData),
-        org_image=get_image(orgData["iconImageId"])
+        image_url=get_image_cdn_url("airspy", orgData["iconImageId"])
     )
 
 @bp.route('/organizations/chart/<organization_id>')

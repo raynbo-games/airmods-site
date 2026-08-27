@@ -41,12 +41,13 @@ def get_property_value(table_name, property_key):
     rows = cursor.fetchall()
     return [row[property_key] for row in rows]
 
-def get_multiple_property_value(table_name, *property_keys):
+def get_multiple_property_values(table_name, *property_keys):
     db = get_db()
     cursor = db.cursor()
     query = result = ", ".join([f'"{item}"' for item in property_keys])
     cursor.execute(f'SELECT {query} FROM "{table_name}"')
-    return cursor.fetchall()
+    rows = cursor.fetchall()
+    return [{key.strip('"'): value for key, value in row.items()} for row in rows]
 
 def insert_game(raw_data):
     game_data = raw_data["game"]

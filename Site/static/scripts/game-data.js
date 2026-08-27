@@ -7,7 +7,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     document.getElementById("game-info").innerHTML = `<h1>${game_data["name"]}</h1>
     <div class="outer-container-box">
-        <img id="game-icon" alt="Game Icon">
+        <img id="game-icon" alt="Game Icon", src="${image_url}">
     </div>
     <p>${ game_data["description"]}</p>
 
@@ -26,6 +26,4 @@ document.addEventListener("DOMContentLoaded", () => {
     Unique Plays 24h: ${game_data["uniquePlays24h"]}<br>
     </p>
     `
-
-    document.getElementById("game-icon").src = window.game_image;
 });
