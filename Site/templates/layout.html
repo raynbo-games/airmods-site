@@ -23,10 +23,9 @@
             </div>
             <div class="navbar-collapse collapse">
                 <ul class="nav navbar-nav">
-                    <li><a href="{{ url_for('root.home') }}">Home</a></li>
                     <li><a href="{{ url_for('root.about') }}">About</a></li>
-                    <li><a href="{{ url_for('airspy.airspy') }}">Airspy</a></li>
-                    <li><a href="{{ url_for('airspy.airmods') }}">Airmods</a></li>
+                    <li><a href="{{ url_for('airspy.root') }}">Airspy</a></li>
+                    <li><a href="{{ url_for('airmods.root') }}">Airmods</a></li>
                 </ul>
                 {% if request.blueprint == 'airspy' %}
                 <div class="search-wrapper">

@@ -6,7 +6,7 @@ from Site.code.airspy.database import get_matching_row
 bp = Blueprint('airspy', __name__, url_prefix='/airspy')
 
 @bp.route('/')
-def airspy():
+def root():
     return render_template(
         'airspy/index.html',
         title="Airspy",
