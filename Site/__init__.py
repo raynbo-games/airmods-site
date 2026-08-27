@@ -23,6 +23,9 @@ def create_app():
     import Site.code.airspy.main as airspy
     app.register_blueprint(airspy.bp)
 
+    import Site.code.airmods.main as airmods
+    app.register_blueprint(airmods.bp)
+
     from Site.code.database.main import init_app
     init_app(app)
 

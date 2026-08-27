@@ -63,6 +63,7 @@
     <Folder Include="Site\templates\airspy\" />
     <Folder Include="Site\templates\airspy\games\" />
     <Folder Include="Site\templates\airspy\organizations\" />
+    <Folder Include="Site\templates\airmods\" />
     <Folder Include="Site\templates\root\" />
   </ItemGroup>
   <ItemGroup>
@@ -100,6 +101,7 @@
     <Content Include="Site\static\scripts\stats-chart.js" />
     <Content Include="Site\static\scripts\search.js" />
     <Content Include="Site\static\scripts\_references.js" />
+    <Content Include="Site\templates\airmods\index.html" />
     <Content Include="Site\templates\airspy\games\view.html" />
     <Content Include="Site\templates\airspy\organizations\index.html" />
     <Content Include="Site\templates\airspy\games\index.html" />

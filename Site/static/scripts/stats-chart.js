@@ -4,9 +4,6 @@ let rawDataMap = undefined;
 
 function initCharts() {
     const dataset = rawDataMap[timeframe];
-
-    console.log(rawDataMap);
-
     document.getElementById("ath").innerText = `Player Count: ${ath_data["playerCount"]}
     Plays 24h: ${ath_data["plays24h"]}
     Unique Plays 24h: ${ath_data["uniquePlays24h"]}`;
