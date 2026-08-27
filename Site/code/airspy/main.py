@@ -1,33 +1,19 @@
 from datetime import datetime
-from flask import Blueprint, render_template, request, redirect, url_for
-from Site.code.airspy.api import bp as api_bp, get_image, get_search_items, get_dashboard_data
-from Site.code.airspy.database import get_matching_row
+from flask import Blueprint, render_template, request, redirect, url_for, current_app, jsonify
+from Site.code.airspy.utility import get_search_items, get_dashboard_data, get_game_list, get_organization_list
+from Site.code.airspy.database import get_matching_row, get_multiple_property_values
+from Site.code.database.cdn import get_image_cdn_url
 
 bp = Blueprint('airspy', __name__, url_prefix='/airspy')
 
 @bp.route('/')
-def airspy():
+def root():
     return render_template(
         'airspy/index.html',
         title="Airspy",
         year=datetime.now().year,
-    )
-
-@bp.route('/search')
-def search():
-    search_items = get_search_items()
-    query = request.args.get('q', '').strip()
-    if query:
-        results = [item for item in search_items if query.lower() in item.lower()]
-    else:
-        results = search_items
-
-    return render_template(
-        'airspy/search.html',
-        title="Airspy",
-        results=results,
-        query=query,
-        year=datetime.now().year,
+        games=get_game_list(),
+        orgs=get_organization_list()
     )
 
 @bp.route('/games')
@@ -36,6 +22,7 @@ def games():
         'airspy/games/index.html',
         title="Airspy",
         year=datetime.now().year,
+        games=get_game_list()
     )
 
 @bp.route('/games/<game_id>')
@@ -47,11 +34,17 @@ def game(game_id):
         'airspy/games/view.html',
         title="Airspy",
         year=datetime.now().year,
-        chart_data=data["chart_data"],
+        chart_url=url_for("airspy.game_chart", game_id=game_id),
         ath_data=data["ath_data"],
         game_data=dict(gameData),
-        game_image=get_image(gameData["iconImageId"])
+        image_url=get_image_cdn_url("airspy", gameData["iconImageId"])
     )
+
+@bp.route('/games/chart/<game_id>')
+def game_chart(game_id):
+    gameData = get_matching_row("game", {"id": game_id})
+    data = get_dashboard_data(gameData["gameStats"])
+    return jsonify(dict(data["chart_data"]))
 
 @bp.route('/games/n/<game_name>')
 def game_by_name(game_name):
@@ -64,6 +57,7 @@ def organizations():
         'airspy/organizations/index.html',
         title="Airspy",
         year=datetime.now().year,
+        orgs=get_organization_list()
     )
 
 @bp.route('/organizations/<organization_id>')
@@ -75,15 +69,33 @@ def organization(organization_id):
         'airspy/organizations/view.html',
         title="Airspy",
         year=datetime.now().year,
-        chart_data=data["chart_data"],
+        chart_url=url_for("airspy.organization_chart", organization_id=organization_id),
         ath_data=data["ath_data"],
         org_data=dict(orgData),
-        org_image=get_image(orgData["iconImageId"])
+        image_url=get_image_cdn_url("airspy", orgData["iconImageId"])
     )
+
+@bp.route('/organizations/chart/<organization_id>')
+def organization_chart(organization_id):
+    orgData = get_matching_row("organization", {"id": organization_id})
+    data = get_dashboard_data(orgData["orgStats"])
+    return jsonify(dict(data["chart_data"]))
 
 @bp.route('/organizations/n/<organization_name>')
 def organization_by_name(organization_name):
     org = get_matching_row("organization", {"name": organization_name})
     return redirect(url_for("airspy.organization", organization_id=org["id"]))
 
-bp.register_blueprint(api_bp)
+@bp.route('/search')
+def search():
+    query = request.args.get('q', '').strip().lower()
+    current_app.logger.info(query)
+    search_items = get_search_items()
+    current_app.logger.info(search_items)
+    
+    if not query:
+        return jsonify([])
+
+    matches = [item for item in search_items if query in item["title"].lower()]
+    current_app.logger.info(matches)
+    return jsonify(matches)

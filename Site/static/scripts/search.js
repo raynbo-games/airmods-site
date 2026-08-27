@@ -21,7 +21,7 @@ async function handleTyping() {
     }
 
     try {
-        const response = await fetch(`/airspy/api/search?q=${encodeURIComponent(query)}`);
+        const response = await fetch(`/airspy/search?q=${encodeURIComponent(query)}`);
         dynamicMatches = await response.json();
         renderSuggestions(dynamicMatches);
     } catch (err) {

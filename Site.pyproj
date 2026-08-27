@@ -34,12 +34,14 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="runserver.py" />
+    <Compile Include="Site\code\airmods\main.py" />
     <Compile Include="Site\code\airspy\airship_urls.py" />
-    <Compile Include="Site\code\airspy\api.py" />
+    <Compile Include="Site\code\airspy\utility.py" />
     <Compile Include="Site\code\airspy\database.py" />
     <Compile Include="Site\code\airspy\main.py" />
     <Compile Include="Site\code\airspy\processes.py" />
     <Compile Include="Site\code\config.py" />
+    <Compile Include="Site\code\database\cdn.py" />
     <Compile Include="Site\code\database\main.py" />
     <Compile Include="Site\__init__.py" />
     <Compile Include="Site\code\main\root.py" />
@@ -52,6 +54,7 @@
     <Folder Include="Site\code\main\" />
     <Folder Include="Site\code\database\" />
     <Folder Include="Site\code\airspy\" />
+    <Folder Include="Site\code\airmods\" />
     <Folder Include="Site\static\" />
     <Folder Include="Site\static\content\" />
     <Folder Include="Site\static\fonts\" />
@@ -61,6 +64,7 @@
     <Folder Include="Site\templates\airspy\" />
     <Folder Include="Site\templates\airspy\games\" />
     <Folder Include="Site\templates\airspy\organizations\" />
+    <Folder Include="Site\templates\airmods\" />
     <Folder Include="Site\templates\root\" />
   </ItemGroup>
   <ItemGroup>
@@ -73,6 +77,7 @@
     <Content Include="Site\code\database\schemas\database.sql" />
     <Content Include="Site\static\content\bootstrap.css" />
     <Content Include="Site\static\content\bootstrap.min.css" />
+    <Content Include="Site\static\content\grid.css" />
     <Content Include="Site\static\content\site.css" />
     <Content Include="Site\static\fonts\glyphicons-halflings-regular.eot" />
     <Content Include="Site\static\fonts\glyphicons-halflings-regular.svg" />
@@ -98,6 +103,7 @@
     <Content Include="Site\static\scripts\stats-chart.js" />
     <Content Include="Site\static\scripts\search.js" />
     <Content Include="Site\static\scripts\_references.js" />
+    <Content Include="Site\templates\airmods\index.html" />
     <Content Include="Site\templates\airspy\games\view.html" />
     <Content Include="Site\templates\airspy\organizations\index.html" />
     <Content Include="Site\templates\airspy\games\index.html" />

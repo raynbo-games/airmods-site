@@ -39,10 +39,10 @@
 {% block scripts %}
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.4/Chart.js"></script>
 <script>
-    const rawDataMap = {{ chart_data | tojson }};
+    const chart_url = "{{ chart_url }}";
     const ath_data = {{ ath_data | tojson }};
     const org_data = {{ org_data | tojson }};
-    window.org_image = "data:image/png;base64,{{ org_image }}";
+    const image_url = "{{ image_url }}";
 </script>
 <script src="{{ url_for('static', filename='scripts/stats-chart.js') }}"></script>
 <script src="{{ url_for('static', filename='scripts/org-data.js') }}"></script>
