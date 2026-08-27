@@ -1,6 +1,6 @@
 from datetime import datetime
 from flask import Blueprint, render_template, request, redirect, url_for, current_app, jsonify
-from Site.code.airspy.utility import get_image, get_search_items, get_dashboard_data
+from Site.code.airspy.utility import get_search_items, get_dashboard_data, get_game_list, get_organization_list
 from Site.code.airspy.database import get_matching_row, get_multiple_property_values
 from Site.code.database.cdn import get_image_cdn_url
 
@@ -8,15 +8,12 @@ bp = Blueprint('airspy', __name__, url_prefix='/airspy')
 
 @bp.route('/')
 def root():
-    game_data = get_multiple_property_values("game", "id", "name", "iconImageId")
-    org_data = get_multiple_property_values("organization", "id", "name", "iconImageId")
-
     return render_template(
         'airspy/index.html',
         title="Airspy",
         year=datetime.now().year,
-        games=game_data,
-        orgs=org_data
+        games=get_game_list(),
+        orgs=get_organization_list()
     )
 
 @bp.route('/games')
@@ -25,6 +22,7 @@ def games():
         'airspy/games/index.html',
         title="Airspy",
         year=datetime.now().year,
+        games=get_game_list()
     )
 
 @bp.route('/games/<game_id>')
@@ -59,6 +57,7 @@ def organizations():
         'airspy/organizations/index.html',
         title="Airspy",
         year=datetime.now().year,
+        orgs=get_organization_list()
     )
 
 @bp.route('/organizations/<organization_id>')

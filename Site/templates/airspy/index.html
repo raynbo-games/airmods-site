@@ -1,7 +1,10 @@
 {% extends "layout.html" %}
 
-{% block content %}
+{% block head %}
+<link rel="stylesheet" type="text/css" href="/static/content/grid.css" />
+{% endblock %}
 
+{% block content %}
 <h1>Airspy - An Airship Monitor</h1>
 Airspy is a program made to track the performance of games and organizations on the Airship platform.
 <br />
@@ -9,19 +12,25 @@ Click the search bar to query games and organizations by name or use "org:" or "
 <br />
 Game pages show stats for each game and the organizations show the stats for all games owned by them in combination.
 <br />
-<br />
-This page is a WIP please query games and organizations via the search bar.
-<br />
 
-{% endblock %}
+<div class="grid-wrapper">
+    <div class="grid">
+        <a href="/airspy/games" class="grid-header">Games &#8594;</a>
+        {% for game in games %}
+        <a href="{{ game.url }}" class="card" rel="noopener noreferrer">
+            <img src="{{ game.image_url }}" alt="{{ game.name }}">
+            <span>{{ game.name }}</span>
+        </a>
+        {% endfor %}
 
+        <a href="/airspy/organizations" class="grid-header">Organizations &#8594;</a>
+        {% for org in orgs %}
+        <a href="{{ org.url }}" class="card" rel="noopener noreferrer">
+            <img src="{{ org.image_url }}" alt="{{ org.name }}">
+            <span>{{ org.name }}</span>
+        </a>
+        {% endfor %}
+    </div>
+</div>
 
-{% block scripts %}
-<script>
-    const games = {{ games | tojson }};
-    const orgs = {{ orgs | tojson }};
-    window.org_image = "data:image/png;base64,{{ org_image }}";
-</script>
-<script src="{{ url_for('static', filename='scripts/stats-chart.js') }}"></script>
-<script src="{{ url_for('static', filename='scripts/org-data.js') }}"></script>
 {% endblock %}

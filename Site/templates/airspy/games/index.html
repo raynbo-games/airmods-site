@@ -1,9 +1,22 @@
 {% extends "layout.html" %}
 
+{% block head %}
+<link rel="stylesheet" type="text/css" href="/static/content/grid.css" />
+{% endblock %}
+
 {% block content %}
 
 <h1>Airship Games</h1>
 
-This page is a WIP please query games and organizations via the search bar.
+<div class="grid-wrapper">
+    <div class="grid">
+        {% for game in games %}
+        <a href="{{ game.url }}" class="card" rel="noopener noreferrer">
+            <img src="{{ game.image_url }}" alt="{{ game.name }}">
+            <span>{{ game.name }}</span>
+        </a>
+        {% endfor %}
+    </div>
+</div>
 
 {% endblock %}
