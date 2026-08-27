@@ -1,18 +1,18 @@
 from flask import Blueprint, request, jsonify, current_app, url_for
 from Site.code.airspy.airship_urls import request_image
-from Site.code.airspy.database import get_matching_row, get_property_values
+from Site.code.airspy.database import get_matching_row, get_property_value
 from Site.code.config import STORED_TICKS, STORED_DAILY_TICKS, STORED_MONTHLY_TICKS
 import base64
 
 def get_search_items():
     items = []
-    game_names = get_property_values("game", "name")
+    game_names = get_property_value("game", "name")
     for name in game_names:
         items.append({
             "title": f"Game: {name}",
             "url": url_for("airspy.game_by_name", game_name=name)
         })
-    org_names = get_property_values("organization", "name")
+    org_names = get_property_value("organization", "name")
     for name in org_names:
         items.append({
             "title": f"Org:  {name}",

@@ -1,7 +1,7 @@
 from flask import Flask
 import time, math
 from Site.code.airspy.airship_urls import request_games, request_game_id
-from Site.code.airspy.database import update_game, update_organization, update_organization_stats, update_game_stats, get_matching_row, get_property_values, get_tick_data, set_tick_data
+from Site.code.airspy.database import update_game, update_organization, update_organization_stats, update_game_stats, get_matching_row, get_property_value, get_tick_data, set_tick_data
 from Site.code.config import AIRSPY_UPDATE_TIMEOUT, AIRSPY_SPEED
 
 def tick_airspy(app: Flask):
@@ -15,8 +15,8 @@ def tick_airspy(app: Flask):
         app.logger.warning("Failed to fetch games.")
         return
 
-    game_ids = get_property_values("game", "id")
-    organization_ids = get_property_values("organization", "id")
+    game_ids = get_property_value("game", "id")
+    organization_ids = get_property_value("organization", "id")
 
     def process_game_data(gameData):
         if gameData["id"] not in game_ids:
