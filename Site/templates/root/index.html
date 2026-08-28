@@ -1,10 +1,25 @@
 {% extends "layout.html" %}
 
+{% block head %}
+<link rel="stylesheet" type="text/css" href="/static/content/grid.css" />
+{% endblock %}
+
 {% block content %}
 
 <h1>Welcome to Raynbo Games!</h1>
 
-This website is a work in progress.
-Click Airspy to view Airship stats over time.
+<div class="grid-wrapper">
+    <div class="grid">
+        <a href="{{ url_for('root.about') }}" class="card" rel="noopener noreferrer">
+            <span>About</span>
+        </a>
+        <a href="{{ url_for('airspy.root') }}" class="card" rel="noopener noreferrer">
+            <span>Airspy</span>
+        </a>
+        <a href="{{ url_for('airmods.root') }}" class="card" rel="noopener noreferrer">
+            <span>Airmods</span>
+        </a>
+    </div>
+</div>
 
 {% endblock %}
