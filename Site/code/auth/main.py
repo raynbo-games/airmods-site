@@ -1,6 +1,7 @@
-from flask import redirect, url_for, session, current_app, Blueprint, request, render_template, jsonify
+from flask import abort, redirect, url_for, session, current_app, Blueprint, request, render_template, jsonify
 from functools import wraps
-from Site.code.auth.database import get_user_from_id, create_user, verify_username
+from werkzeug.exceptions import Forbidden
+from Site.code.auth.database import AUTH_LEVEL, get_auth, get_user_from_id, create_user, verify_username
 
 bp = Blueprint('auth', __name__, url_prefix='/auth')
 
@@ -9,17 +10,34 @@ def inject_auth_global():
     return dict(title="Auth")
 
 def get_user():
-    if not 'user' in session:
+    if not 'user-id' in session:
         return None
-    return session['user']
+    user = get_user_from_id(session['user-id'])
+    if user["auth"] == get_auth("BANNED"):
+        abort(403, "User is banned")
+    return user
 
-def login_required(f):
-    @wraps(f)
-    def decorated_function(*args, **kwargs):
-        if 'user' not in session:
-            return redirect(url_for('auth.login', next=request.full_path))
-        return f(*args, **kwargs)
-    return decorated_function
+def login_required():
+    def decorator_login_required(func):
+        @wraps(func)
+        def decorated_function(*args, **kwargs):
+            if 'user-id' not in session:
+                return redirect(url_for('auth.login', next=request.full_path))
+            return func(*args, **kwargs)
+        return decorated_function
+    return decorator_login_required
+
+def auth_required(level: AUTH_LEVEL):
+    def decorator_auth_required(func):
+        @wraps(func)
+        def decorated_function(*args, **kwargs):
+            if 'user-id' not in session:
+                abort(401, "No user logged in")
+            if get_user()['auth'] < get_auth(level):
+                abort(403, "User does not have valid auth level")
+            return func(*args, **kwargs)
+        return decorated_function
+    return decorator_auth_required
 
 @bp.route('/login')
 def login():
@@ -47,7 +65,7 @@ def create():
         verify = verify_username(username)
         if not verify["valid"]: return f"Invalid username input: {verify["message"]}"
         create_user(user_info["sub"], user_info["email"], username)
-        session['user'] = get_user_from_id(user_info["sub"])
+        session['user-id'] = user_info["sub"]
         session.pop('google-user', None)
         return redirect(next_url)
 
@@ -66,7 +84,7 @@ def authorize():
     if user_info:
         user = get_user_from_id(user_info["sub"])
         if user:
-            session['user'] = user
+            session['user-id'] = user_info["sub"]
         else:
             session['google-user'] = user_info
             return redirect(url_for('auth.create', next=next_url))
@@ -75,5 +93,5 @@ def authorize():
 
 @bp.route('/logout')
 def logout():
-    session.pop('user', None)
+    session.pop('user-id', None)
     return redirect('/')

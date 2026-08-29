@@ -19,6 +19,11 @@
         <a href="{{ url_for('airmods.root') }}" class="card" rel="noopener noreferrer">
             <span>Airmods</span>
         </a>
+        {% if user and user.auth and user.auth >= 1 %}
+        <a href="{{ url_for('admin.root') }}" class="card" rel="noopener noreferrer">
+            <span>Admin</span>
+        </a>
+        {% endif %}
     </div>
 </div>
 

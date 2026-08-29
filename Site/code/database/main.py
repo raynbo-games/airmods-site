@@ -26,14 +26,49 @@ def init_db():
         cursor.execute(sql_script)
     db.commit()
 
+def update_db():
+    db = get_db()
+
+    with current_app.open_resource('code/database/schemas/update.sql') as f:
+        sql_script = f.read().decode('utf8')
+        
+    with db.cursor() as cursor:
+        cursor.execute(sql_script)
+    db.commit()
+
 @click.command('init-db')
 def init_db_command():
     init_db()
-    click.echo('Initialized the managed PostgreSQL database.')
+    click.echo('Initialized the PostgreSQL database.')
+
+@click.command('update-db')
+def update_db_command():
+    update_db()
+    init_db()
+    click.echo('Updated the PostgreSQL database.')
+
+@click.command('set-user-auth')
+@click.option('--username', help='username of the user.')
+@click.option('--auth', default=0, help='auth level (0-4).')
+def set_user_auth_command(username, auth):
+    if not username:
+        return click.echo(f'No username specified')
+
+    db = get_db()
+    cursor = db.cursor()
+    try:
+        cursor.execute(f'UPDATE "user" SET "auth" = %s WHERE "username" = %s;', (auth, username))
+        db.commit()
+        click.echo(f"Successfully updated auth to {auth} for user: {username}")
+    except psycopg.DatabaseError as error:
+        db.rollback()
+        click.echo(f"Database error occurred: {error}")
 
 def init_app(app):
     app.teardown_appcontext(close_db)
     app.cli.add_command(init_db_command)
+    app.cli.add_command(update_db_command)
+    app.cli.add_command(set_user_auth_command)
 
 def get_matching_row(table_name, properties_dict, multiple=False):
     db = get_db()

@@ -9,7 +9,7 @@ bp = Blueprint('airspy', __name__, url_prefix='/airspy')
 def inject_airspy_global():
     return dict(title="Airspy")
 
-@bp.route('/')
+@bp.route('')
 def root():
     return render_template(
         'airspy/index.html',

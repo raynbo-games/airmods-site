@@ -1,0 +1,19 @@
+{% extends "layout.html" %}
+
+{% block head %}
+<link rel="stylesheet" type="text/css" href="/static/content/grid.css" />
+{% endblock %}
+
+{% block content %}
+
+<h1>Admin Pannel</h1>
+
+<div class="grid-wrapper">
+    <div class="grid">
+        <a href="{{ url_for('admin.users') }}" class="card" rel="noopener noreferrer">
+            <span>Users</span>
+        </a>
+    </div>
+</div>
+
+{% endblock %}

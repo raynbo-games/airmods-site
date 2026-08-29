@@ -1,11 +1,14 @@
 import os, logging, click
-from flask import Flask, session
+from flask import Flask, session, render_template
 from flask.cli import load_dotenv
 from flask_apscheduler import APScheduler
 from Site.code.airspy.processes import tick_airspy, tick_airspy_icons
+from Site.code.auth.main import get_user
 from Site.code.config import AIRSPY_UPDATE_TIMEOUT, AIRSPY_SPEED
 from authlib.integrations.flask_client import OAuth
 from datetime import datetime
+from werkzeug.exceptions import HTTPException
+import sys
 
 load_dotenv()
 
@@ -42,6 +45,9 @@ def create_app():
 
     import Site.code.auth.main as auth
     app.register_blueprint(auth.bp)
+
+    import Site.code.admin.main as admin
+    app.register_blueprint(admin.bp)
 
     from Site.code.database.main import init_app
     init_app(app)
@@ -80,12 +86,21 @@ def create_app():
 
         scheduler.start()
 
-        @app.context_processor
-        def inject_global():
-            user = None
-            if 'user' in session:
-                user = session['user']
-            return dict(user=user, year=datetime.now().year)
+    @app.context_processor
+    def inject_global():
+        user = get_user()
+        return dict(user=user, year=datetime.now().year)
+
+    @app.errorhandler(Exception)
+    def handle_exception(e):
+        if isinstance(e, HTTPException):
+            error_code = e.code
+            error_message = e.description
+        else:
+            error_code = 500
+            error_message = "Internal Server Error"
+        
+        return render_template('error.html', error_code=error_code, error_message=error_message), error_code
 
     return app
 

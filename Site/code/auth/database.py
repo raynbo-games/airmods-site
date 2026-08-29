@@ -1,4 +1,20 @@
+from typing import Literal
 from Site.code.database.main import get_db, get_matching_row
+
+AUTH_LEVEL_VALUES = {
+    "BANNED": -1,
+    "USER": 0,
+    "MODERATOR": 1,
+    "ADMIN": 2,
+    "DEVELOPER": 3,
+    "OWNER": 4,
+    "SYSTEM": 5,
+}
+
+AUTH_LEVEL = Literal["BANNED", "USER", "MODERATOR", "ADMIN", "DEVELOPER", "OWNER", "SYSTEM"]
+
+def get_auth(level: AUTH_LEVEL):
+    return AUTH_LEVEL_VALUES[level]
 
 def create_user(userID, email, username):
     db = get_db()
@@ -51,5 +67,14 @@ def update_username(userID, username):
     cursor.execute(
         'UPDATE "user" SET "username" = %s WHERE "id" = %s',
         (username, userID)
+    )
+    db.commit()
+
+def update_auth(userID, auth: AUTH_LEVEL):
+    db = get_db()
+    cursor = db.cursor()
+    cursor.execute(
+        'UPDATE "user" SET "auth" = %s WHERE "id" = %s',
+        (get_auth(auth), userID)
     )
     db.commit()

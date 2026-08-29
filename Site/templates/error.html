@@ -1,0 +1,10 @@
+{% extends "layout.html" %}
+
+{% block content %}
+
+<h1>Oops a error has occured!</h1>
+<p>Refer to the message below and contact us for more information at <a href="mailto:iris@raynbo.games">iris@raynbo.games</a></p>
+<p>CODE: {{ error_code }}</p>
+<p>MESSAGE: {{ error_message }}</p>
+
+{% endblock %}

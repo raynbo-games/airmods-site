@@ -2,7 +2,7 @@ from flask import Blueprint, redirect, render_template
 
 bp = Blueprint('root', __name__, url_prefix='/')
 
-@bp.route('/')
+@bp.route('')
 @bp.route('/home')
 def home():
     """Renders the home page."""

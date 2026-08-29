@@ -1,4 +1,5 @@
 from flask import Blueprint, render_template
+from Site.code.auth.main import auth_required
 
 bp = Blueprint('airmods', __name__, url_prefix='/airmods')
 
@@ -6,6 +7,6 @@ bp = Blueprint('airmods', __name__, url_prefix='/airmods')
 def inject_airmods_global():
     return dict(title="Airmods")
 
-@bp.route('/')
+@bp.route('')
 def root():
     return render_template('airmods/index.html')
