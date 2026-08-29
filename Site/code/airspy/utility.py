@@ -1,9 +1,7 @@
-from flask import Blueprint, request, jsonify, current_app, url_for
-from Site.code.airspy.airship_urls import request_image
-from Site.code.airspy.database import get_matching_row, get_property_value, get_multiple_property_values
+from flask import url_for
 from Site.code.config import STORED_TICKS, STORED_DAILY_TICKS, STORED_MONTHLY_TICKS
 from Site.code.database.cdn import get_image_cdn_url
-import base64
+from Site.code.database.main import get_property_value, get_multiple_property_values
 
 def get_search_items():
     items = []

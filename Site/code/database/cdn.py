@@ -1,5 +1,4 @@
-import time, boto3, requests, os
-from flask import current_app
+import boto3, requests, os
 
 bucket = "raynbo-games-site-storage"
 cdn_url = "https://raynbo-games-site-storage.sfo3.cdn.digitaloceanspaces.com"

@@ -19,7 +19,7 @@
     <Name>Site</Name>
     <RootNamespace>Site</RootNamespace>
     <InterpreterId>MSBuild|env|$(MSBuildProjectFullPath)</InterpreterId>
-    <WebBrowserPort>5000</WebBrowserPort>
+    <WebBrowserPort>8080</WebBrowserPort>
     <SuppressPackageInstallationPrompt>True</SuppressPackageInstallationPrompt>
     <IsWindowsApplication>False</IsWindowsApplication>
     <SuppressEnvironmentCreationPrompt>True</SuppressEnvironmentCreationPrompt>
@@ -40,6 +40,8 @@
     <Compile Include="Site\code\airspy\database.py" />
     <Compile Include="Site\code\airspy\main.py" />
     <Compile Include="Site\code\airspy\processes.py" />
+    <Compile Include="Site\code\auth\database.py" />
+    <Compile Include="Site\code\auth\main.py" />
     <Compile Include="Site\code\config.py" />
     <Compile Include="Site\code\database\cdn.py" />
     <Compile Include="Site\code\database\main.py" />
@@ -55,6 +57,7 @@
     <Folder Include="Site\code\database\" />
     <Folder Include="Site\code\airspy\" />
     <Folder Include="Site\code\airmods\" />
+    <Folder Include="Site\code\auth\" />
     <Folder Include="Site\static\" />
     <Folder Include="Site\static\content\" />
     <Folder Include="Site\static\fonts\" />
@@ -65,6 +68,7 @@
     <Folder Include="Site\templates\airspy\games\" />
     <Folder Include="Site\templates\airspy\organizations\" />
     <Folder Include="Site\templates\airmods\" />
+    <Folder Include="Site\templates\auth\" />
     <Folder Include="Site\templates\root\" />
   </ItemGroup>
   <ItemGroup>
@@ -109,6 +113,7 @@
     <Content Include="Site\templates\airspy\games\index.html" />
     <Content Include="Site\templates\airspy\index.html" />
     <Content Include="Site\templates\airspy\organizations\view.html" />
+    <Content Include="Site\templates\auth\create.html" />
     <Content Include="Site\templates\root\about.html" />
     <Content Include="Site\templates\root\privacy.html" />
     <Content Include="Site\templates\root\index.html" />

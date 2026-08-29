@@ -1,17 +1,18 @@
-from datetime import datetime
 from flask import Blueprint, render_template, request, redirect, url_for, current_app, jsonify
 from Site.code.airspy.utility import get_search_items, get_dashboard_data, get_game_list, get_organization_list
-from Site.code.airspy.database import get_matching_row, get_multiple_property_values
 from Site.code.database.cdn import get_image_cdn_url
+from Site.code.database.main import get_matching_row
 
 bp = Blueprint('airspy', __name__, url_prefix='/airspy')
+
+@bp.context_processor
+def inject_airspy_global():
+    return dict(title="Airspy")
 
 @bp.route('/')
 def root():
     return render_template(
         'airspy/index.html',
-        title="Airspy",
-        year=datetime.now().year,
         games=get_game_list(),
         orgs=get_organization_list()
     )
@@ -20,8 +21,6 @@ def root():
 def games():
     return render_template(
         'airspy/games/index.html',
-        title="Airspy",
-        year=datetime.now().year,
         games=get_game_list()
     )
 
@@ -32,8 +31,6 @@ def game(game_id):
     
     return render_template(
         'airspy/games/view.html',
-        title="Airspy",
-        year=datetime.now().year,
         chart_url=url_for("airspy.game_chart", game_id=game_id),
         ath_data=data["ath_data"],
         game_data=dict(gameData),
@@ -55,8 +52,6 @@ def game_by_name(game_name):
 def organizations():
     return render_template(
         'airspy/organizations/index.html',
-        title="Airspy",
-        year=datetime.now().year,
         orgs=get_organization_list()
     )
 
@@ -67,8 +62,6 @@ def organization(organization_id):
     
     return render_template(
         'airspy/organizations/view.html',
-        title="Airspy",
-        year=datetime.now().year,
         chart_url=url_for("airspy.organization_chart", organization_id=organization_id),
         ath_data=data["ath_data"],
         org_data=dict(orgData),

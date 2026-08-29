@@ -1,9 +1,10 @@
 from flask import Flask
 import time, math
 from Site.code.airspy.airship_urls import request_games, request_game_id, get_image_url
-from Site.code.airspy.database import update_game, update_organization, update_organization_stats, update_game_stats, get_matching_row, get_property_value, get_tick_data, set_tick_data
+from Site.code.airspy.database import update_game, update_organization, update_organization_stats, update_game_stats, get_tick_data, set_tick_data
 from Site.code.config import AIRSPY_UPDATE_TIMEOUT, AIRSPY_SPEED
 from Site.code.database.cdn import upload_to_spaces
+from Site.code.database.main import get_matching_row, get_property_value
 
 def tick_airspy_icons(app: Flask):
     game_image_ids = get_property_value("game", "iconImageId")

@@ -1,5 +1,4 @@
 from flask import Blueprint, redirect, render_template
-from datetime import datetime
 
 bp = Blueprint('root', __name__, url_prefix='/')
 
@@ -10,7 +9,6 @@ def home():
     return render_template(
         'root/index.html',
         title="Home",
-        year=datetime.now().year,
     )
 
 @bp.route('/about')
@@ -19,7 +17,6 @@ def about():
     return render_template(
         'root/about.html',
         title="About",
-        year=datetime.now().year,
     )
 
 @bp.route('/tos')
@@ -34,5 +31,4 @@ def privacy():
     return render_template(
         'root/privacy.html',
         title="Privacy Policy",
-        year=datetime.now().year,
     )
