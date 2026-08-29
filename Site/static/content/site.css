@@ -45,19 +45,6 @@ input[type="checkbox"].input-validation-error {
     place-items: center;
 }
 
-.search-wrapper {
-    position: absolute;
-    right: 15px; /* Pins it to the right edge */
-    top: 50%; /* Aligns the top edge to the vertical center */
-    transform: translateY(-50%);
-}
-
-/* Positioning parent for absolute suggestion layering */
-.search-container {
-    vertical-align: middle;
-    width: 280px; /* Standard navigation matching width configuration */
-}
-
 /* Refined Dark Theme Input Fields overrides */
 #search-input {
     width: 100%;
@@ -197,4 +184,25 @@ input[type="checkbox"].input-validation-error {
         width: 100%;
         height: 100%;
         object-fit: cover;
+    }
+
+
+
+.right-nav-wrapper {
+    position: absolute;
+    right: 15px;
+    top: 50%;
+    transform: translateY(-50%);
+}
+
+.right-nav-container {
+    vertical-align: middle;
+    width: 280px;
+    color: #9ca3af;
+    text-decoration: none;
+    font-family: Arial, sans-serif;
+}
+
+    .right-nav-container a:hover {
+        color: #ffffff;
     }

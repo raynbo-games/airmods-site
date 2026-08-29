@@ -1,8 +1,4 @@
-DROP TABLE IF EXISTS "game";
-DROP TABLE IF EXISTS "organization";
-DROP TABLE IF EXISTS "json";
-
-CREATE TABLE "game" (
+CREATE TABLE IF NOT EXISTS "game" (
 	"id" TEXT PRIMARY KEY UNIQUE,
 	"slug" TEXT,
 	"slugProperCase" TEXT,
@@ -27,7 +23,7 @@ CREATE TABLE "game" (
 	"gameStats" JSONB NOT NULL
 );
 
-CREATE TABLE "organization" (
+CREATE TABLE IF NOT EXISTS "organization" (
 	"id" TEXT PRIMARY KEY UNIQUE,
 	"slug" TEXT NOT NULL,
 	"slugProperCase" TEXT NOT NULL,
@@ -39,7 +35,13 @@ CREATE TABLE "organization" (
 	"orgStats" JSONB NOT NULL
 );
 
-CREATE TABLE "json" (
+CREATE TABLE IF NOT EXISTS "json" (
 	"id" TEXT PRIMARY KEY UNIQUE,
 	"data" JSONB NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS "user" (
+    id VARCHAR(50) PRIMARY KEY UNIQUE NOT NULL,
+    email VARCHAR(120) NOT NULL,
+    username VARCHAR(30) UNIQUE
 );

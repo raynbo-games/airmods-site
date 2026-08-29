@@ -22,23 +22,33 @@
                 </button>
                 <a href="/" class="navbar-brand">Raynbo Games</a>
             </div>
+
             <div class="navbar-collapse collapse">
                 <ul class="nav navbar-nav">
                     <li><a href="{{ url_for('root.about') }}">About</a></li>
                     <li><a href="{{ url_for('airspy.root') }}">Airspy</a></li>
                     <li><a href="{{ url_for('airmods.root') }}">Airmods</a></li>
                 </ul>
-                {% if request.blueprint == 'airspy' %}
-                <div class="search-wrapper">
-                    <div class="search-container">
-                        <input type="text" id="search-input" autocomplete="off" placeholder="Search...">
-                        <div id="suggestions" class="suggestions-box"></div>
-                    </div>
-                </div>
-                {% endif %}
+
+                <ul class="nav navbar-nav navbar-right">
+                    {% if request.blueprint == 'airspy' %}
+                    <form class="navbar-form navbar-left" role="search" style="border: none; box-shadow: none;">
+                        <div class="form-group" style="position: relative;">
+                            <input type="text" id="search-input" class="form-control" autocomplete="off" placeholder="Search...">
+                            <div id="suggestions" class="suggestions-box"></div>
+                        </div>
+                    </form>
+                    {% elif user and user.username %}
+                    <p class="navbar-text" style="margin-right: 10px;"><span class="username">{{ user.username }}</span></p>
+                    <li><a href="{{ url_for('auth.logout') }}">Logout</a></li>
+                    {% else %}
+                    <li><a href="{{ url_for('auth.login', next=request.path) }}">Login</a></li>
+                    {% endif %}
+                </ul>
             </div>
         </div>
     </div>
+
 
     <div class="container body-content">
         {% block content %}{% endblock %}

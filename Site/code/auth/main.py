@@ -1,0 +1,79 @@
+from flask import redirect, url_for, session, current_app, Blueprint, request, render_template, jsonify
+from functools import wraps
+from Site.code.auth.database import get_user_from_id, create_user, verify_username
+
+bp = Blueprint('auth', __name__, url_prefix='/auth')
+
+@bp.context_processor
+def inject_auth_global():
+    return dict(title="Auth")
+
+def get_user():
+    if not 'user' in session:
+        return None
+    return session['user']
+
+def login_required(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if 'user' not in session:
+            return redirect(url_for('auth.login', next=request.full_path))
+        return f(*args, **kwargs)
+    return decorated_function
+
+@bp.route('/login')
+def login():
+    google = current_app.config['GOOGLE']
+    next_url = request.args.get('next') or url_for('root.home')
+    print(next_url)
+    redirect_uri = url_for('auth.authorize', _external=True)
+    return google.authorize_redirect(redirect_uri, state=next_url)
+
+@bp.route('/create/verify')
+def verify():
+    username = request.args.get('username')
+    return jsonify(verify_username(username))
+
+@bp.route('/create', methods=['GET', 'POST'])
+def create():
+    if 'google-user' not in session:
+        return redirect(url_for('auth.login'))
+
+    next_url = request.args.get('next') or url_for('root.home')
+    user_info = session['google-user']
+
+    if request.method == 'POST':
+        username = request.form.get('username', '').strip()
+        verify = verify_username(username)
+        if not verify["valid"]: return f"Invalid username input: {verify["message"]}"
+        create_user(user_info["sub"], user_info["email"], username)
+        session['user'] = get_user_from_id(user_info["sub"])
+        session.pop('google-user', None)
+        return redirect(next_url)
+
+    return render_template(
+        'auth/create.html',
+        next_url=next_url,
+    )
+
+@bp.route('/authorize')
+def authorize():
+    google = current_app.config['GOOGLE']
+    token = google.authorize_access_token()
+    user_info = token.get('userinfo')
+    next_url = request.args.get('state') or url_for('root.home')
+
+    if user_info:
+        user = get_user_from_id(user_info["sub"])
+        if user:
+            session['user'] = user
+        else:
+            session['google-user'] = user_info
+            return redirect(url_for('auth.create', next=next_url))
+
+    return redirect(next_url)
+
+@bp.route('/logout')
+def logout():
+    session.pop('user', None)
+    return redirect('/')
