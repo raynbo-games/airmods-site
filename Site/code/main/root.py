@@ -1,6 +1,4 @@
-from flask import Blueprint, redirect, render_template, session
-from Site.code.auth.main import get_user, login_required
-from datetime import datetime
+from flask import Blueprint, redirect, render_template
 
 bp = Blueprint('root', __name__, url_prefix='/')
 

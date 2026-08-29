@@ -1,5 +1,4 @@
-from Site.code.database.main import get_db
-from Site.code.airspy.database import get_matching_row
+from Site.code.database.main import get_db, get_matching_row
 
 def create_user(userID, email, username):
     db = get_db()

@@ -1,8 +1,3 @@
-"""
-This script runs the Site application using a development server.
-"""
-
-from subprocess import Popen
 from os import environ
 from Site import app
 
