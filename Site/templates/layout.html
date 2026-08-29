@@ -28,6 +28,9 @@
                     <li><a href="{{ url_for('root.about') }}">About</a></li>
                     <li><a href="{{ url_for('airspy.root') }}">Airspy</a></li>
                     <li><a href="{{ url_for('airmods.root') }}">Airmods</a></li>
+                    {% if user and user.auth and user.auth >= 1 %}
+                    <li><a href="{{ url_for('admin.root') }}">Admin</a></li>
+                    {% endif %}
                 </ul>
 
                 <ul class="nav navbar-nav navbar-right">

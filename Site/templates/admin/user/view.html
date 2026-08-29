@@ -1,0 +1,17 @@
+{% extends "layout.html" %}
+
+{% block content %}
+
+<h1>User View</h1>
+<p>Username: {{ data.username }}</p>
+<p>User ID: {{ data.id }}</p>
+<p>Email: {{ data.email }}</p>
+<p>Auth Level: {{ data.auth }}</p>
+
+{% if data.auth < user.auth and user.auth > 1 %}
+
+Actions: {% if data.auth != -1 %}<a href="{{ url_for("admin.ban_user", user_id=data.id) }}">Ban</a>{% else %}<a href="{{ url_for("admin.unban_user", user_id=data.id) }}">Unban</a>{% endif %}
+
+{% endif %}
+
+{% endblock %}

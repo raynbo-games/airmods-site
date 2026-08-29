@@ -34,6 +34,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="runserver.py" />
+    <Compile Include="Site\code\admin\main.py" />
     <Compile Include="Site\code\airmods\main.py" />
     <Compile Include="Site\code\airspy\airship_urls.py" />
     <Compile Include="Site\code\airspy\utility.py" />
@@ -45,6 +46,7 @@
     <Compile Include="Site\code\config.py" />
     <Compile Include="Site\code\database\cdn.py" />
     <Compile Include="Site\code\database\main.py" />
+    <Compile Include="Site\templates\admin\index.html" />
     <Compile Include="Site\__init__.py" />
     <Compile Include="Site\code\main\root.py" />
   </ItemGroup>
@@ -58,17 +60,20 @@
     <Folder Include="Site\code\airspy\" />
     <Folder Include="Site\code\airmods\" />
     <Folder Include="Site\code\auth\" />
+    <Folder Include="Site\code\admin\" />
     <Folder Include="Site\static\" />
     <Folder Include="Site\static\content\" />
     <Folder Include="Site\static\fonts\" />
     <Folder Include="Site\static\images\" />
     <Folder Include="Site\static\scripts\" />
     <Folder Include="Site\templates\" />
+    <Folder Include="Site\templates\admin\user\" />
     <Folder Include="Site\templates\airspy\" />
     <Folder Include="Site\templates\airspy\games\" />
     <Folder Include="Site\templates\airspy\organizations\" />
     <Folder Include="Site\templates\airmods\" />
     <Folder Include="Site\templates\auth\" />
+    <Folder Include="Site\templates\admin\" />
     <Folder Include="Site\templates\root\" />
   </ItemGroup>
   <ItemGroup>
@@ -79,6 +84,7 @@
     <Content Include="readme.md" />
     <Content Include="requirements.txt" />
     <Content Include="Site\code\database\schemas\database.sql" />
+    <Content Include="Site\code\database\schemas\update.sql" />
     <Content Include="Site\static\content\bootstrap.css" />
     <Content Include="Site\static\content\bootstrap.min.css" />
     <Content Include="Site\static\content\grid.css" />
@@ -107,6 +113,8 @@
     <Content Include="Site\static\scripts\stats-chart.js" />
     <Content Include="Site\static\scripts\search.js" />
     <Content Include="Site\static\scripts\_references.js" />
+    <Content Include="Site\templates\admin\user\view.html" />
+    <Content Include="Site\templates\admin\user\index.html" />
     <Content Include="Site\templates\airmods\index.html" />
     <Content Include="Site\templates\airspy\games\view.html" />
     <Content Include="Site\templates\airspy\organizations\index.html" />
@@ -114,6 +122,7 @@
     <Content Include="Site\templates\airspy\index.html" />
     <Content Include="Site\templates\airspy\organizations\view.html" />
     <Content Include="Site\templates\auth\create.html" />
+    <Content Include="Site\templates\error.html" />
     <Content Include="Site\templates\root\about.html" />
     <Content Include="Site\templates\root\privacy.html" />
     <Content Include="Site\templates\root\index.html" />
