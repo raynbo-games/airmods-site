@@ -27,6 +27,8 @@
                 <ul class="nav navbar-nav">
                     <li><a href="{{ url_for('airspy.root') }}">Airspy</a></li>
                     <li><a href="{{ url_for('airmods.root') }}">Airmods</a></li>
+                    <li><a href="{{ url_for('community.root') }}">Community</a></li>
+                    <li><a href="{{ url_for('roadmap.index') }}">Roadmap</a></li>
                     {% if user and user.auth and user.auth >= 1 %}
                     <li><a href="{{ url_for('admin.root') }}">Admin</a></li>
                     {% endif %}
@@ -40,7 +42,12 @@
                             <div id="suggestions" class="suggestions-box"></div>
                         </div>
                     </form>
-                    {% elif user and user.username %}
+                    {% endif %}
+                    {% if user and user.username %}
+                    <li><a href="{{ url_for('community.inbox') }}" class="inbox-link">
+                        <span class="glyphicon glyphicon-envelope"></span> Inbox
+                        {% if unread_notifications %}<span class="inbox-badge">{{ unread_notifications }}</span>{% endif %}
+                    </a></li>
                     <p class="navbar-text">{{ user.username }}</p>
                     <li><a href="{{ url_for('auth.logout') }}"><span class="glyphicon glyphicon-log-out"></span> Logout</a></li>
                     {% else %}

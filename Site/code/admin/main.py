@@ -3,6 +3,7 @@ from flask import Blueprint, redirect, render_template, url_for, abort, request
 from Site.code.admin.database import AUDIT_ACTIONS, add_audit_log, get_audit_log
 from Site.code.auth.database import AUTH_LEVEL_VALUES, get_auth, update_auth, update_username, update_user_notes, verify_username
 from Site.code.auth.main import auth_required, get_user
+from Site.code.community.webhook import get_community_config, set_community_config
 from Site.code.database.main import get_matching_row, get_multiple_property_values
 
 bp = Blueprint('admin', __name__, url_prefix='/admin')
@@ -105,3 +106,24 @@ def audit_log():
         entries.append(entry)
 
     return render_template('admin/audit_log.html', entries=entries, filters=filters, actions=AUDIT_ACTIONS)
+
+@bp.route('/community-settings', methods=['GET', 'POST'])
+@auth_required("DEVELOPER")
+def community_settings():
+    if request.method == 'POST':
+        config = {
+            "discordWebhookUrl": request.form.get("discordWebhookUrl", "").strip(),
+            "notifyAuditLog": request.form.get("notifyAuditLog") == "on",
+            "notifyNewPost": request.form.get("notifyNewPost") == "on",
+            "notifyEditedPost": request.form.get("notifyEditedPost") == "on",
+            "notifyComment": request.form.get("notifyComment") == "on",
+            "notifyRoadmapNewStep": request.form.get("notifyRoadmapNewStep") == "on",
+            "notifyRoadmapEditedStep": request.form.get("notifyRoadmapEditedStep") == "on",
+            "notifyRoadmapComment": request.form.get("notifyRoadmapComment") == "on",
+            "automodEnabled": request.form.get("automodEnabled") == "on",
+            "automodWords": [w.strip() for w in request.form.get("automodWords", "").splitlines() if w.strip()],
+        }
+        set_community_config(config)
+        return redirect(url_for("admin.community_settings"))
+
+    return render_template('admin/community_settings.html', config=get_community_config())

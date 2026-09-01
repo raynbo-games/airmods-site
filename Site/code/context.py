@@ -3,12 +3,14 @@ from flask import render_template
 from werkzeug.exceptions import HTTPException
 from Site.code.auth.main import get_user
 from Site.code.database.cdn import cdn, cdn_script, cdn_style, cdn_image
+from Site.code.community.database import get_unread_notification_count
 
 def init_context(app):
     @app.context_processor
     def inject_global():
         user = get_user()
-        return dict(user=user, year=datetime.now().year, cdn=cdn, cdn_script=cdn_script, cdn_style=cdn_style, cdn_image=cdn_image)
+        unread_notifications = get_unread_notification_count(user["id"]) if user else 0
+        return dict(user=user, unread_notifications=unread_notifications, year=datetime.now().year, cdn=cdn, cdn_script=cdn_script, cdn_style=cdn_style, cdn_image=cdn_image)
 
     @app.errorhandler(Exception)
     def handle_exception(e):

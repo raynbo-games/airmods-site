@@ -21,3 +21,7 @@ SET "orgStats" = "orgStats" || jsonb_build_object(
 WHERE NOT ("orgStats" ? 'timestamps');
 
 ALTER TABLE "user" ADD COLUMN IF NOT EXISTS "notes" TEXT;
+
+ALTER TABLE "roadmap_box_comment" ADD COLUMN IF NOT EXISTS "parentCommentId" INTEGER;
+ALTER TABLE "roadmap_box_comment" ADD COLUMN IF NOT EXISTS "deleted" BOOLEAN NOT NULL DEFAULT FALSE;
+ALTER TABLE "comment" ADD COLUMN IF NOT EXISTS "parentCommentId" INTEGER;

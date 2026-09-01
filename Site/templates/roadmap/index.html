@@ -1,0 +1,13 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<div class="hero-card">
+    <h1>Roadmaps</h1>
+    <p>Track what we're planning, building, and shipping.</p>
+</div>
+
+<p class="info-description">No roadmaps have been created yet.</p>
+{% if can_edit %}
+<a href="{{ url_for('roadmap.new_roadmap') }}" class="btn btn-primary">Create the first Roadmap</a>
+{% endif %}
+{% endblock %}

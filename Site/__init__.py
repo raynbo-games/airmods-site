@@ -43,6 +43,12 @@ def create_app():
     import Site.code.admin.main as admin
     app.register_blueprint(admin.bp)
 
+    import Site.code.community.main as community
+    app.register_blueprint(community.bp)
+
+    import Site.code.roadmap.main as roadmap
+    app.register_blueprint(roadmap.bp)
+
     from Site.code.database.main import init_app
     init_app(app)
 

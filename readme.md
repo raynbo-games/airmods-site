@@ -10,5 +10,7 @@ To initialize the PostgreSQL database run:
 ```python -m flask --app Site init-db```
 To update the PostgreSQL database run:
 ```python -m flask --app Site update-db```
+To wipe the PostgreSQL database run:
+```python -m flask --app Site wipe-db```
 To change a users auth level via the console:
 ```python -m flask --app Site set-user-auth --username USER_NAME --auth AUTH_LEVEL```

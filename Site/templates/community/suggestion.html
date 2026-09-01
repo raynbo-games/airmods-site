@@ -1,0 +1,120 @@
+{% extends "layout.html" %}
+
+{% macro render_comment(comment, is_reply) %}
+{% if comment.visible_to_viewer %}
+<div class="comment-card{% if is_reply %} comment-reply{% endif %}">
+    <div class="comment-meta">
+        {{ comment.authorUsername }}
+        {% if comment.status != 'visible' %}
+        <span class="suggestion-status-badge {% if comment.status in ('hidden', 'deleted') %}status-hidden{% endif %}">{{ comment.status }}</span>
+        {% endif %}
+    </div>
+    <div class="comment-body">{{ comment.body }}</div>
+
+    {% if not is_reply and user and comment.status == 'visible' %}
+    <div class="mod-action-row">
+        <button type="button" class="mod-action-btn" onclick="document.getElementById('reply-form-{{ comment.id }}').classList.toggle('hidden-form')">Reply</button>
+    </div>
+    <form id="reply-form-{{ comment.id }}" method="POST" action="{{ url_for('community.post_comment', suggestion_id=suggestion.id) }}" class="admin-form-section hidden-form comment-reply-form">
+        <input type="hidden" name="parentCommentId" value="{{ comment.id }}">
+        <textarea name="body" class="form-control form-dark-input admin-form-textarea" rows="2" placeholder="Write a reply..." required></textarea>
+        <button type="submit" class="btn btn-primary admin-form-submit">Post Reply</button>
+    </form>
+    {% endif %}
+
+    {% if is_moderator and comment.status != 'deleted' %}
+    <div class="mod-action-row">
+        <form method="POST" action="{{ url_for('community.hide_comment', comment_id=comment.id) }}" data-requires-reason="{{ 'unhiding' if comment.status == 'hidden' else 'hiding' }} this comment">
+            <button type="submit" class="mod-action-btn">{{ 'Unhide' if comment.status == 'hidden' else 'Hide' }}</button>
+        </form>
+        <form method="POST" action="{{ url_for('community.remove_comment', comment_id=comment.id) }}" data-requires-reason="deleting this comment">
+            <button type="submit" class="mod-action-btn danger">Delete</button>
+        </form>
+    </div>
+    {% endif %}
+</div>
+{% endif %}
+{% endmacro %}
+
+{% block content %}
+
+{% if suggestion.status != 'visible' %}
+<p class="info-description">
+    This suggestion is currently <strong>{{ suggestion.status.replace('_', ' ') }}</strong> and is only visible to you and moderators.
+</p>
+{% endif %}
+
+<div class="suggestion-card">
+    <div class="vote-widget">
+        {% if user %}
+        <form method="POST" action="{{ url_for('community.vote_suggestion', suggestion_id=suggestion.id) }}">
+            <input type="hidden" name="direction" value="up">
+            <button type="submit" class="vote-btn {% if user_vote == 1 %}active-up{% endif %}">&#9650;</button>
+        </form>
+        {% else %}
+        <span class="vote-btn">&#9650;</span>
+        {% endif %}
+        <span class="vote-score">{{ score }}</span>
+        {% if user %}
+        <form method="POST" action="{{ url_for('community.vote_suggestion', suggestion_id=suggestion.id) }}">
+            <input type="hidden" name="direction" value="down">
+            <button type="submit" class="vote-btn {% if user_vote == -1 %}active-down{% endif %}">&#9660;</button>
+        </form>
+        {% else %}
+        <span class="vote-btn">&#9660;</span>
+        {% endif %}
+    </div>
+    <div class="suggestion-card-body">
+        <h1>
+            {{ suggestion.title }}
+            {% if suggestion.status != 'visible' %}
+            <span class="suggestion-status-badge {% if suggestion.status == 'hidden' %}status-hidden{% endif %}">{{ suggestion.status }}</span>
+            {% endif %}
+        </h1>
+        <div class="suggestion-meta">by {{ suggestion.authorUsername }}</div>
+        <p class="comment-body">{{ suggestion.body }}</p>
+
+        {% if is_moderator %}
+        <div class="mod-action-row">
+            <form method="POST" action="{{ url_for('community.hide_suggestion', suggestion_id=suggestion.id) }}" data-requires-reason="{{ 'unhiding' if suggestion.status == 'hidden' else 'hiding' }} this suggestion">
+                <button type="submit" class="mod-action-btn">{{ 'Unhide' if suggestion.status == 'hidden' else 'Hide' }}</button>
+            </form>
+            <button type="button" class="mod-action-btn" onclick="document.getElementById('edit-suggestion-form').classList.toggle('hidden-form')">Edit</button>
+            <form method="POST" action="{{ url_for('community.remove_suggestion', suggestion_id=suggestion.id) }}" data-requires-reason="deleting this suggestion">
+                <button type="submit" class="mod-action-btn danger">Delete</button>
+            </form>
+        </div>
+        <form id="edit-suggestion-form" method="POST" action="{{ url_for('community.edit_suggestion', suggestion_id=suggestion.id) }}" data-requires-reason="editing this suggestion" class="admin-form-section hidden-form">
+            <input type="text" name="title" class="form-control form-dark-input" value="{{ suggestion.title }}" required>
+            <textarea name="body" class="form-control form-dark-input admin-form-textarea" rows="4" required>{{ suggestion.body }}</textarea>
+            <button type="submit" class="btn btn-primary admin-form-submit">Save Edit</button>
+        </form>
+        {% endif %}
+    </div>
+</div>
+
+<h2>Comments</h2>
+<div class="comment-list">
+    {% for comment in comments %}
+    {{ render_comment(comment, false) }}
+    {% for reply in comment.replies %}
+    {{ render_comment(reply, true) }}
+    {% endfor %}
+    {% else %}
+    <p class="info-description">No comments yet.</p>
+    {% endfor %}
+</div>
+
+{% if user and suggestion.status == 'visible' %}
+<div class="admin-form-section">
+    <h3>Add a Comment</h3>
+    <form method="POST" action="{{ url_for('community.post_comment', suggestion_id=suggestion.id) }}">
+        <textarea name="body" class="form-control form-dark-input admin-form-textarea" rows="3" placeholder="Write a comment..." required></textarea>
+        <button type="submit" class="btn btn-primary admin-form-submit">Post Comment</button>
+    </form>
+</div>
+{% elif not user %}
+<p class="info-description"><a href="{{ url_for('auth.login', next=request.path) }}">Log in</a> to vote and comment.</p>
+{% endif %}
+
+{% endblock %}

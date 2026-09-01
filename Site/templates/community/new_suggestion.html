@@ -1,0 +1,16 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<div class="form-card">
+    <h2>New Suggestion</h2>
+    <form method="POST" action="{{ url_for('community.new_suggestion') }}">
+        <div class="form-group">
+            <input type="text" name="title" class="form-control form-dark-input" placeholder="Suggestion title..." maxlength="200" required>
+        </div>
+        <div class="form-group">
+            <textarea name="body" class="form-control form-dark-input admin-form-textarea" rows="6" placeholder="Describe your suggestion..." required></textarea>
+        </div>
+        <button type="submit" class="btn btn-primary">Post Suggestion</button>
+    </form>
+</div>
+{% endblock %}

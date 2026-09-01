@@ -59,3 +59,91 @@ CREATE TABLE IF NOT EXISTS "audit_log" (
 	"reason" TEXT NOT NULL,
 	"createdAt" TIMESTAMP NOT NULL
 );
+
+CREATE TABLE IF NOT EXISTS "suggestion" (
+	"id" SERIAL PRIMARY KEY,
+	"authorId" VARCHAR(50) NOT NULL,
+	"authorUsername" VARCHAR(30) NOT NULL,
+	"title" TEXT NOT NULL,
+	"body" TEXT NOT NULL,
+	"status" TEXT NOT NULL DEFAULT 'visible',
+	"createdAt" TIMESTAMP NOT NULL,
+	"editedAt" TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS "suggestion_vote" (
+	"suggestionId" INTEGER NOT NULL,
+	"userId" VARCHAR(50) NOT NULL,
+	"value" INTEGER NOT NULL,
+	PRIMARY KEY ("suggestionId", "userId")
+);
+
+CREATE TABLE IF NOT EXISTS "comment" (
+	"id" SERIAL PRIMARY KEY,
+	"suggestionId" INTEGER NOT NULL,
+	"authorId" VARCHAR(50) NOT NULL,
+	"authorUsername" VARCHAR(30) NOT NULL,
+	"body" TEXT NOT NULL,
+	"status" TEXT NOT NULL DEFAULT 'visible',
+	"parentCommentId" INTEGER,
+	"createdAt" TIMESTAMP NOT NULL,
+	"editedAt" TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS "notification" (
+	"id" SERIAL PRIMARY KEY,
+	"userId" VARCHAR(50) NOT NULL,
+	"message" TEXT NOT NULL,
+	"url" TEXT,
+	"read" BOOLEAN NOT NULL DEFAULT FALSE,
+	"createdAt" TIMESTAMP NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS "roadmap" (
+	"id" SERIAL PRIMARY KEY,
+	"name" TEXT NOT NULL,
+	"slug" TEXT UNIQUE NOT NULL,
+	"createdAt" TIMESTAMP NOT NULL,
+	"updatedAt" TIMESTAMP NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS "roadmap_box" (
+	"id" SERIAL PRIMARY KEY,
+	"roadmapId" INTEGER NOT NULL,
+	"title" TEXT NOT NULL,
+	"description" TEXT NOT NULL DEFAULT '',
+	"status" TEXT NOT NULL DEFAULT 'planned',
+	"x" INTEGER NOT NULL DEFAULT 40,
+	"y" INTEGER NOT NULL DEFAULT 40
+);
+
+CREATE TABLE IF NOT EXISTS "roadmap_arrow" (
+	"id" SERIAL PRIMARY KEY,
+	"roadmapId" INTEGER NOT NULL,
+	"fromBoxId" INTEGER NOT NULL,
+	"toBoxId" INTEGER NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS "roadmap_box_vote" (
+	"boxId" INTEGER NOT NULL,
+	"userId" VARCHAR(50) NOT NULL,
+	"value" INTEGER NOT NULL,
+	PRIMARY KEY ("boxId", "userId")
+);
+
+CREATE TABLE IF NOT EXISTS "roadmap_box_comment" (
+	"id" SERIAL PRIMARY KEY,
+	"boxId" INTEGER NOT NULL,
+	"authorId" VARCHAR(50) NOT NULL,
+	"authorUsername" VARCHAR(30) NOT NULL,
+	"body" TEXT NOT NULL,
+	"parentCommentId" INTEGER,
+	"deleted" BOOLEAN NOT NULL DEFAULT FALSE,
+	"createdAt" TIMESTAMP NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS "roadmap_comment_vote" (
+	"commentId" INTEGER NOT NULL,
+	"userId" VARCHAR(50) NOT NULL,
+	PRIMARY KEY ("commentId", "userId")
+);

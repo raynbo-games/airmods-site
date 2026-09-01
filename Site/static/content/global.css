@@ -680,3 +680,513 @@ a.list-card-item:hover {
     margin-top: 2px;
     white-space: normal;
 }
+
+/* Inbox nav link + unread badge */
+
+.inbox-link {
+    position: relative;
+}
+
+.inbox-badge {
+    display: inline-block;
+    background-color: #d9534f;
+    color: #ffffff;
+    font-size: 11px;
+    font-weight: 700;
+    line-height: 1;
+    padding: 3px 6px;
+    border-radius: 999px;
+    margin-left: 4px;
+}
+
+/* Toggle switch ("slide button") */
+
+.toggle-switch {
+    position: relative;
+    display: inline-block;
+    width: 44px;
+    height: 24px;
+    flex-shrink: 0;
+}
+
+.toggle-switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.toggle-slider {
+    position: absolute;
+    cursor: pointer;
+    inset: 0;
+    background-color: #3d3d3d;
+    transition: background-color 0.15s ease-in-out;
+    border-radius: 24px;
+}
+
+.toggle-slider::before {
+    content: "";
+    position: absolute;
+    height: 18px;
+    width: 18px;
+    left: 3px;
+    bottom: 3px;
+    background-color: #ffffff;
+    transition: transform 0.15s ease-in-out;
+    border-radius: 50%;
+}
+
+.toggle-switch input:checked + .toggle-slider {
+    background-color: #5bc0de;
+}
+
+.toggle-switch input:checked + .toggle-slider::before {
+    transform: translateX(20px);
+}
+
+.toggle-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px;
+    padding: 10px 0;
+}
+
+.toggle-row:not(:last-child) {
+    border-bottom: 1px solid #2b2b2b;
+}
+
+.toggle-row-label {
+    color: #ffffff;
+    font-size: 14px;
+}
+
+.toggle-row-description {
+    color: #9d9d9d;
+    font-size: 12px;
+    margin-top: 2px;
+}
+
+/* Community: suggestion list + vote widget */
+
+.suggestion-list {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    margin-bottom: 20px;
+}
+
+.suggestion-card {
+    display: flex;
+    gap: 16px;
+    background-color: #1b1b1b;
+    border-radius: 12px;
+    padding: 16px 20px;
+    transition: box-shadow 0.15s ease-in-out;
+}
+
+.suggestion-card:hover {
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
+}
+
+.vote-widget {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    flex-shrink: 0;
+    min-width: 40px;
+}
+
+.vote-btn {
+    background: none;
+    border: 1px solid #3d3d3d;
+    border-radius: 6px;
+    color: #9d9d9d;
+    width: 32px;
+    height: 32px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: background-color 0.15s ease-in-out, color 0.15s ease-in-out;
+}
+
+.vote-btn:hover {
+    background-color: #2b2b2b;
+    color: #ffffff;
+}
+
+.vote-btn.active-up {
+    background-color: #234a2e;
+    border-color: #2e6b3e;
+    color: #ffffff;
+}
+
+.vote-btn.active-down {
+    background-color: #4a2323;
+    border-color: #6b2e2e;
+    color: #ffffff;
+}
+
+.vote-score {
+    color: #ffffff;
+    font-weight: 600;
+    font-size: 15px;
+}
+
+.suggestion-card-body {
+    flex: 1;
+    min-width: 0;
+}
+
+.suggestion-card-body h1 {
+    color: #ffffff;
+    margin-top: 0;
+}
+
+.suggestion-card-title {
+    color: #ffffff !important;
+    text-decoration: none !important;
+    font-size: 17px;
+    font-weight: 500;
+}
+
+.suggestion-card-title:hover {
+    color: #5bc0de !important;
+}
+
+.suggestion-meta {
+    color: #9d9d9d;
+    font-size: 12px;
+    margin-top: 4px;
+}
+
+.suggestion-status-badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 999px;
+    font-size: 11px;
+    margin-left: 8px;
+    background-color: #4a3d23;
+    border: 1px solid #6b5a2e;
+    color: #ffffff;
+}
+
+.suggestion-status-badge.status-hidden {
+    background-color: #4a2323;
+    border-color: #6b2e2e;
+}
+
+/* Community: suggestion detail + comments */
+
+.comment-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin: 16px 0 24px 0;
+}
+
+.comment-card {
+    background-color: #1b1b1b;
+    border-radius: 10px;
+    padding: 12px 16px;
+}
+
+.comment-meta {
+    color: #9d9d9d;
+    font-size: 12px;
+    margin-bottom: 4px;
+}
+
+.comment-body {
+    color: #ffffff;
+    white-space: pre-wrap;
+    word-break: break-word;
+}
+
+.mod-action-row {
+    display: flex;
+    gap: 8px;
+    margin-top: 10px;
+}
+
+.mod-action-row form {
+    display: inline;
+}
+
+.mod-action-btn {
+    background: none;
+    border: 1px solid #3d3d3d;
+    border-radius: 6px;
+    color: #9d9d9d;
+    font-size: 12px;
+    padding: 3px 10px;
+    cursor: pointer;
+    transition: background-color 0.15s ease-in-out, color 0.15s ease-in-out;
+}
+
+.mod-action-btn:hover {
+    background-color: #2b2b2b;
+    color: #ffffff;
+}
+
+.mod-action-btn.danger:hover {
+    background-color: #4a2323;
+    border-color: #6b2e2e;
+}
+
+/* Community: inbox */
+
+.notification-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.notification-item {
+    background-color: #1b1b1b;
+    border-radius: 10px;
+    padding: 14px 18px;
+}
+
+.notification-item {
+    color: #ffffff;
+}
+
+.notification-item a {
+    color: #ffffff;
+    text-decoration: none;
+}
+
+.notification-item a:hover {
+    color: #5bc0de;
+}
+
+.notification-time {
+    color: #9d9d9d;
+    font-size: 12px;
+    margin-top: 4px;
+}
+
+.hidden-form {
+    display: none;
+}
+
+.automod-words-label {
+    display: block;
+    margin: 14px 0 6px 0;
+    color: #9d9d9d;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+}
+
+/* Roadmaps */
+
+.roadmap-header {
+    margin-bottom: 10px;
+}
+
+.roadmap-switcher {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.roadmap-switcher select {
+    max-width: 320px;
+}
+
+.roadmap-toolbar {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 10px;
+    flex-wrap: wrap;
+}
+
+.roadmap-toolbar form {
+    display: inline-flex;
+}
+
+.roadmap-toolbar .btn.active {
+    background-color: #5bc0de;
+    color: #1b1b1b;
+    border-color: #5bc0de;
+}
+
+.roadmap-delete-btn:hover {
+    background-color: #4a2323;
+}
+
+.roadmap-canvas-wrapper {
+    overflow: auto;
+    border: 1px solid #2b2b2b;
+    border-radius: 12px;
+    background-color: #141414;
+    margin-bottom: 20px;
+}
+
+.roadmap-canvas {
+    position: relative;
+    min-width: 1200px;
+    min-height: 600px;
+}
+
+.roadmap-arrows-svg {
+    position: absolute;
+    top: 0;
+    left: 0;
+    pointer-events: none;
+    z-index: 1;
+}
+
+.roadmap-arrow-path {
+    fill: none;
+    stroke: #5bc0de;
+    stroke-width: 2.5;
+    pointer-events: stroke;
+    cursor: pointer;
+}
+
+.roadmap-box {
+    position: absolute;
+    width: 200px;
+    min-height: 60px;
+    background-color: #1b1b1b;
+    border: 2px solid #4d4d4d;
+    border-radius: 10px;
+    padding: 10px 14px;
+    cursor: pointer;
+    user-select: none;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+    transition: box-shadow 0.15s ease-in-out, border-color 0.15s ease-in-out;
+    z-index: 2;
+}
+
+.roadmap-box:hover {
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.45);
+}
+
+.roadmap-box.connect-selected {
+    border-color: #5bc0de;
+    box-shadow: 0 0 0 2px rgba(91, 192, 222, 0.35);
+}
+
+.roadmap-box-status-dot {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    margin-right: 6px;
+}
+
+.roadmap-box-title {
+    color: #ffffff;
+    font-weight: 500;
+    font-size: 14px;
+}
+
+.roadmap-box.status-planned { border-color: #4d4d4d; }
+.roadmap-box.status-in_progress { border-color: #2a7c99; }
+.roadmap-box.status-completed { border-color: #3d7a3d; }
+.roadmap-box.status-canceled { border-color: #8f3a37; }
+
+.roadmap-box.status-planned .roadmap-box-status-dot { background-color: #9d9d9d; }
+.roadmap-box.status-in_progress .roadmap-box-status-dot { background-color: #5bc0de; }
+.roadmap-box.status-completed .roadmap-box-status-dot { background-color: #5cb85c; }
+.roadmap-box.status-canceled .roadmap-box-status-dot { background-color: #d9534f; }
+
+.roadmap-status-badge {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 999px;
+    font-size: 12px;
+    margin-bottom: 12px;
+    color: #ffffff;
+}
+
+.roadmap-status-badge.status-planned { background-color: #3d3d3d; }
+.roadmap-status-badge.status-in_progress { background-color: #2a7c99; }
+.roadmap-status-badge.status-completed { background-color: #3d7a3d; }
+.roadmap-status-badge.status-canceled { background-color: #8f3a37; }
+
+.roadmap-box-delete-form {
+    margin-top: 12px;
+}
+
+#roadmap-detail-description {
+    white-space: pre-wrap;
+    text-align: left;
+}
+
+.roadmap-box-meta {
+    display: flex;
+    gap: 10px;
+    margin-top: 6px;
+    color: #9d9d9d;
+    font-size: 11px;
+}
+
+.roadmap-detail-card {
+    max-width: 640px;
+    text-align: center;
+}
+
+.roadmap-detail-votes {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    margin-bottom: 16px;
+}
+
+.roadmap-detail-comments {
+    text-align: left;
+    margin-bottom: 16px;
+}
+
+.roadmap-detail-comments h3 {
+    color: #ffffff;
+    font-size: 15px;
+    margin: 0 0 10px 0;
+}
+
+.roadmap-detail-comments .comment-list {
+    max-height: 260px;
+    overflow-y: auto;
+    margin: 0 0 14px 0;
+}
+
+.roadmap-detail-login-prompt {
+    margin: 0;
+}
+
+.comment-reply {
+    margin-left: 28px;
+    border-left: 2px solid #2b2b2b;
+    border-radius: 0 10px 10px 0;
+}
+
+.comment-upvote-btn.active {
+    background-color: #234a2e;
+    border-color: #2e6b3e;
+    color: #ffffff;
+}
+
+.comment-reply-form {
+    margin-top: 10px;
+}
+
+.comment-reply-form textarea {
+    margin-bottom: 8px;
+}
+
+.comment-deleted {
+    background-color: #2a1717;
+    border: 1px solid #4a2323;
+}
+
+.comment-deleted .comment-body {
+    color: #c99;
+}

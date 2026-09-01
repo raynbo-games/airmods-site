@@ -1,0 +1,139 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<div class="roadmap-header">
+    <div class="roadmap-switcher">
+        <select id="roadmap-select" class="form-control form-dark-input" onchange="if(this.value) window.location.href = this.value;">
+            {% for r in roadmaps %}
+            <option value="{{ url_for('roadmap.view', slug=r.slug) }}" {% if r.id == roadmap.id %}selected{% endif %}>{{ r.name }}</option>
+            {% endfor %}
+        </select>
+        {% if can_edit %}
+        <a href="{{ url_for('roadmap.new_roadmap') }}" class="btn btn-default">New Roadmap</a>
+        {% endif %}
+    </div>
+    <h1>{{ roadmap.name }}</h1>
+
+    {% if can_edit %}
+    <div class="roadmap-toolbar">
+        <button type="button" class="btn btn-primary" onclick="openBoxModal()">Add Step</button>
+        <button type="button" id="connect-mode-btn" class="btn btn-default" onclick="toggleConnectMode()">Draw Arrow</button>
+        <button type="button" class="btn btn-default" onclick="openRenameModal()">Rename Roadmap</button>
+        <form method="POST" action="{{ url_for('roadmap.remove', slug=roadmap.slug) }}" onsubmit="return confirm('Delete this entire roadmap? This cannot be undone.')">
+            <button type="submit" class="btn btn-default roadmap-delete-btn">Delete Roadmap</button>
+        </form>
+    </div>
+    <p class="info-description">Drag steps to reposition them. Click a step to view details, or use "Draw Arrow" then click two steps in order to connect them.</p>
+    {% endif %}
+</div>
+
+<div class="roadmap-canvas-wrapper">
+    <div class="roadmap-canvas" id="roadmap-canvas">
+        <svg id="roadmap-arrows-svg" class="roadmap-arrows-svg">
+            <defs>
+                <marker id="arrowhead" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto">
+                    <path d="M0,0 L0,6 L9,3 z" fill="#5bc0de" />
+                </marker>
+            </defs>
+        </svg>
+        {% for box in boxes %}
+        <div class="roadmap-box status-{{ box.status }}" id="box-{{ box.id }}" data-box-id="{{ box.id }}" style="left: {{ box.x }}px; top: {{ box.y }}px;">
+            <span class="roadmap-box-status-dot"></span><span class="roadmap-box-title">{{ box.title }}</span>
+            <div class="roadmap-box-meta">
+                <span class="roadmap-box-score">&#9650; <span class="roadmap-box-score-value">{{ box.score }}</span></span>
+                <span class="roadmap-box-comments">&#128172; {{ box.commentCount }}</span>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+{% if not boxes %}
+<p class="info-description">This roadmap has no steps yet.{% if can_edit %} Click "Add Step" to create one.{% endif %}</p>
+{% endif %}
+
+<div id="roadmap-detail-overlay" class="leaving-modal-overlay">
+    <div class="leaving-card roadmap-detail-card">
+        <h2 id="roadmap-detail-title"></h2>
+        <div class="roadmap-status-badge" id="roadmap-detail-status"></div>
+        <p class="leaving-message" id="roadmap-detail-description"></p>
+
+        <div class="roadmap-detail-votes">
+            <button type="button" class="vote-btn" id="roadmap-detail-vote-up">&#9650;</button>
+            <span class="vote-score" id="roadmap-detail-vote-score">0</span>
+            <button type="button" class="vote-btn" id="roadmap-detail-vote-down">&#9660;</button>
+        </div>
+
+        <div class="roadmap-detail-comments">
+            <h3>Comments</h3>
+            <div class="comment-list" id="roadmap-detail-comment-list"></div>
+            <div id="roadmap-detail-comment-form">
+                <textarea id="roadmap-detail-comment-input" class="form-control form-dark-input admin-form-textarea" rows="2" placeholder="Add a comment..."></textarea>
+                <button type="button" class="btn btn-primary admin-form-submit" id="roadmap-detail-comment-submit">Post Comment</button>
+            </div>
+            <p class="info-description roadmap-detail-login-prompt hidden-form" id="roadmap-detail-login-prompt">
+                <a href="{{ url_for('auth.login', next=request.path) }}">Log in</a> to vote and comment.
+            </p>
+        </div>
+
+        <div class="leaving-actions">
+            {% if can_edit %}
+            <button type="button" class="leaving-btn leaving-btn-continue" id="roadmap-detail-edit-btn">Edit</button>
+            {% endif %}
+            <button type="button" class="leaving-btn leaving-btn-cancel" id="roadmap-detail-close-btn">Close</button>
+        </div>
+    </div>
+</div>
+
+{% if can_edit %}
+<div id="roadmap-box-overlay" class="leaving-modal-overlay">
+    <div class="leaving-card">
+        <h2 id="roadmap-box-modal-title">Add Step</h2>
+        <form id="roadmap-box-form" method="POST">
+            <input type="text" name="title" id="roadmap-box-title-input" class="form-control form-dark-input" placeholder="Step title..." maxlength="100" required>
+            <textarea name="description" id="roadmap-box-description-input" class="form-control form-dark-input admin-form-textarea" rows="4" placeholder="Description..."></textarea>
+            <select name="status" id="roadmap-box-status-input" class="form-control form-dark-input">
+                {% for status in statuses %}
+                <option value="{{ status }}">{{ status.replace('_', ' ') | title }}</option>
+                {% endfor %}
+            </select>
+            <input type="hidden" name="x" id="roadmap-box-x-input" value="40">
+            <input type="hidden" name="y" id="roadmap-box-y-input" value="40">
+            <div class="leaving-actions">
+                <button type="submit" class="leaving-btn leaving-btn-continue">Save</button>
+                <button type="button" class="leaving-btn leaving-btn-cancel" id="roadmap-box-cancel-btn">Cancel</button>
+            </div>
+        </form>
+        <form id="roadmap-box-delete-form" method="POST" class="hidden-form roadmap-box-delete-form">
+            <button type="submit" class="mod-action-btn danger">Delete Step</button>
+        </form>
+    </div>
+</div>
+
+<div id="roadmap-rename-overlay" class="leaving-modal-overlay">
+    <div class="leaving-card">
+        <h2>Rename Roadmap</h2>
+        <form method="POST" action="{{ url_for('roadmap.rename', slug=roadmap.slug) }}">
+            <input type="text" name="name" class="form-control form-dark-input" value="{{ roadmap.name }}" maxlength="100" required>
+            <div class="leaving-actions">
+                <button type="submit" class="leaving-btn leaving-btn-continue">Save</button>
+                <button type="button" class="leaving-btn leaving-btn-cancel" id="roadmap-rename-cancel-btn">Cancel</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block scripts %}
+<script>
+    const ROADMAP_SLUG = {{ roadmap.slug | tojson }};
+    const CAN_EDIT = {{ 'true' if can_edit else 'false' }};
+    const IS_LOGGED_IN = {{ 'true' if user else 'false' }};
+    const CURRENT_USER_ID = {{ user.id | tojson if user else 'null' }};
+    const BOXES = {{ boxes | tojson }};
+    const ARROWS = {{ arrows | tojson }};
+    const ADD_BOX_URL = {{ url_for('roadmap.add_box', slug=roadmap.slug) | tojson }};
+</script>
+<script src="{{ url_for('static', filename='scripts/roadmap.js') }}"></script>
+{% endblock %}

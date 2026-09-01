@@ -1,0 +1,15 @@
+DROP TABLE IF EXISTS "game";
+DROP TABLE IF EXISTS "organization";
+DROP TABLE IF EXISTS "json";
+DROP TABLE IF EXISTS "user";
+DROP TABLE IF EXISTS "audit_log";
+DROP TABLE IF EXISTS "suggestion";
+DROP TABLE IF EXISTS "suggestion_vote";
+DROP TABLE IF EXISTS "comment";
+DROP TABLE IF EXISTS "notification";
+DROP TABLE IF EXISTS "roadmap";
+DROP TABLE IF EXISTS "roadmap_box";
+DROP TABLE IF EXISTS "roadmap_arrow";
+DROP TABLE IF EXISTS "roadmap_box_vote";
+DROP TABLE IF EXISTS "roadmap_box_comment";
+DROP TABLE IF EXISTS "roadmap_comment_vote";

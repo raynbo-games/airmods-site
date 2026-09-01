@@ -36,6 +36,16 @@ def update_db():
         cursor.execute(sql_script)
     db.commit()
 
+def wipe_db():
+    db = get_db()
+
+    with current_app.open_resource('code/database/schemas/wipe.sql') as f:
+        sql_script = f.read().decode('utf8')
+        
+    with db.cursor() as cursor:
+        cursor.execute(sql_script)
+    db.commit()
+
 @click.command('init-db')
 def init_db_command():
     init_db()
@@ -46,6 +56,12 @@ def update_db_command():
     update_db()
     init_db()
     click.echo('Updated the PostgreSQL database.')
+
+@click.command('wipe-db')
+def wipe_db_command():
+    wipe_db()
+    init_db()
+    click.echo('Wiped the PostgreSQL database.')
 
 @click.command('set-user-auth')
 @click.option('--username', help='username of the user.')
@@ -69,6 +85,7 @@ def init_app(app):
     app.cli.add_command(init_db_command)
     app.cli.add_command(update_db_command)
     app.cli.add_command(set_user_auth_command)
+    app.cli.add_command(wipe_db_command)
 
     from Site.code.airspy.database import reset_airspy_db_command
     app.cli.add_command(reset_airspy_db_command)
