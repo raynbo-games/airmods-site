@@ -1,19 +1,35 @@
 {% extends "layout.html" %}
 
-{% block head %}
-<link rel="stylesheet" type="text/css" href="/static/content/grid.css" />
-{% endblock %}
-
 {% block content %}
 
-<h1>Admin Pannel</h1>
+<h1>Admin Panel</h1>
 
-<div class="grid-wrapper">
-    <div class="grid">
-        <a href="{{ url_for('admin.users') }}" class="card" rel="noopener noreferrer">
-            <span>Users</span>
-        </a>
-    </div>
+<div class="project-card">
+    <h3>Users</h3>
+    <p>View, ban, and manage user accounts and permission levels.</p>
+    <a href="{{ url_for('admin.users') }}">Manage Users &#8594;</a>
 </div>
+
+<div class="project-card">
+    <h3>Community Review Queue</h3>
+    <p>Approve or reject suggestions and comments held for review by the automatic content filter.</p>
+    <a href="{{ url_for('community.review') }}">View Review Queue &#8594;</a>
+</div>
+
+{% if user.auth > 1 %}
+<div class="project-card">
+    <h3>Audit Log</h3>
+    <p>Review privileged actions taken by moderators and admins, along with their stated reasons.</p>
+    <a href="{{ url_for('admin.audit_log') }}">View Audit Log &#8594;</a>
+</div>
+{% endif %}
+
+{% if user.auth > 2 %}
+<div class="project-card">
+    <h3>Community Settings</h3>
+    <p>Configure the Discord webhook, notification triggers, and the auto-moderation blocked word list.</p>
+    <a href="{{ url_for('admin.community_settings') }}">Configure Community Settings &#8594;</a>
+</div>
+{% endif %}
 
 {% endblock %}

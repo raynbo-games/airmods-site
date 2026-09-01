@@ -1,0 +1,50 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<h1>Review Queue</h1>
+<p class="info-description">Content flagged by the automatic content filter, awaiting moderator review before it goes live.</p>
+
+<h2>Suggestions</h2>
+{% if suggestions %}
+<div class="comment-list">
+    {% for suggestion in suggestions %}
+    <div class="comment-card">
+        <div class="comment-meta">{{ suggestion.authorUsername }} &mdash; <strong>{{ suggestion.title }}</strong></div>
+        <div class="comment-body">{{ suggestion.body }}</div>
+        <div class="mod-action-row">
+            <form method="POST" action="{{ url_for('community.approve_suggestion', suggestion_id=suggestion.id) }}">
+                <button type="submit" class="mod-action-btn">Approve</button>
+            </form>
+            <form method="POST" action="{{ url_for('community.reject_suggestion', suggestion_id=suggestion.id) }}" data-requires-reason="rejecting this suggestion">
+                <button type="submit" class="mod-action-btn danger">Reject</button>
+            </form>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<p class="info-description">Nothing pending.</p>
+{% endif %}
+
+<h2>Comments</h2>
+{% if comments %}
+<div class="comment-list">
+    {% for comment in comments %}
+    <div class="comment-card">
+        <div class="comment-meta">{{ comment.authorUsername }}</div>
+        <div class="comment-body">{{ comment.body }}</div>
+        <div class="mod-action-row">
+            <form method="POST" action="{{ url_for('community.approve_comment', comment_id=comment.id) }}">
+                <button type="submit" class="mod-action-btn">Approve</button>
+            </form>
+            <form method="POST" action="{{ url_for('community.reject_comment', comment_id=comment.id) }}" data-requires-reason="rejecting this comment">
+                <button type="submit" class="mod-action-btn danger">Reject</button>
+            </form>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<p class="info-description">Nothing pending.</p>
+{% endif %}
+{% endblock %}

@@ -4,40 +4,62 @@
 
 <div id="org-info"></div>
 
+<h2>Games</h2>
+{% if games %}
+<div class="row">
+    {% for game in games %}
+    <div class="col-xs-12 col-sm-6 col-md-3">
+        <a href="{{ game.url }}" class="grid-link" rel="noopener noreferrer">
+            <div class="grid-card text-center">
+                <div class="grid-img-wrapper">
+                    <img src="{{ game.image_url }}" class="grid-img" alt="{{ game.name }} Icon">
+                </div>
+                <h3>{{ game.name }}</h3>
+            </div>
+        </a>
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<p class="info-description">This organization has no tracked games yet.</p>
+{% endif %}
+
 <div class="dashboard-wrapper">
     <h2>Organization Statistics</h2>
     <h3>All Time Highs</h3>
-    <p id="ath">Loading...</p>
+    <div id="ath" class="ath-stats">Loading...</div>
     <div class="chart-filter-tabs">
         <h3>Charts</h3>
-        <button class="tab-btn active" onclick="switchTimeframe('day', this)">Day</button>
-        <button class="tab-btn" onclick="switchTimeframe('month', this)">Month</button>
-        <button class="tab-btn" onclick="switchTimeframe('year', this)">Year</button>
+        <div class="tab-btn-group">
+            <button class="tab-btn active" onclick="switchTimeframe('day', this)">Day</button>
+            <button class="tab-btn" onclick="switchTimeframe('month', this)">Month</button>
+            <button class="tab-btn" onclick="switchTimeframe('year', this)">Year</button>
+        </div>
     </div>
 
     <div class="graphs-grid">
         <div class="graph-card">
             <h4 id="title-0">Loading...</h4>
-            <canvas id="canvas-0"></canvas>
+            <div class="graph-canvas-wrapper"><canvas id="canvas-0"></canvas></div>
         </div>
         <div class="graph-card">
             <h4 id="title-1">Loading...</h4>
-            <canvas id="canvas-1"></canvas>
+            <div class="graph-canvas-wrapper"><canvas id="canvas-1"></canvas></div>
         </div>
         <div class="graph-card">
             <h4 id="title-2">Loading...</h4>
-            <canvas id="canvas-2"></canvas>
+            <div class="graph-canvas-wrapper"><canvas id="canvas-2"></canvas></div>
         </div>
         <div class="graph-card">
             <h4 id="title-3">Loading...</h4>
-            <canvas id="canvas-3"></canvas>
+            <div class="graph-canvas-wrapper"><canvas id="canvas-3"></canvas></div>
         </div>
     </div>
 </div>
 {% endblock %}
 
 {% block scripts %}
-<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.4/Chart.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.4/Chart.min.js"></script>
 <script>
     const chart_url = "{{ chart_url }}";
     const ath_data = {{ ath_data | tojson }};

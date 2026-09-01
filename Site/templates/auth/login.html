@@ -1,0 +1,14 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<div class="leaving-card">
+    <div class="leaving-icon">&#128274;</div>
+    <h1>Continue with Google</h1>
+    <p class="leaving-message">You're about to leave Raynbo Games and sign in through your Google account. We never see your Google password.</p>
+    <div class="leaving-destination">accounts.google.com</div>
+    <div class="leaving-actions">
+        <a href="{{ url_for('auth.login_google', next=next_url) }}" class="leaving-btn leaving-btn-continue">Continue to Google</a>
+        <a href="{{ next_url }}" class="leaving-btn leaving-btn-cancel">Cancel</a>
+    </div>
+</div>
+{% endblock %}

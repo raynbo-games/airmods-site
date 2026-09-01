@@ -1,0 +1,26 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<h1>Inbox</h1>
+
+{% if notifications %}
+<div class="notification-list">
+    {% for notification in notifications %}
+    <div class="notification-item">
+        {% if notification.url %}
+        <a href="{{ notification.url }}">{{ notification.message }}</a>
+        {% else %}
+        {{ notification.message }}
+        {% endif %}
+        <div class="notification-time audit-time" data-timestamp="{{ notification.createdAtIso }}">{{ notification.createdAtIso }}</div>
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<p class="info-description">No notifications yet.</p>
+{% endif %}
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='scripts/audit-log.js') }}"></script>
+{% endblock %}

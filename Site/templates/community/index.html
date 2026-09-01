@@ -1,0 +1,37 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<div class="hero-card">
+    <h1>Community Suggestions</h1>
+    <p>Share ideas for Raynbo Games, upvote what you'd like to see, and discuss with other players.</p>
+</div>
+
+<div class="grid-section-header">
+    <h2>Suggestions</h2>
+    {% if user %}
+    <a href="{{ url_for('community.new_suggestion') }}">New Suggestion &#8594;</a>
+    {% endif %}
+</div>
+
+{% if user and user.auth >= 1 %}
+<p class="info-description"><a href="{{ url_for('community.review') }}">View pending review queue &#8594;</a></p>
+{% endif %}
+
+{% if suggestions %}
+<div class="suggestion-list">
+    {% for suggestion in suggestions %}
+    <div class="suggestion-card">
+        <div class="vote-widget">
+            <span class="vote-score">{{ suggestion.score }}</span>
+        </div>
+        <div class="suggestion-card-body">
+            <a href="{{ url_for('community.view_suggestion', suggestion_id=suggestion.id) }}" class="suggestion-card-title">{{ suggestion.title }}</a>
+            <div class="suggestion-meta">by {{ suggestion.authorUsername }}</div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<p class="info-description">No suggestions yet &mdash; be the first to post one!</p>
+{% endif %}
+{% endblock %}

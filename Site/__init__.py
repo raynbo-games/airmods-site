@@ -1,20 +1,14 @@
-import os, logging, click
-from flask import Flask, session, render_template
+import os, logging
+from flask import Flask
 from flask.cli import load_dotenv
-from flask_apscheduler import APScheduler
-from Site.code.airspy.processes import tick_airspy, tick_airspy_icons
-from Site.code.auth.main import get_user
-from Site.code.config import AIRSPY_UPDATE_TIMEOUT, AIRSPY_SPEED
 from authlib.integrations.flask_client import OAuth
-from datetime import datetime
-from werkzeug.exceptions import HTTPException
-import sys
 
 load_dotenv()
 
 def create_app():
     app = Flask(__name__, instance_relative_config=True)
     app.logger.setLevel(logging.INFO)
+    app.url_map.strict_slashes = False
     oauth = OAuth(app)
     google = oauth.register(
         name='google',
@@ -49,58 +43,20 @@ def create_app():
     import Site.code.admin.main as admin
     app.register_blueprint(admin.bp)
 
+    import Site.code.community.main as community
+    app.register_blueprint(community.bp)
+
+    import Site.code.roadmap.main as roadmap
+    app.register_blueprint(roadmap.bp)
+
     from Site.code.database.main import init_app
     init_app(app)
 
-    def create_job(func):
-        def wrapper():
-            with app.app_context():
-                func(app)
-        return wrapper
+    from Site.code.context import init_context
+    init_context(app)
 
-    if click.get_current_context(silent=True) is None:
-        scheduler = APScheduler()
-        scheduler.init_app(app)
-        scheduler.add_job(
-            id="tick_airspy",
-            func=create_job(tick_airspy),
-            trigger='interval',
-            minutes=AIRSPY_UPDATE_TIMEOUT / AIRSPY_SPEED,
-        )
-        scheduler.add_job(
-            id="tick_airspy_icons",
-            func=create_job(tick_airspy_icons),
-            trigger='interval',
-            minutes=60,
-        )
-        scheduler.add_job(
-            id="tick_airspy_startup",
-            func=create_job(tick_airspy),
-            trigger="date",
-        )
-        scheduler.add_job(
-            id="tick_airspy_icons_startup",
-            func=create_job(tick_airspy_icons),
-            trigger="date",
-        )
-
-        scheduler.start()
-
-    @app.context_processor
-    def inject_global():
-        user = get_user()
-        return dict(user=user, year=datetime.now().year)
-
-    @app.errorhandler(Exception)
-    def handle_exception(e):
-        if isinstance(e, HTTPException):
-            error_code = e.code
-            error_message = e.description
-        else:
-            error_code = 500
-            error_message = "Internal Server Error"
-        
-        return render_template('error.html', error_code=error_code, error_message=error_message), error_code
+    from Site.code.tasks import init_tasks
+    init_tasks(app)
 
     return app
 

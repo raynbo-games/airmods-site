@@ -16,65 +16,59 @@ AUTH_LEVEL = Literal["BANNED", "USER", "MODERATOR", "ADMIN", "DEVELOPER", "OWNER
 def get_auth(level: AUTH_LEVEL):
     return AUTH_LEVEL_VALUES[level]
 
-def create_user(userID, email, username):
+def create_user(user_id, email, username):
     db = get_db()
     cursor = db.cursor()
     cursor.execute(
         'INSERT INTO "user" ("id", "email", "username") VALUES (%s, %s, %s)',
-        (userID, email, username)
+        (user_id, email, username)
     )
     db.commit()
 
 def get_user_from_username(username):
     return get_matching_row("user", {"username": username})
 
-def get_user_from_id(userID):
-    return get_matching_row("user", {"id": userID})
+def get_user_from_id(user_id):
+    return get_matching_row("user", {"id": user_id})
 
 def verify_username(username):
     if not username:
-        return {
-            "valid": False, 
-            "message": "Username is null"
-        }
+        return {"valid": False, "message": "Username is null"}
 
     if not username.isalnum():
-        return {
-            "valid": False, 
-            "message": "Username can only contain letters and numbers."
-        }
+        return {"valid": False, "message": "Username can only contain letters and numbers."}
 
     if len(username) < 3 or len(username) > 30:
-        return {
-            "valid": False, 
-            "message": "Username must be between 3 and 30 characters."
-        }
+        return {"valid": False, "message": "Username must be between 3 and 30 characters."}
 
-    if get_user_from_username(username): 
-        return {
-                    "valid": False, 
-                    "message": "This username is already taken."
-                }
+    if get_user_from_username(username):
+        return {"valid": False, "message": "This username is already taken."}
 
-    return {
-            "valid": True, 
-            "message": "Username is available!"
-        }
+    return {"valid": True, "message": "Username is available!"}
 
-def update_username(userID, username):
+def update_username(user_id, username):
     db = get_db()
     cursor = db.cursor()
     cursor.execute(
         'UPDATE "user" SET "username" = %s WHERE "id" = %s',
-        (username, userID)
+        (username, user_id)
     )
     db.commit()
 
-def update_auth(userID, auth: AUTH_LEVEL):
+def update_auth(user_id, auth: AUTH_LEVEL):
     db = get_db()
     cursor = db.cursor()
     cursor.execute(
         'UPDATE "user" SET "auth" = %s WHERE "id" = %s',
-        (get_auth(auth), userID)
+        (get_auth(auth), user_id)
+    )
+    db.commit()
+
+def update_user_notes(user_id, notes):
+    db = get_db()
+    cursor = db.cursor()
+    cursor.execute(
+        'UPDATE "user" SET "notes" = %s WHERE "id" = %s',
+        (notes, user_id)
     )
     db.commit()

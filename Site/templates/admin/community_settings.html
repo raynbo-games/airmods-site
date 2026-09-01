@@ -1,0 +1,108 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<h1>Community Settings</h1>
+
+<form method="POST" action="{{ url_for('admin.community_settings') }}">
+    <div class="admin-form-section">
+        <h3>Discord Webhook</h3>
+        <input type="text" name="discordWebhookUrl" class="form-control form-dark-input" value="{{ config.discordWebhookUrl }}" placeholder="https://discord.com/api/webhooks/...">
+    </div>
+
+    <div class="admin-form-section">
+        <h3>Notify Discord When...</h3>
+        <div class="toggle-row">
+            <div>
+                <div class="toggle-row-label">Audit Log</div>
+                <div class="toggle-row-description">Any privileged action logged in the audit log.</div>
+            </div>
+            <label class="toggle-switch">
+                <input type="checkbox" name="notifyAuditLog" {% if config.notifyAuditLog %}checked{% endif %}>
+                <span class="toggle-slider"></span>
+            </label>
+        </div>
+        <div class="toggle-row">
+            <div>
+                <div class="toggle-row-label">New Post</div>
+                <div class="toggle-row-description">A new community suggestion is posted.</div>
+            </div>
+            <label class="toggle-switch">
+                <input type="checkbox" name="notifyNewPost" {% if config.notifyNewPost %}checked{% endif %}>
+                <span class="toggle-slider"></span>
+            </label>
+        </div>
+        <div class="toggle-row">
+            <div>
+                <div class="toggle-row-label">Edited Post</div>
+                <div class="toggle-row-description">A moderator edits a suggestion.</div>
+            </div>
+            <label class="toggle-switch">
+                <input type="checkbox" name="notifyEditedPost" {% if config.notifyEditedPost %}checked{% endif %}>
+                <span class="toggle-slider"></span>
+            </label>
+        </div>
+        <div class="toggle-row">
+            <div>
+                <div class="toggle-row-label">Comment</div>
+                <div class="toggle-row-description">A new comment is posted.</div>
+            </div>
+            <label class="toggle-switch">
+                <input type="checkbox" name="notifyComment" {% if config.notifyComment %}checked{% endif %}>
+                <span class="toggle-slider"></span>
+            </label>
+        </div>
+    </div>
+
+    <div class="admin-form-section">
+        <h3>Notify Discord When... (Roadmap)</h3>
+        <div class="toggle-row">
+            <div>
+                <div class="toggle-row-label">New Step</div>
+                <div class="toggle-row-description">A new roadmap step is added.</div>
+            </div>
+            <label class="toggle-switch">
+                <input type="checkbox" name="notifyRoadmapNewStep" {% if config.notifyRoadmapNewStep %}checked{% endif %}>
+                <span class="toggle-slider"></span>
+            </label>
+        </div>
+        <div class="toggle-row">
+            <div>
+                <div class="toggle-row-label">Edited Step</div>
+                <div class="toggle-row-description">A roadmap step is edited.</div>
+            </div>
+            <label class="toggle-switch">
+                <input type="checkbox" name="notifyRoadmapEditedStep" {% if config.notifyRoadmapEditedStep %}checked{% endif %}>
+                <span class="toggle-slider"></span>
+            </label>
+        </div>
+        <div class="toggle-row">
+            <div>
+                <div class="toggle-row-label">Comment</div>
+                <div class="toggle-row-description">A new comment or reply is posted on a roadmap step.</div>
+            </div>
+            <label class="toggle-switch">
+                <input type="checkbox" name="notifyRoadmapComment" {% if config.notifyRoadmapComment %}checked{% endif %}>
+                <span class="toggle-slider"></span>
+            </label>
+        </div>
+    </div>
+
+    <div class="admin-form-section">
+        <h3>Auto Moderation</h3>
+        <div class="toggle-row">
+            <div>
+                <div class="toggle-row-label">Enabled</div>
+                <div class="toggle-row-description">Automatically hold new suggestions/comments for review if they match a blocked word.</div>
+            </div>
+            <label class="toggle-switch">
+                <input type="checkbox" name="automodEnabled" {% if config.automodEnabled %}checked{% endif %}>
+                <span class="toggle-slider"></span>
+            </label>
+        </div>
+        <label for="automodWords" class="automod-words-label">Blocked Words (one per line)</label>
+        <textarea id="automodWords" name="automodWords" class="form-control form-dark-input admin-form-textarea" rows="6">{{ config.automodWords | join('\n') }}</textarea>
+    </div>
+
+    <button type="submit" class="btn btn-primary">Save Settings</button>
+</form>
+{% endblock %}

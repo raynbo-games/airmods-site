@@ -1,29 +1,47 @@
+function formatDate(value) {
+    const date = new Date(value);
+    if (isNaN(date)) return "Unknown";
+    return date.toLocaleDateString(undefined, { year: "numeric", month: "short", day: "numeric" });
+}
+
 document.addEventListener("DOMContentLoaded", () => {
-    const links = "";
-    for (let [key, value] in Object.entries(game_data["links"])) {
-        links += `<a href="${value}">${key}</a>\n`;
+    let links = "";
+    for (const [key, value] of Object.entries(game_data["links"])) {
+        links += `<a href="${value}" class="info-chip" target="_blank" rel="noopener noreferrer">${key}</a>`;
     }
-    const platforms = game_data["platforms"].join(", ");
 
-    document.getElementById("game-info").innerHTML = `<h1>${game_data["name"]}</h1>
-    <div class="outer-container-box">
-        <img id="game-icon" alt="Game Icon", src="${image_url}">
+    const platforms = game_data["platforms"].join(", ") || "None";
+    const isArchived = !!game_data["archivedAt"];
+
+    document.getElementById("game-info").innerHTML = `
+    <div class="info-header">
+        <img id="game-icon" class="info-icon" alt="Game Icon" src="${image_url}">
+        <div class="info-header-text">
+            <h1>${game_data["name"]}</h1>
+            <p class="info-description">${game_data["description"]}</p>
+            <div class="info-chips">
+                <a href="/airspy/organizations/${game_data["organizationId"]}" class="info-chip">Author</a>
+                <a href="https://airship.gg/g/${game_data["id"]}" class="info-chip" target="_blank" rel="noopener noreferrer">View on Airship</a>
+                ${links}
+                <span class="info-chip info-chip-badge ${isArchived ? "info-chip-warning" : ""}">${isArchived ? "Archived" : "Active"}</span>
+            </div>
+        </div>
     </div>
-    <p>${ game_data["description"]}</p>
 
-    <p><a href="/airspy/organizations/${game_data["organizationId"]}">Author</a>, <a href="https://airship.gg/g/${game_data["id"]}">Game Link</a></p>
-    Images: <a href="https://cnd.airship.gg/images/${game_data["iconImageId"]}">Icon</a>, <a href="https://cnd.airship.gg/images/${game_data["logoImageId"]}">Logo</a><br>
-    <p>
-    Visiblility: ${game_data["visibility"]}<br>
-    Platforms: ${game_data["platforms"]}<br>
-    Created At: ${game_data["createdAt"]}<br>
-    Last Updated At: ${game_data["lastVersionUpdate"]}<br>
-    ${game_data["archivedAt"] ? "Game is archived" : "Game is not archived"}<br>
-    Links: ${links}<br>
-    Plays: ${game_data["plays"]}<br>
-    Favorites: ${game_data["favorites"]}<br>
-    Plays 24h: ${game_data["plays24h"]}<br>
-    Unique Plays 24h: ${game_data["uniquePlays24h"]}<br>
-    </p>
-    `
+    <div class="info-stats-grid">
+        <div class="info-stat"><span class="info-stat-label">Visibility</span><span class="info-stat-value">${game_data["visibility"]}</span></div>
+        <div class="info-stat"><span class="info-stat-label">Platforms</span><span class="info-stat-value">${platforms}</span></div>
+        <div class="info-stat"><span class="info-stat-label">Created</span><span class="info-stat-value">${formatDate(game_data["createdAt"])}</span></div>
+        <div class="info-stat"><span class="info-stat-label">Last Updated</span><span class="info-stat-value">${formatDate(game_data["lastVersionUpdate"])}</span></div>
+        <div class="info-stat"><span class="info-stat-label">Plays</span><span class="info-stat-value">${game_data["plays"]}</span></div>
+        <div class="info-stat"><span class="info-stat-label">Favorites</span><span class="info-stat-value">${game_data["favorites"]}</span></div>
+        <div class="info-stat"><span class="info-stat-label">Plays (24h)</span><span class="info-stat-value">${game_data["plays24h"]}</span></div>
+        <div class="info-stat"><span class="info-stat-label">Unique Plays (24h)</span><span class="info-stat-value">${game_data["uniquePlays24h"]}</span></div>
+    </div>
+
+    <div class="info-meta-links">
+        <a href="https://cnd.airship.gg/images/${game_data["iconImageId"]}" target="_blank" rel="noopener noreferrer">Icon</a>
+        <a href="https://cnd.airship.gg/images/${game_data["logoImageId"]}" target="_blank" rel="noopener noreferrer">Logo</a>
+    </div>
+    `;
 });

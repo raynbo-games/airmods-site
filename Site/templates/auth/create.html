@@ -1,19 +1,19 @@
 {% extends "layout.html" %}
 {% block content %}
-<div class="container" style="max-width: 500px; margin-top: 50px;">
-    <h2 style="margin-bottom: 20px; font-weight: 300;">Choose a Username</h2>
+<div class="form-card">
+    <h2>Choose a Username</h2>
 
     <form method="POST" action="{{ url_for('auth.create', next=next_url) }}">
         <div class="form-group">
             <div class="input-group">
-                <input type="text" id="username" name="username" class="form-control input-lg" placeholder="Enter username..." autocomplete="off" required>
+                <input type="text" id="username" name="username" class="form-control input-lg form-dark-input" placeholder="Enter username..." autocomplete="off" required>
 
                 <span class="input-group-btn">
                     <button type="submit" id="submit-btn" class="btn btn-primary btn-lg" disabled>Create Account</button>
                 </span>
             </div>
 
-            <div id="feedback" style="margin-top: 10px; font-weight: 500;"></div>
+            <div id="feedback" class="form-feedback"></div>
         </div>
     </form>
 </div>
@@ -29,6 +29,7 @@
 
         if (username.length === 0) {
             feedbackDiv.textContent = '';
+            feedbackDiv.className = 'form-feedback';
             submitBtn.disabled = true;
             return;
         }
@@ -40,18 +41,18 @@
                 .then(data => {
                     if (data.valid) {
                         feedbackDiv.textContent = data.message;
-                        feedbackDiv.className = 'success';
+                        feedbackDiv.className = 'form-feedback feedback-success';
                         submitBtn.disabled = false;
                     } else {
                         feedbackDiv.textContent = data.message;
-                        feedbackDiv.className = 'error';
+                        feedbackDiv.className = 'form-feedback feedback-error';
                         submitBtn.disabled = true;
                     }
                 })
                 .catch(err => {
                     console.error('Error verifying username:', err);
                     feedbackDiv.textContent = 'Server verification failed. Please try again.';
-                    feedbackDiv.className = 'error';
+                    feedbackDiv.className = 'form-feedback feedback-error';
                     submitBtn.disabled = true;
                 });
 

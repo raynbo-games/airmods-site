@@ -1,4 +1,4 @@
-import time
+import click, time
 from Site.code.database.main import get_db, get_matching_row
 from Site.code.config import AIRSPY_SPEED, STORED_TICKS, STORED_DAILY_TICKS, STORED_MONTHLY_TICKS
 from psycopg.types.json import Jsonb
@@ -9,17 +9,23 @@ default_stats = {
     "plays": [-1] * STORED_TICKS,
     "plays24h": [-1] * STORED_TICKS,
     "uniquePlays24h": [-1] * STORED_TICKS,
+    "timestamps": [None] * STORED_TICKS,
     "dailyPlayerCounts": [-1] * STORED_DAILY_TICKS,
     "dailyPlays": [-1] * STORED_DAILY_TICKS,
     "dailyPlays24h": [-1] * STORED_DAILY_TICKS,
     "dailyUniquePlays24h": [-1] * STORED_DAILY_TICKS,
+    "dailyTimestamps": [None] * STORED_DAILY_TICKS,
     "monthlyPlayerCounts": [-1] * STORED_MONTHLY_TICKS,
     "monthlyPlays": [-1] * STORED_MONTHLY_TICKS,
     "monthlyPlays24h": [-1] * STORED_MONTHLY_TICKS,
     "monthlyUniquePlays24h": [-1] * STORED_MONTHLY_TICKS,
+    "monthlyTimestamps": [None] * STORED_MONTHLY_TICKS,
     "athPlayerCount": 0,
+    "athPlayerCountAt": None,
     "athPlays24h": 0,
+    "athPlays24hAt": None,
     "athUniquePlays24h": 0,
+    "athUniquePlays24hAt": None,
 }
 
 def insert_game(raw_data):
@@ -98,6 +104,7 @@ def organize_game_data(raw_data):
     }
 
 def update_game(raw_data):
+    """Insert the game if it doesn't exist yet, otherwise update only the fields that changed."""
     game_data = raw_data["game"]
     db = get_db()
     cursor = db.cursor()
@@ -153,6 +160,7 @@ def insert_organization(raw_data):
     return f"Inserted organization: {raw_data["id"]}"
 
 def update_organization(raw_data):
+    """Insert the organization if it doesn't exist yet, otherwise update only the fields that changed."""
     db = get_db()
     cursor = db.cursor()
     cursor.execute(f'SELECT * FROM "organization" WHERE "id" = %s', (raw_data["id"],))
@@ -186,3 +194,20 @@ def update_organization_stats(org_id, stats):
     cursor = db.cursor()
     cursor.execute(f'UPDATE "organization" SET "orgStats" = %s WHERE id = %s', (Jsonb(stats), org_id))
     db.commit()
+
+def reset_airspy_data():
+    db = get_db()
+    cursor = db.cursor()
+    cursor.execute('TRUNCATE TABLE "game", "organization"')
+    cursor.execute('DELETE FROM "json" WHERE "id" = %s', ("airship_tick_data",))
+    db.commit()
+
+@click.command('reset-airspy-db')
+@click.option('--yes', is_flag=True, help='Skip the confirmation prompt.')
+def reset_airspy_db_command(yes):
+    if not yes and not click.confirm('This will permanently delete all Airspy games, organizations, and tick data. Continue?'):
+        click.echo('Aborted.')
+        return
+
+    reset_airspy_data()
+    click.echo('Reset all Airspy data.')

@@ -18,7 +18,8 @@
     <SuppressCollectPythonCloudServiceFiles>true</SuppressCollectPythonCloudServiceFiles>
     <Name>Site</Name>
     <RootNamespace>Site</RootNamespace>
-    <InterpreterId>MSBuild|env|$(MSBuildProjectFullPath)</InterpreterId>
+    <InterpreterId>
+    </InterpreterId>
     <WebBrowserPort>8080</WebBrowserPort>
     <SuppressPackageInstallationPrompt>True</SuppressPackageInstallationPrompt>
     <IsWindowsApplication>False</IsWindowsApplication>
@@ -44,8 +45,10 @@
     <Compile Include="Site\code\auth\database.py" />
     <Compile Include="Site\code\auth\main.py" />
     <Compile Include="Site\code\config.py" />
+    <Compile Include="Site\code\context.py" />
     <Compile Include="Site\code\database\cdn.py" />
     <Compile Include="Site\code\database\main.py" />
+    <Compile Include="Site\code\tasks.py" />
     <Compile Include="Site\templates\admin\index.html" />
     <Compile Include="Site\__init__.py" />
     <Compile Include="Site\code\main\root.py" />
@@ -61,11 +64,6 @@
     <Folder Include="Site\code\airmods\" />
     <Folder Include="Site\code\auth\" />
     <Folder Include="Site\code\admin\" />
-    <Folder Include="Site\static\" />
-    <Folder Include="Site\static\content\" />
-    <Folder Include="Site\static\fonts\" />
-    <Folder Include="Site\static\images\" />
-    <Folder Include="Site\static\scripts\" />
     <Folder Include="Site\templates\" />
     <Folder Include="Site\templates\admin\user\" />
     <Folder Include="Site\templates\airspy\" />
@@ -75,6 +73,11 @@
     <Folder Include="Site\templates\auth\" />
     <Folder Include="Site\templates\admin\" />
     <Folder Include="Site\templates\root\" />
+    <Folder Include="static\" />
+    <Folder Include="static\content\" />
+    <Folder Include="static\fonts\" />
+    <Folder Include="static\images\" />
+    <Folder Include="static\scripts\" />
   </ItemGroup>
   <ItemGroup>
     <Content Include=".gitattributes" />
@@ -85,34 +88,6 @@
     <Content Include="requirements.txt" />
     <Content Include="Site\code\database\schemas\database.sql" />
     <Content Include="Site\code\database\schemas\update.sql" />
-    <Content Include="Site\static\content\bootstrap.css" />
-    <Content Include="Site\static\content\bootstrap.min.css" />
-    <Content Include="Site\static\content\grid.css" />
-    <Content Include="Site\static\content\site.css" />
-    <Content Include="Site\static\fonts\glyphicons-halflings-regular.eot" />
-    <Content Include="Site\static\fonts\glyphicons-halflings-regular.svg" />
-    <Content Include="Site\static\fonts\glyphicons-halflings-regular.ttf" />
-    <Content Include="Site\static\fonts\glyphicons-halflings-regular.woff" />
-    <Content Include="Site\static\images\favicon.png" />
-    <Content Include="Site\static\scripts\bootstrap.js" />
-    <Content Include="Site\static\scripts\bootstrap.min.js" />
-    <Content Include="Site\static\scripts\org-data.js" />
-    <Content Include="Site\static\scripts\jquery-1.10.2.intellisense.js" />
-    <Content Include="Site\static\scripts\jquery-1.10.2.js" />
-    <Content Include="Site\static\scripts\jquery-1.10.2.min.js" />
-    <Content Include="Site\static\scripts\jquery-1.10.2.min.map" />
-    <Content Include="Site\static\scripts\jquery.validate-vsdoc.js" />
-    <Content Include="Site\static\scripts\jquery.validate.js" />
-    <Content Include="Site\static\scripts\jquery.validate.min.js" />
-    <Content Include="Site\static\scripts\jquery.validate.unobtrusive.js" />
-    <Content Include="Site\static\scripts\jquery.validate.unobtrusive.min.js" />
-    <Content Include="Site\static\scripts\modernizr-2.6.2.js" />
-    <Content Include="Site\static\scripts\respond.js" />
-    <Content Include="Site\static\scripts\respond.min.js" />
-    <Content Include="Site\static\scripts\game-data.js" />
-    <Content Include="Site\static\scripts\stats-chart.js" />
-    <Content Include="Site\static\scripts\search.js" />
-    <Content Include="Site\static\scripts\_references.js" />
     <Content Include="Site\templates\admin\user\view.html" />
     <Content Include="Site\templates\admin\user\index.html" />
     <Content Include="Site\templates\airmods\index.html" />
@@ -123,21 +98,46 @@
     <Content Include="Site\templates\airspy\organizations\view.html" />
     <Content Include="Site\templates\auth\create.html" />
     <Content Include="Site\templates\error.html" />
-    <Content Include="Site\templates\root\about.html" />
     <Content Include="Site\templates\root\privacy.html" />
     <Content Include="Site\templates\root\index.html" />
     <Content Include="Site\templates\layout.html" />
-  </ItemGroup>
-  <ItemGroup>
-    <Interpreter Include="env\">
-      <Id>env</Id>
-      <Version>3.14</Version>
-      <Description>env (Python 3.14.6)</Description>
-      <InterpreterPath>Scripts\python.exe</InterpreterPath>
-      <WindowsInterpreterPath>Scripts\pythonw.exe</WindowsInterpreterPath>
-      <PathEnvironmentVariable>PYTHONPATH</PathEnvironmentVariable>
-      <Architecture>X64</Architecture>
-    </Interpreter>
+    <Content Include="static\content\bootstrap-theme.css" />
+    <Content Include="static\content\bootstrap-theme.css.map" />
+    <Content Include="static\content\bootstrap-theme.min.css" />
+    <Content Include="static\content\bootstrap-theme.min.css.map" />
+    <Content Include="static\content\bootstrap.css" />
+    <Content Include="static\content\bootstrap.css.map" />
+    <Content Include="static\content\bootstrap.min.css" />
+    <Content Include="static\content\bootstrap.min.css.map" />
+    <Content Include="static\content\global.css" />
+    <Content Include="static\fonts\glyphicons-halflings-regular.eot" />
+    <Content Include="static\fonts\glyphicons-halflings-regular.svg" />
+    <Content Include="static\fonts\glyphicons-halflings-regular.ttf" />
+    <Content Include="static\fonts\glyphicons-halflings-regular.woff" />
+    <Content Include="static\fonts\glyphicons-halflings-regular.woff2" />
+    <Content Include="static\images\black.jpg" />
+    <Content Include="static\images\favicon.jpg" />
+    <Content Include="static\scripts\bootstrap.js" />
+    <Content Include="static\scripts\bootstrap.min.js" />
+    <Content Include="static\scripts\Chart.js" />
+    <Content Include="static\scripts\game-data.js" />
+    <Content Include="static\scripts\jquery-1.10.2.js" />
+    <Content Include="static\scripts\jquery-1.10.2.min.js" />
+    <Content Include="static\scripts\jquery-1.10.2.min.map" />
+    <Content Include="static\scripts\jquery.validate.js" />
+    <Content Include="static\scripts\jquery.validate.min.js" />
+    <Content Include="static\scripts\jquery.validate.unobtrusive.js" />
+    <Content Include="static\scripts\jquery.validate.unobtrusive.min.js" />
+    <Content Include="static\scripts\modernizr-2.6.2.js" />
+    <Content Include="static\scripts\npm.js" />
+    <Content Include="static\scripts\org-data.js" />
+    <Content Include="static\scripts\respond.js" />
+    <Content Include="static\scripts\respond.min.js" />
+    <Content Include="static\scripts\search.js" />
+    <Content Include="static\scripts\stats-chart.js" />
+    <None Include="static\scripts\_references.js" />
+    <None Include="static\scripts\jquery.validate-vsdoc.js" />
+    <None Include="static\scripts\jquery-1.10.2.intellisense.js" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\Python Tools\Microsoft.PythonTools.Web.targets" />
   <!-- Specify pre- and post-build commands in the BeforeBuild and 

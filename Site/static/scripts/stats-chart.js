@@ -2,11 +2,33 @@ let chartInstances = [];
 let timeframe = "day";
 let rawDataMap = undefined;
 
+function formatTimestamp(value) {
+    if (!value) return "Never";
+    const date = new Date(value);
+    if (isNaN(date)) return "Never";
+    return date.toLocaleString(undefined, { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" });
+}
+
+function formatChartLabel(value, currentTimeframe) {
+    if (!value) return null;
+    const date = new Date(value);
+    if (isNaN(date)) return null;
+    if (currentTimeframe === "day") {
+        return date.toLocaleTimeString(undefined, { hour: "numeric", minute: "2-digit" });
+    }
+    if (currentTimeframe === "month") {
+        return date.toLocaleDateString(undefined, { month: "short", day: "numeric" });
+    }
+    return date.toLocaleDateString(undefined, { month: "short", year: "numeric" });
+}
+
 function initCharts() {
     const dataset = rawDataMap[timeframe];
-    document.getElementById("ath").innerText = `Player Count: ${ath_data["playerCount"]}
-    Plays 24h: ${ath_data["plays24h"]}
-    Unique Plays 24h: ${ath_data["uniquePlays24h"]}`;
+    document.getElementById("ath").innerHTML = `
+        <div class="ath-stat"><span class="ath-stat-label">Player Count</span><span class="ath-stat-value">${ath_data["playerCount"]}</span><span class="ath-stat-time">${formatTimestamp(ath_data["playerCountAt"])}</span></div>
+        <div class="ath-stat"><span class="ath-stat-label">Plays (24h)</span><span class="ath-stat-value">${ath_data["plays24h"]}</span><span class="ath-stat-time">${formatTimestamp(ath_data["plays24hAt"])}</span></div>
+        <div class="ath-stat"><span class="ath-stat-label">Unique Plays (24h)</span><span class="ath-stat-value">${ath_data["uniquePlays24h"]}</span><span class="ath-stat-time">${formatTimestamp(ath_data["uniquePlays24hAt"])}</span></div>
+    `;
 
     for (let i = 0; i < 4; i++) {
         const graphInfo = dataset.graphs[i];
@@ -16,7 +38,8 @@ function initCharts() {
 
         graphInfo.values.forEach((val, idx) => {
             if (val !== -1) {
-                filteredLabels.push(dataset.labels[idx] || `Point ${idx + 1}`);
+                const label = formatChartLabel(dataset.labels[idx], timeframe);
+                filteredLabels.push(label || `Point ${idx + 1}`);
                 filteredValues.push(val);
             }
         });
@@ -46,6 +69,7 @@ function initCharts() {
             },
             options: {
                 responsive: true,
+                maintainAspectRatio: false,
                 plugins: {
                     legend: { display: false },
                     tooltip: {
@@ -87,8 +111,8 @@ function initCharts() {
     }
 }
 
-function switchTimeframe(new_timeframe, element) {
-    timeframe = new_timeframe;
+function switchTimeframe(newTimeframe, element) {
+    timeframe = newTimeframe;
     document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
     element.classList.add('active');
     initCharts();

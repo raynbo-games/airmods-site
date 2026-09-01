@@ -1,20 +1,16 @@
 {% extends "layout.html" %}
 
-{% block head %}
-<link rel="stylesheet" type="text/css" href="/static/content/grid.css" />
-{% endblock %}
-
 {% block content %}
 
 <h1>Users</h1>
-<div class="grid-wrapper">
-    <div class="grid">
-        {% for user_data in data %}
-        <a href="{{ url_for('admin.user', user_id=user_data.id) }}" class="card" rel="noopener noreferrer">
-            <span>{{ user_data.username }}</span>
-        </a>
-        {% endfor %}
-    </div>
+
+<div class="list-card">
+    {% for user_data in data %}
+    <a href="{{ url_for('admin.user', user_id=user_data.id) }}" class="list-card-item">
+        <span>{{ user_data.username }}</span>
+        <span class="list-card-arrow">&#8594;</span>
+    </a>
+    {% endfor %}
 </div>
 
 {% endblock %}

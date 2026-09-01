@@ -1,30 +1,36 @@
 {% extends "layout.html" %}
 
-{% block head %}
-<link rel="stylesheet" type="text/css" href="/static/content/grid.css" />
-{% endblock %}
-
 {% block content %}
-
-<h1>Welcome to Raynbo Games!</h1>
-
-<div class="grid-wrapper">
-    <div class="grid">
-        <a href="{{ url_for('root.about') }}" class="card" rel="noopener noreferrer">
-            <span>About</span>
-        </a>
-        <a href="{{ url_for('airspy.root') }}" class="card" rel="noopener noreferrer">
-            <span>Airspy</span>
-        </a>
-        <a href="{{ url_for('airmods.root') }}" class="card" rel="noopener noreferrer">
-            <span>Airmods</span>
-        </a>
-        {% if user and user.auth and user.auth >= 1 %}
-        <a href="{{ url_for('admin.root') }}" class="card" rel="noopener noreferrer">
-            <span>Admin</span>
-        </a>
-        {% endif %}
-    </div>
+<div class="hero-card">
+    <h1>Raynbo Games</h1>
+    <p>
+        Welcome to the Raynbo Games website! Here you can find information about our games, our team, and our projects.
+        Feel free to explore and learn more about what we do.
+    </p>
 </div>
 
+<h2>Projects</h2>
+
+<div class="project-card">
+    <h3>Airspy</h3>
+    <p>Airspy allows users to track the performance of games and organizations over time on the Airship platform.</p>
+    <a href="{{ url_for('airspy.root') }}">View more about Airspy &#8594;</a>
+</div>
+
+<div class="project-card">
+    <h3>Airmods</h3>
+    <p>Airmods is a modding platform for Airship games, allowing users to create, share, and play custom content for supported games.</p>
+    <a href="{{ url_for('airmods.root') }}">View more about Airmods &#8594;</a>
+</div>
+
+<div class="project-card">
+    <h3>Community</h3>
+    <p>Post suggestions, vote and comment on ideas from other players, and help shape what we build next.</p>
+    <a href="{{ url_for('community.root') }}">Visit the Community &#8594;</a>
+</div>
+
+<h2>Contact</h2>
+<p>
+    <strong>Email:</strong> <a href="mailto:info@raynbo.games">info@raynbo.games</a>
+</p>
 {% endblock %}

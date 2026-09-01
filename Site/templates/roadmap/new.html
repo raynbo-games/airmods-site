@@ -1,0 +1,11 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<div class="form-card">
+    <h2>New Roadmap</h2>
+    <form method="POST" action="{{ url_for('roadmap.new_roadmap') }}">
+        <input type="text" name="name" class="form-control form-dark-input" placeholder="Roadmap name..." maxlength="100" required>
+        <button type="submit" class="btn btn-primary admin-form-submit">Create Roadmap</button>
+    </form>
+</div>
+{% endblock %}

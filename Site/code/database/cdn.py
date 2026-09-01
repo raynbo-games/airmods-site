@@ -1,7 +1,6 @@
 import boto3, requests, os
 
-bucket = "raynbo-games-site-storage"
-cdn_url = "https://raynbo-games-site-storage.sfo3.cdn.digitaloceanspaces.com"
+CDN_URL = "https://raynbo-games-site-storage.sfo3.cdn.digitaloceanspaces.com"
 
 session = boto3.session.Session()
 client = session.client(
@@ -13,19 +12,30 @@ client = session.client(
 )
 
 def get_image_cdn_url(directory, image_id):
-    return f"{cdn_url}/{bucket}//images/{directory}/{image_id}.jpg"
+    return f"{CDN_URL}/{directory}/images/{image_id}.jpg"
 
 def upload_to_spaces(directory, image_id, image_url):
     response = requests.get(image_url, stream=True)
     response.raise_for_status()
     
-    file_path = f"/images/{directory}/{image_id}.jpg"
     client.put_object(
-        Bucket=bucket,
-        Key=file_path,
+        Bucket=directory,
+        Key=f"images/{image_id}.jpg",
         Body=response.raw.read(),
         ACL='public-read',
         ContentType=response.headers.get('Content-Type', 'image/jpeg')
     )
     
     return get_image_cdn_url(directory, image_id)
+
+def cdn(directory, name, extension):
+    return f"{CDN_URL}/static/{directory}/{name}.{extension}"
+
+def cdn_script(name):
+    return cdn("scripts", name, "js")
+
+def cdn_style(name):
+    return cdn("content", name, "css")
+
+def cdn_image(name):
+    return cdn("images", name, "jpg")

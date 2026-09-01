@@ -1,22 +1,22 @@
 {% extends "layout.html" %}
 
-{% block head %}
-<link rel="stylesheet" type="text/css" href="/static/content/grid.css" />
-{% endblock %}
-
 {% block content %}
 
 <h1>Airship Organizations</h1>
 
-<div class="grid-wrapper">
-    <div class="grid">
-        {% for org in orgs %}
-        <a href="{{ org.url }}" class="card" rel="noopener noreferrer">
-            <img src="{{ org.image_url }}" alt="{{ org.name }}">
-            <span>{{ org.name }}</span>
+<div class="row">
+    {% for org in orgs %}
+    <div class="col-xs-12 col-sm-6 col-md-3">
+        <a href="{{ org.url }}" class="grid-link" rel="noopener noreferrer">
+            <div class="grid-card text-center">
+                <div class="grid-img-wrapper">
+                    <img src="{{ org.image_url }}" class="grid-img" alt="{{ org.name }} Icon">
+                </div>
+                <h3>{{ org.name }}</h3>
+            </div>
         </a>
-        {% endfor %}
     </div>
+    {% endfor %}
 </div>
 
 {% endblock %}
