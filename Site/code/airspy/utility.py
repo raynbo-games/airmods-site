@@ -53,6 +53,7 @@ def bucket_series(values, timestamps, bucket_size, mode="last"):
     return bucketed_values, bucketed_labels
 
 def get_dashboard_data(stats):
+    """Build chart-ready series (day/month/year) plus all-time-high data for a game or organization."""
     ticks_per_bucket = max(1, round(AIRSPY_CHART_BUCKET_MINUTES / AIRSPY_UPDATE_TIMEOUT))
 
     day_player_counts, day_labels = bucket_series(stats["playerCounts"], stats["timestamps"], ticks_per_bucket, mode="average")

@@ -104,6 +104,7 @@ def organize_game_data(raw_data):
     }
 
 def update_game(raw_data):
+    """Insert the game if it doesn't exist yet, otherwise update only the fields that changed."""
     game_data = raw_data["game"]
     db = get_db()
     cursor = db.cursor()
@@ -159,6 +160,7 @@ def insert_organization(raw_data):
     return f"Inserted organization: {raw_data["id"]}"
 
 def update_organization(raw_data):
+    """Insert the organization if it doesn't exist yet, otherwise update only the fields that changed."""
     db = get_db()
     cursor = db.cursor()
     cursor.execute(f'SELECT * FROM "organization" WHERE "id" = %s', (raw_data["id"],))

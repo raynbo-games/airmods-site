@@ -8,6 +8,7 @@ from Site.code.database.cdn import upload_to_spaces
 from Site.code.database.main import get_matching_row, get_property_value
 
 def tick_airspy_icons(app: Flask):
+    """Scheduled task: mirror every tracked game/organization icon to the CDN."""
     game_image_ids = get_property_value("game", "iconImageId")
     organization_image_ids = get_property_value("organization", "iconImageId")
     for image_id in game_image_ids:
@@ -16,10 +17,12 @@ def tick_airspy_icons(app: Flask):
         upload_to_spaces("airspy", image_id, get_image_url(image_id))
 
 def tick_airspy(app: Flask):
+    """Scheduled task: pull live Airship stats and append a tick to every tracked
+    game/organization, then roll ticks into daily/monthly buckets once due."""
     data = get_tick_data()
 
-    missedTicks = math.floor(((time.time() * AIRSPY_SPEED - data["lastTick"]) / 60) / AIRSPY_UPDATE_TIMEOUT)
-    tickCount = 1 + missedTicks
+    missed_ticks = math.floor(((time.time() * AIRSPY_SPEED - data["lastTick"]) / 60) / AIRSPY_UPDATE_TIMEOUT)
+    tick_count = 1 + missed_ticks
     current_tick_time = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%S.%fZ")
 
     games = request_games()
@@ -30,18 +33,18 @@ def tick_airspy(app: Flask):
     game_ids = get_property_value("game", "id")
     organization_ids = get_property_value("organization", "id")
 
-    def process_game_data(gameData):
-        if gameData["id"] not in game_ids:
-            game_ids.append(gameData["id"])
-        if gameData["organization"]["id"] not in organization_ids:
-            organization_ids.append(gameData["organization"]["id"])
+    def process_game_data(game_data):
+        if game_data["id"] not in game_ids:
+            game_ids.append(game_data["id"])
+        if game_data["organization"]["id"] not in organization_ids:
+            organization_ids.append(game_data["organization"]["id"])
 
-    for gameData in games["popular"]:
-        process_game_data(gameData)
-    for gameData in games["featured"]:
-        process_game_data(gameData)
-    for gameData in games["recentlyUpdated"]:
-        process_game_data(gameData)
+    for game_data in games["popular"]:
+        process_game_data(game_data)
+    for game_data in games["featured"]:
+        process_game_data(game_data)
+    for game_data in games["recentlyUpdated"]:
+        process_game_data(game_data)
 
     organization_data = {}
     
@@ -52,43 +55,43 @@ def tick_airspy(app: Flask):
             continue
 
         app.logger.debug(update_game(raw_data))
-        gameData = get_matching_row("game", {"id": game_id})
+        game_data = get_matching_row("game", {"id": game_id})
 
         playerCount = raw_data["game"]["liveStats"]["playerCount"]
         plays = raw_data["game"]["plays"]
         plays24h = raw_data["game"]["plays24h"]
         uniquePlays24h = raw_data["game"]["uniquePlays24h"]
 
-        if missedTicks > 0:
-            gameData['gameStats']["playerCounts"].extend([-1] * missedTicks)
-            gameData['gameStats']["plays"].extend([-1] * missedTicks)
-            gameData['gameStats']["plays24h"].extend([-1] * missedTicks)
-            gameData['gameStats']["uniquePlays24h"].extend([-1] * missedTicks)
-            gameData['gameStats']["timestamps"].extend([None] * missedTicks)
+        if missed_ticks > 0:
+            game_data['gameStats']["playerCounts"].extend([-1] * missed_ticks)
+            game_data['gameStats']["plays"].extend([-1] * missed_ticks)
+            game_data['gameStats']["plays24h"].extend([-1] * missed_ticks)
+            game_data['gameStats']["uniquePlays24h"].extend([-1] * missed_ticks)
+            game_data['gameStats']["timestamps"].extend([None] * missed_ticks)
 
-        gameData['gameStats']["playerCounts"].append(playerCount)
-        gameData['gameStats']["plays"].append(plays)
-        gameData['gameStats']["plays24h"].append(plays24h)
-        gameData['gameStats']["uniquePlays24h"].append(uniquePlays24h)
-        gameData['gameStats']["timestamps"].append(current_tick_time)
+        game_data['gameStats']["playerCounts"].append(playerCount)
+        game_data['gameStats']["plays"].append(plays)
+        game_data['gameStats']["plays24h"].append(plays24h)
+        game_data['gameStats']["uniquePlays24h"].append(uniquePlays24h)
+        game_data['gameStats']["timestamps"].append(current_tick_time)
 
-        del gameData['gameStats']["playerCounts"][:tickCount]
-        del gameData['gameStats']["plays"][:tickCount]
-        del gameData['gameStats']["plays24h"][:tickCount]
-        del gameData['gameStats']["uniquePlays24h"][:tickCount]
-        del gameData['gameStats']["timestamps"][:tickCount]
+        del game_data['gameStats']["playerCounts"][:tick_count]
+        del game_data['gameStats']["plays"][:tick_count]
+        del game_data['gameStats']["plays24h"][:tick_count]
+        del game_data['gameStats']["uniquePlays24h"][:tick_count]
+        del game_data['gameStats']["timestamps"][:tick_count]
 
-        if playerCount > gameData["gameStats"]["athPlayerCount"]:
-            gameData["gameStats"]["athPlayerCount"] = playerCount
-            gameData["gameStats"]["athPlayerCountAt"] = current_tick_time
-        if plays24h > gameData["gameStats"]["athPlays24h"]:
-            gameData["gameStats"]["athPlays24h"] = plays24h
-            gameData["gameStats"]["athPlays24hAt"] = current_tick_time
-        if uniquePlays24h > gameData["gameStats"]["athUniquePlays24h"]:
-            gameData["gameStats"]["athUniquePlays24h"] = uniquePlays24h
-            gameData["gameStats"]["athUniquePlays24hAt"] = current_tick_time
+        if playerCount > game_data["gameStats"]["athPlayerCount"]:
+            game_data["gameStats"]["athPlayerCount"] = playerCount
+            game_data["gameStats"]["athPlayerCountAt"] = current_tick_time
+        if plays24h > game_data["gameStats"]["athPlays24h"]:
+            game_data["gameStats"]["athPlays24h"] = plays24h
+            game_data["gameStats"]["athPlays24hAt"] = current_tick_time
+        if uniquePlays24h > game_data["gameStats"]["athUniquePlays24h"]:
+            game_data["gameStats"]["athUniquePlays24h"] = uniquePlays24h
+            game_data["gameStats"]["athUniquePlays24hAt"] = current_tick_time
 
-        update_game_stats(gameData["id"], gameData['gameStats'])
+        update_game_stats(game_data["id"], game_data['gameStats'])
 
         if raw_data["game"]["organization"]["id"] not in organization_data:
             organization_data[raw_data["game"]["organization"]["id"]] = {
@@ -109,45 +112,45 @@ def tick_airspy(app: Flask):
     for orgId, current in organization_data.items():
         raw_data = current["data"]
         app.logger.debug(update_organization(raw_data))
-        orgData = get_matching_row("organization", {"id": raw_data["id"]})
+        org_data = get_matching_row("organization", {"id": raw_data["id"]})
 
         playerCount = current["orgStats"]["playerCounts"]
         plays = current["orgStats"]["plays"]
         plays24h = current["orgStats"]["plays24h"]
         uniquePlays24h = current["orgStats"]["uniquePlays24h"]
 
-        if missedTicks > 0:
-            orgData['orgStats']["playerCounts"].extend([-1] * missedTicks)
-            orgData['orgStats']["plays"].extend([-1] * missedTicks)
-            orgData['orgStats']["plays24h"].extend([-1] * missedTicks)
-            orgData['orgStats']["uniquePlays24h"].extend([-1] * missedTicks)
-            orgData['orgStats']["timestamps"].extend([None] * missedTicks)
+        if missed_ticks > 0:
+            org_data['orgStats']["playerCounts"].extend([-1] * missed_ticks)
+            org_data['orgStats']["plays"].extend([-1] * missed_ticks)
+            org_data['orgStats']["plays24h"].extend([-1] * missed_ticks)
+            org_data['orgStats']["uniquePlays24h"].extend([-1] * missed_ticks)
+            org_data['orgStats']["timestamps"].extend([None] * missed_ticks)
 
-        orgData['orgStats']["playerCounts"].append(playerCount)
-        orgData['orgStats']["plays"].append(plays)
-        orgData['orgStats']["plays24h"].append(plays24h)
-        orgData['orgStats']["uniquePlays24h"].append(uniquePlays24h)
-        orgData['orgStats']["timestamps"].append(current_tick_time)
+        org_data['orgStats']["playerCounts"].append(playerCount)
+        org_data['orgStats']["plays"].append(plays)
+        org_data['orgStats']["plays24h"].append(plays24h)
+        org_data['orgStats']["uniquePlays24h"].append(uniquePlays24h)
+        org_data['orgStats']["timestamps"].append(current_tick_time)
 
-        del orgData['orgStats']["playerCounts"][:tickCount]
-        del orgData['orgStats']["plays"][:tickCount]
-        del orgData['orgStats']["plays24h"][:tickCount]
-        del orgData['orgStats']["uniquePlays24h"][:tickCount]
-        del orgData['orgStats']["timestamps"][:tickCount]
+        del org_data['orgStats']["playerCounts"][:tick_count]
+        del org_data['orgStats']["plays"][:tick_count]
+        del org_data['orgStats']["plays24h"][:tick_count]
+        del org_data['orgStats']["uniquePlays24h"][:tick_count]
+        del org_data['orgStats']["timestamps"][:tick_count]
 
-        if playerCount > orgData["orgStats"]["athPlayerCount"]:
-            orgData["orgStats"]["athPlayerCount"] = playerCount
-            orgData["orgStats"]["athPlayerCountAt"] = current_tick_time
-        if plays24h > orgData["orgStats"]["athPlays24h"]:
-            orgData["orgStats"]["athPlays24h"] = plays24h
-            orgData["orgStats"]["athPlays24hAt"] = current_tick_time
-        if uniquePlays24h > orgData["orgStats"]["athUniquePlays24h"]:
-            orgData["orgStats"]["athUniquePlays24h"] = uniquePlays24h
-            orgData["orgStats"]["athUniquePlays24hAt"] = current_tick_time
+        if playerCount > org_data["orgStats"]["athPlayerCount"]:
+            org_data["orgStats"]["athPlayerCount"] = playerCount
+            org_data["orgStats"]["athPlayerCountAt"] = current_tick_time
+        if plays24h > org_data["orgStats"]["athPlays24h"]:
+            org_data["orgStats"]["athPlays24h"] = plays24h
+            org_data["orgStats"]["athPlays24hAt"] = current_tick_time
+        if uniquePlays24h > org_data["orgStats"]["athUniquePlays24h"]:
+            org_data["orgStats"]["athUniquePlays24h"] = uniquePlays24h
+            org_data["orgStats"]["athUniquePlays24hAt"] = current_tick_time
 
-        update_organization_stats(orgData["id"], orgData['orgStats'])
+        update_organization_stats(org_data["id"], org_data['orgStats'])
 
-    data["tick"] += tickCount
+    data["tick"] += tick_count
     data["lastTick"] = time.time() * AIRSPY_SPEED
 
     days = math.floor((time.time() * AIRSPY_SPEED - data["lastDailyTick"]) / 86400)
@@ -156,89 +159,89 @@ def tick_airspy(app: Flask):
         set_tick_data(data)
         return
 
-    missedDays = days - 1
+    missed_days = days - 1
     
     for game_id in game_ids:
-        gameData = get_matching_row("game", {"id": game_id})
+        game_data = get_matching_row("game", {"id": game_id})
 
-        if missedDays > 0:
-            gameData['gameStats']["dailyPlayerCounts"].extend([-1] * missedDays)
-            gameData['gameStats']["dailyPlays"].extend([-1] * missedDays)
-            gameData['gameStats']["dailyPlays24h"].extend([-1] * missedDays)
-            gameData['gameStats']["dailyUniquePlays24h"].extend([-1] * missedDays)
-            gameData['gameStats']["dailyTimestamps"].extend([None] * missedDays)
+        if missed_days > 0:
+            game_data['gameStats']["dailyPlayerCounts"].extend([-1] * missed_days)
+            game_data['gameStats']["dailyPlays"].extend([-1] * missed_days)
+            game_data['gameStats']["dailyPlays24h"].extend([-1] * missed_days)
+            game_data['gameStats']["dailyUniquePlays24h"].extend([-1] * missed_days)
+            game_data['gameStats']["dailyTimestamps"].extend([None] * missed_days)
 
-        filtered = [num for num in gameData['gameStats']["playerCounts"] if num != -1]
+        filtered = [num for num in game_data['gameStats']["playerCounts"] if num != -1]
         if (len(filtered) >= 1): value = sum(filtered) / len(filtered)
         else: value = -1
-        gameData['gameStats']["dailyPlayerCounts"].append(value)
+        game_data['gameStats']["dailyPlayerCounts"].append(value)
 
-        filtered = [num for num in gameData['gameStats']["plays"] if num != -1]
+        filtered = [num for num in game_data['gameStats']["plays"] if num != -1]
         if (len(filtered) >= 1): value = filtered[-1]
         else: value = -1
-        gameData['gameStats']["dailyPlays"].append(value)
+        game_data['gameStats']["dailyPlays"].append(value)
 
-        filtered = [num for num in gameData['gameStats']["plays24h"] if num != -1]
+        filtered = [num for num in game_data['gameStats']["plays24h"] if num != -1]
         if (len(filtered) >= 1): value = filtered[-1]
         else: value = -1
-        gameData['gameStats']["dailyPlays24h"].append(value)
+        game_data['gameStats']["dailyPlays24h"].append(value)
 
-        filtered = [num for num in gameData['gameStats']["uniquePlays24h"] if num != -1]
+        filtered = [num for num in game_data['gameStats']["uniquePlays24h"] if num != -1]
         if (len(filtered) >= 1): value = filtered[-1]
         else: value = -1
-        gameData['gameStats']["dailyUniquePlays24h"].append(value)
+        game_data['gameStats']["dailyUniquePlays24h"].append(value)
 
-        filtered = [t for t in gameData['gameStats']["timestamps"] if t is not None]
-        gameData['gameStats']["dailyTimestamps"].append(filtered[-1] if len(filtered) >= 1 else None)
+        filtered = [t for t in game_data['gameStats']["timestamps"] if t is not None]
+        game_data['gameStats']["dailyTimestamps"].append(filtered[-1] if len(filtered) >= 1 else None)
 
-        del gameData['gameStats']["dailyPlayerCounts"][:days]
-        del gameData['gameStats']["dailyPlays"][:days]
-        del gameData['gameStats']["dailyPlays24h"][:days]
-        del gameData['gameStats']["dailyUniquePlays24h"][:days]
-        del gameData['gameStats']["dailyTimestamps"][:days]
+        del game_data['gameStats']["dailyPlayerCounts"][:days]
+        del game_data['gameStats']["dailyPlays"][:days]
+        del game_data['gameStats']["dailyPlays24h"][:days]
+        del game_data['gameStats']["dailyUniquePlays24h"][:days]
+        del game_data['gameStats']["dailyTimestamps"][:days]
 
-        update_game_stats(game_id, gameData['gameStats'])
+        update_game_stats(game_id, game_data['gameStats'])
 
     for org_id in organization_ids:
-        orgData = get_matching_row("organization", {"id": org_id})
+        org_data = get_matching_row("organization", {"id": org_id})
 
-        if missedDays > 0:
-            orgData['orgStats']["dailyPlayerCounts"].extend([-1] * missedDays)
-            orgData['orgStats']["dailyPlays"].extend([-1] * missedDays)
-            orgData['orgStats']["dailyPlays24h"].extend([-1] * missedDays)
-            orgData['orgStats']["dailyUniquePlays24h"].extend([-1] * missedDays)
-            orgData['orgStats']["dailyTimestamps"].extend([None] * missedDays)
+        if missed_days > 0:
+            org_data['orgStats']["dailyPlayerCounts"].extend([-1] * missed_days)
+            org_data['orgStats']["dailyPlays"].extend([-1] * missed_days)
+            org_data['orgStats']["dailyPlays24h"].extend([-1] * missed_days)
+            org_data['orgStats']["dailyUniquePlays24h"].extend([-1] * missed_days)
+            org_data['orgStats']["dailyTimestamps"].extend([None] * missed_days)
 
-        filtered = [num for num in orgData['orgStats']["playerCounts"] if num != -1]
+        filtered = [num for num in org_data['orgStats']["playerCounts"] if num != -1]
         if (len(filtered) >= 1): value = sum(filtered) / len(filtered)
         else: value = -1
-        orgData['orgStats']["dailyPlayerCounts"].append(value)
+        org_data['orgStats']["dailyPlayerCounts"].append(value)
 
-        filtered = [num for num in orgData['orgStats']["plays"] if num != -1]
+        filtered = [num for num in org_data['orgStats']["plays"] if num != -1]
         if (len(filtered) >= 1): value = filtered[-1]
         else: value = -1
-        orgData['orgStats']["dailyPlays"].append(value)
+        org_data['orgStats']["dailyPlays"].append(value)
 
-        filtered = [num for num in orgData['orgStats']["plays24h"] if num != -1]
+        filtered = [num for num in org_data['orgStats']["plays24h"] if num != -1]
         if (len(filtered) >= 1): value = filtered[-1]
         else: value = -1
-        orgData['orgStats']["dailyPlays24h"].append(value)
+        org_data['orgStats']["dailyPlays24h"].append(value)
 
-        filtered = [num for num in orgData['orgStats']["uniquePlays24h"] if num != -1]
+        filtered = [num for num in org_data['orgStats']["uniquePlays24h"] if num != -1]
         if (len(filtered) >= 1): value = filtered[-1]
         else: value = -1
-        orgData['orgStats']["dailyUniquePlays24h"].append(value)
+        org_data['orgStats']["dailyUniquePlays24h"].append(value)
 
-        filtered = [t for t in orgData['orgStats']["timestamps"] if t is not None]
-        orgData['orgStats']["dailyTimestamps"].append(filtered[-1] if len(filtered) >= 1 else None)
+        filtered = [t for t in org_data['orgStats']["timestamps"] if t is not None]
+        org_data['orgStats']["dailyTimestamps"].append(filtered[-1] if len(filtered) >= 1 else None)
 
-        del orgData['orgStats']["dailyPlayerCounts"][:days]
-        del orgData['orgStats']["dailyPlays"][:days]
-        del orgData['orgStats']["dailyPlays24h"][:days]
-        del orgData['orgStats']["dailyUniquePlays24h"][:days]
-        del orgData['orgStats']["dailyTimestamps"][:days]
+        del org_data['orgStats']["dailyPlayerCounts"][:days]
+        del org_data['orgStats']["dailyPlays"][:days]
+        del org_data['orgStats']["dailyPlays24h"][:days]
+        del org_data['orgStats']["dailyUniquePlays24h"][:days]
+        del org_data['orgStats']["dailyTimestamps"][:days]
 
-        update_organization_stats(org_id, orgData['orgStats'])
+        update_organization_stats(org_id, org_data['orgStats'])
 
     data["dailyTick"] += days
     data["lastDailyTick"] = time.time() * AIRSPY_SPEED
@@ -249,89 +252,89 @@ def tick_airspy(app: Flask):
         set_tick_data(data)
         return
 
-    missedMonths = months - 1
+    missed_months = months - 1
 
     for game_id in game_ids:
-        gameData = get_matching_row("game", {"id": game_id})
+        game_data = get_matching_row("game", {"id": game_id})
 
-        if missedMonths > 0:
-            gameData['gameStats']["monthlyPlayerCounts"].extend([-1] * missedMonths)
-            gameData['gameStats']["monthlyPlays"].extend([-1] * missedMonths)
-            gameData['gameStats']["monthlyPlays24h"].extend([-1] * missedMonths)
-            gameData['gameStats']["monthlyUniquePlays24h"].extend([-1] * missedMonths)
-            gameData['gameStats']["monthlyTimestamps"].extend([None] * missedMonths)
+        if missed_months > 0:
+            game_data['gameStats']["monthlyPlayerCounts"].extend([-1] * missed_months)
+            game_data['gameStats']["monthlyPlays"].extend([-1] * missed_months)
+            game_data['gameStats']["monthlyPlays24h"].extend([-1] * missed_months)
+            game_data['gameStats']["monthlyUniquePlays24h"].extend([-1] * missed_months)
+            game_data['gameStats']["monthlyTimestamps"].extend([None] * missed_months)
 
-        filtered = [num for num in gameData['gameStats']["dailyPlayerCounts"] if num != -1]
+        filtered = [num for num in game_data['gameStats']["dailyPlayerCounts"] if num != -1]
         if (len(filtered) >= 1): value = sum(filtered) / len(filtered)
         else: value = -1
-        gameData['gameStats']["monthlyPlayerCounts"].append(value)
+        game_data['gameStats']["monthlyPlayerCounts"].append(value)
 
-        filtered = [num for num in gameData['gameStats']["dailyPlays"] if num != -1]
+        filtered = [num for num in game_data['gameStats']["dailyPlays"] if num != -1]
         if (len(filtered) >= 1): value = filtered[-1]
         else: value = -1
-        gameData['gameStats']["monthlyPlays"].append(value)
+        game_data['gameStats']["monthlyPlays"].append(value)
 
-        filtered = [num for num in gameData['gameStats']["dailyPlays24h"] if num != -1]
+        filtered = [num for num in game_data['gameStats']["dailyPlays24h"] if num != -1]
         if (len(filtered) >= 1): value = sum(filtered) / len(filtered)
         else: value = -1
-        gameData['gameStats']["monthlyPlays24h"].append(value)
+        game_data['gameStats']["monthlyPlays24h"].append(value)
 
-        filtered = [num for num in gameData['gameStats']["dailyUniquePlays24h"] if num != -1]
+        filtered = [num for num in game_data['gameStats']["dailyUniquePlays24h"] if num != -1]
         if (len(filtered) >= 1): value = sum(filtered) / len(filtered)
         else: value = -1
-        gameData['gameStats']["monthlyUniquePlays24h"].append(value)
+        game_data['gameStats']["monthlyUniquePlays24h"].append(value)
 
-        filtered = [t for t in gameData['gameStats']["dailyTimestamps"] if t is not None]
-        gameData['gameStats']["monthlyTimestamps"].append(filtered[-1] if len(filtered) >= 1 else None)
+        filtered = [t for t in game_data['gameStats']["dailyTimestamps"] if t is not None]
+        game_data['gameStats']["monthlyTimestamps"].append(filtered[-1] if len(filtered) >= 1 else None)
 
-        del gameData['gameStats']["monthlyPlayerCounts"][:months]
-        del gameData['gameStats']["monthlyPlays"][:months]
-        del gameData['gameStats']["monthlyPlays24h"][:months]
-        del gameData['gameStats']["monthlyUniquePlays24h"][:months]
-        del gameData['gameStats']["monthlyTimestamps"][:months]
+        del game_data['gameStats']["monthlyPlayerCounts"][:months]
+        del game_data['gameStats']["monthlyPlays"][:months]
+        del game_data['gameStats']["monthlyPlays24h"][:months]
+        del game_data['gameStats']["monthlyUniquePlays24h"][:months]
+        del game_data['gameStats']["monthlyTimestamps"][:months]
 
-        update_game_stats(game_id, gameData['gameStats'])
+        update_game_stats(game_id, game_data['gameStats'])
 
     for org_id in organization_ids:
-        orgData = get_matching_row("organization", {"id": org_id})
+        org_data = get_matching_row("organization", {"id": org_id})
 
-        if missedMonths > 0:
-            orgData['orgStats']["monthlyPlayerCounts"].extend([-1] * missedMonths)
-            orgData['orgStats']["monthlyPlays"].extend([-1] * missedMonths)
-            orgData['orgStats']["monthlyPlays24h"].extend([-1] * missedMonths)
-            orgData['orgStats']["monthlyUniquePlays24h"].extend([-1] * missedMonths)
-            orgData['orgStats']["monthlyTimestamps"].extend([None] * missedMonths)
+        if missed_months > 0:
+            org_data['orgStats']["monthlyPlayerCounts"].extend([-1] * missed_months)
+            org_data['orgStats']["monthlyPlays"].extend([-1] * missed_months)
+            org_data['orgStats']["monthlyPlays24h"].extend([-1] * missed_months)
+            org_data['orgStats']["monthlyUniquePlays24h"].extend([-1] * missed_months)
+            org_data['orgStats']["monthlyTimestamps"].extend([None] * missed_months)
 
-        filtered = [num for num in orgData['orgStats']["dailyPlayerCounts"] if num != -1]
+        filtered = [num for num in org_data['orgStats']["dailyPlayerCounts"] if num != -1]
         if (len(filtered) >= 1): value = sum(filtered) / len(filtered)
         else: value = -1
-        orgData['orgStats']["monthlyPlayerCounts"].append(value)
+        org_data['orgStats']["monthlyPlayerCounts"].append(value)
 
-        filtered = [num for num in orgData['orgStats']["dailyPlays"] if num != -1]
+        filtered = [num for num in org_data['orgStats']["dailyPlays"] if num != -1]
         if (len(filtered) >= 1): value = filtered[-1]
         else: value = -1
-        orgData['orgStats']["monthlyPlays"].append(value)
+        org_data['orgStats']["monthlyPlays"].append(value)
 
-        filtered = [num for num in orgData['orgStats']["dailyPlays24h"] if num != -1]
+        filtered = [num for num in org_data['orgStats']["dailyPlays24h"] if num != -1]
         if (len(filtered) >= 1): value = sum(filtered) / len(filtered)
         else: value = -1
-        orgData['orgStats']["monthlyPlays24h"].append(value)
+        org_data['orgStats']["monthlyPlays24h"].append(value)
 
-        filtered = [num for num in orgData['orgStats']["dailyUniquePlays24h"] if num != -1]
+        filtered = [num for num in org_data['orgStats']["dailyUniquePlays24h"] if num != -1]
         if (len(filtered) >= 1): value = sum(filtered) / len(filtered)
         else: value = -1
-        orgData['orgStats']["monthlyUniquePlays24h"].append(value)
+        org_data['orgStats']["monthlyUniquePlays24h"].append(value)
 
-        filtered = [t for t in orgData['orgStats']["dailyTimestamps"] if t is not None]
-        orgData['orgStats']["monthlyTimestamps"].append(filtered[-1] if len(filtered) >= 1 else None)
+        filtered = [t for t in org_data['orgStats']["dailyTimestamps"] if t is not None]
+        org_data['orgStats']["monthlyTimestamps"].append(filtered[-1] if len(filtered) >= 1 else None)
 
-        del orgData['orgStats']["monthlyPlayerCounts"][:months]
-        del orgData['orgStats']["monthlyPlays"][:months]
-        del orgData['orgStats']["monthlyPlays24h"][:months]
-        del orgData['orgStats']["monthlyUniquePlays24h"][:months]
-        del orgData['orgStats']["monthlyTimestamps"][:months]
+        del org_data['orgStats']["monthlyPlayerCounts"][:months]
+        del org_data['orgStats']["monthlyPlays"][:months]
+        del org_data['orgStats']["monthlyPlays24h"][:months]
+        del org_data['orgStats']["monthlyUniquePlays24h"][:months]
+        del org_data['orgStats']["monthlyTimestamps"][:months]
 
-        update_organization_stats(org_id, orgData['orgStats'])
+        update_organization_stats(org_id, org_data['orgStats'])
 
     data["monthlyTick"] += months
     data["lastMonthlyTick"] = time.time() * AIRSPY_SPEED

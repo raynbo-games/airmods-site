@@ -186,8 +186,6 @@ def remove_arrow(slug, arrow_id):
     touch_roadmap(roadmap["id"])
     return jsonify({"ok": True})
 
-# --- Box discussion (votes + comments) ---
-
 def _get_roadmap_box_or_404(slug, box_id):
     roadmap = get_roadmap(slug)
     box = get_box(box_id)
@@ -197,14 +195,12 @@ def _get_roadmap_box_or_404(slug, box_id):
 
 @bp.route('/<slug>/boxes/<int:box_id>/discussion')
 def box_discussion(slug, box_id):
+    """Fetch every comment including deleted ones so a reply's parent linkage never breaks on a
+    parent invisible to this viewer; deleted comments' content is stripped out below instead."""
     _, box = _get_roadmap_box_or_404(slug, box_id)
     user = get_user()
     can_moderate = bool(user and user["auth"] >= get_auth("MODERATOR"))
 
-    # Always fetch every comment, including deleted ones, so a reply's parent linkage is
-    # never broken by a parent invisible to this viewer. Deleted comments' content is then
-    # stripped out for non-moderators below rather than filtered out of the query, so a
-    # surviving reply to a deleted parent still has something to attach to.
     comments = []
     for comment in get_box_comments(box_id, include_deleted=True):
         comment = dict(comment)

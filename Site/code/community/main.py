@@ -48,6 +48,8 @@ def new_suggestion():
 
 @bp.route('/suggestions/<int:suggestion_id>')
 def view_suggestion(suggestion_id):
+    """Fetch every comment regardless of status so reply->parent linkage never breaks on a
+    parent invisible to this viewer; per-comment visibility is decided at render time instead."""
     suggestion = get_suggestion(suggestion_id)
     if not suggestion:
         abort(404)
@@ -60,9 +62,6 @@ def view_suggestion(suggestion_id):
         if not is_owner and not is_moderator:
             abort(404)
 
-    # Always fetch every comment (regardless of status) so reply -> parent linkage is
-    # never broken by a parent that happens to be invisible to this viewer; per-comment
-    # visibility is then decided independently at render time in the template.
     comments_by_id = {}
     top_level_comments = []
     for comment in get_comments(suggestion_id, include_hidden=True):
@@ -123,8 +122,6 @@ def post_comment(suggestion_id):
 
     create_comment(get_user(), suggestion, body, parent_comment)
     return redirect(url_for('community.view_suggestion', suggestion_id=suggestion_id))
-
-# --- Moderator actions: suggestions ---
 
 @bp.route('/suggestions/<int:suggestion_id>/hide', methods=['POST'])
 @auth_required("MODERATOR")
@@ -199,8 +196,6 @@ def remove_suggestion(suggestion_id):
         add_notification(suggestion["authorId"], f'Your suggestion "{suggestion["title"]}" was deleted by a moderator: {reason}')
 
     return redirect(url_for('community.root'))
-
-# --- Moderator actions: comments ---
 
 @bp.route('/comments/<int:comment_id>/hide', methods=['POST'])
 @auth_required("MODERATOR")
@@ -278,8 +273,6 @@ def remove_comment(comment_id):
 
     return redirect(url_for('community.view_suggestion', suggestion_id=suggestion_id))
 
-# --- Review queue (auto-flagged content) ---
-
 @bp.route('/review')
 @auth_required("MODERATOR")
 def review():
@@ -346,8 +339,6 @@ def reject_comment(comment_id):
     add_notification(comment["authorId"], f'Your comment was rejected during review: {reason}')
 
     return redirect(url_for('community.review'))
-
-# --- Inbox ---
 
 @bp.route('/inbox')
 @login_required()

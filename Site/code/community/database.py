@@ -5,9 +5,8 @@ from Site.code.community.webhook import check_automod, send_discord_notification
 def now_utc():
     return datetime.now(timezone.utc).replace(tzinfo=None)
 
-# --- Suggestions ---
-
 def create_suggestion(author, title, body):
+    """Insert a suggestion, routing it to review instead of publishing if automod flags it."""
     db = get_db()
     cursor = db.cursor()
     status = "pending_review" if check_automod(f"{title}\n{body}") else "visible"
@@ -64,8 +63,6 @@ def delete_suggestion(suggestion_id):
     cursor.execute('DELETE FROM "suggestion" WHERE "id" = %s', (suggestion_id,))
     db.commit()
 
-# --- Voting ---
-
 def get_suggestion_score(suggestion_id):
     db = get_db()
     cursor = db.cursor()
@@ -80,6 +77,7 @@ def get_user_vote(suggestion_id, user_id):
     return row["value"] if row else 0
 
 def cast_vote(suggestion_id, user_id, value):
+    """Toggle a user's vote off if it matches the existing value, otherwise set/replace it."""
     db = get_db()
     cursor = db.cursor()
     current = get_user_vote(suggestion_id, user_id)
@@ -93,9 +91,8 @@ def cast_vote(suggestion_id, user_id, value):
         )
     db.commit()
 
-# --- Comments ---
-
 def create_comment(author, suggestion, body, parent_comment=None):
+    """Insert a comment (routing to review if automod flags it) and notify the reply/suggestion author."""
     db = get_db()
     cursor = db.cursor()
     status = "pending_review" if check_automod(body) else "visible"
@@ -154,8 +151,6 @@ def set_comment_status(comment_id, status):
     cursor = db.cursor()
     cursor.execute('UPDATE "comment" SET "status" = %s WHERE "id" = %s', (status, comment_id))
     db.commit()
-
-# --- Notifications ---
 
 def add_notification(user_id, message, url=None):
     db = get_db()

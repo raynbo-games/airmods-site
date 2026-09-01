@@ -111,8 +111,8 @@ function initCharts() {
     }
 }
 
-function switchTimeframe(new_timeframe, element) {
-    timeframe = new_timeframe;
+function switchTimeframe(newTimeframe, element) {
+    timeframe = newTimeframe;
     document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
     element.classList.add('active');
     initCharts();

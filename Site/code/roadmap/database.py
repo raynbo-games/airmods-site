@@ -11,9 +11,8 @@ def slugify(name):
     slug = re.sub(r'[^a-z0-9]+', '-', name.lower()).strip('-')
     return slug or "roadmap"
 
-# --- Roadmaps ---
-
 def create_roadmap(name):
+    """Create a roadmap, appending a numeric suffix to the slug if it already exists."""
     db = get_db()
     cursor = db.cursor()
 
@@ -62,8 +61,6 @@ def delete_roadmap(roadmap_id):
     cursor.execute('DELETE FROM "roadmap" WHERE "id" = %s', (roadmap_id,))
     db.commit()
 
-# --- Boxes ---
-
 def get_boxes(roadmap_id):
     db = get_db()
     cursor = db.cursor()
@@ -109,8 +106,6 @@ def delete_box(box_id):
     cursor.execute('DELETE FROM "roadmap_box" WHERE "id" = %s', (box_id,))
     db.commit()
 
-# --- Box votes ---
-
 def get_box_score(box_id):
     db = get_db()
     cursor = db.cursor()
@@ -125,6 +120,7 @@ def get_user_box_vote(box_id, user_id):
     return row["value"] if row else 0
 
 def cast_box_vote(box_id, user_id, value):
+    """Toggle a user's vote off if it matches the existing value, otherwise set/replace it."""
     db = get_db()
     cursor = db.cursor()
     current = get_user_box_vote(box_id, user_id)
@@ -137,8 +133,6 @@ def cast_box_vote(box_id, user_id, value):
             (box_id, user_id, value, value)
         )
     db.commit()
-
-# --- Box comments ---
 
 def get_box_comments(box_id, include_deleted=False):
     db = get_db()
@@ -175,8 +169,6 @@ def delete_box_comment(comment_id):
     cursor.execute('UPDATE "roadmap_box_comment" SET "deleted" = TRUE WHERE "id" = %s', (comment_id,))
     db.commit()
 
-# --- Comment votes ---
-
 def get_comment_score(comment_id):
     db = get_db()
     cursor = db.cursor()
@@ -199,8 +191,6 @@ def toggle_comment_upvote(comment_id, user_id):
     cursor.execute('INSERT INTO "roadmap_comment_vote" ("commentId", "userId") VALUES (%s, %s)', (comment_id, user_id))
     db.commit()
     return True
-
-# --- Arrows ---
 
 def get_arrows(roadmap_id):
     db = get_db()

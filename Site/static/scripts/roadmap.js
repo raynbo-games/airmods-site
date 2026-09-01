@@ -77,8 +77,6 @@
     renderAllArrows();
     resizeSvg();
 
-    // --- Draw-arrow (connect) mode ---
-
     let connectMode = false;
     let connectFrom = null;
 
@@ -89,8 +87,6 @@
         const btn = document.getElementById('connect-mode-btn');
         if (btn) btn.classList.toggle('active', connectMode);
     };
-
-    // --- Drag + click ---
 
     let dragState = null;
 
@@ -162,6 +158,8 @@
         resizeSvg();
     });
 
+    // Defers clearing dragState by a tick since the click event fires right after mouseup,
+    // and the box's click handler still needs to see dragState.moved on that same click.
     document.addEventListener('mouseup', function () {
         if (!dragState) return;
         if (dragState.moved) {
@@ -172,13 +170,8 @@
                 body: `x=${boxes[boxId].x}&y=${boxes[boxId].y}`,
             });
         }
-        // The click event fires right after mouseup, so defer clearing dragState
-        // to a following tick — the box's click handler still needs to see
-        // dragState.moved to know it should not open the detail modal.
         setTimeout(function () { dragState = null; }, 0);
     });
-
-    // --- Detail modal ---
 
     const detailOverlay = document.getElementById('roadmap-detail-overlay');
     const detailTitle = document.getElementById('roadmap-detail-title');
@@ -209,6 +202,8 @@
         commentsEl.textContent = `\u{1F4AC} ${count}`;
     }
 
+    // Moderators still see a deleted comment (for audit purposes), so refetch to re-render it
+    // in the deleted state instead of removing it outright as a non-moderator deletion would.
     function deleteComment(card, commentId) {
         if (!confirm('Delete this comment?')) return;
         fetch(`/roadmaps/${ROADMAP_SLUG}/boxes/${detailBoxId}/comments/${commentId}/delete`, { method: 'POST' })
@@ -217,8 +212,6 @@
                 if (!data.ok) return;
                 bumpBoxCommentCount(-1);
                 if (detailCanModerate) {
-                    // Moderators still see the comment, marked deleted, for audit purposes —
-                    // refetch so it re-renders in the deleted (red) state rather than disappearing.
                     loadDiscussion(detailBoxId);
                 } else {
                     card.remove();
@@ -264,6 +257,7 @@
         textarea.focus();
     }
 
+    // A deleted comment is only ever rendered for moderators, shown audit-only with no actions.
     function renderComment(comment, isReply) {
         if (comment.deleted && !detailCanModerate) return null;
 
@@ -290,7 +284,6 @@
         card.appendChild(body);
 
         if (comment.deleted) {
-            // A deleted comment is shown to moderators for audit purposes only — no further actions.
             return card;
         }
 
@@ -450,8 +443,6 @@
             openBoxModal(boxes[detailBoxId]);
         });
     }
-
-    // --- Add/Edit step modal + rename modal (edit-only) ---
 
     if (CAN_EDIT) {
         const boxOverlay = document.getElementById('roadmap-box-overlay');

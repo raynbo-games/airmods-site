@@ -26,21 +26,21 @@ def games():
 
 @bp.route('/games/<game_id>')
 def game(game_id):
-    gameData = get_matching_row("game", {"id": game_id})
-    data = get_dashboard_data(gameData["gameStats"])
-    
+    game_data = get_matching_row("game", {"id": game_id})
+    data = get_dashboard_data(game_data["gameStats"])
+
     return render_template(
         'airspy/games/view.html',
         chart_url=url_for("airspy.game_chart", game_id=game_id),
         ath_data=data["ath_data"],
-        game_data=dict(gameData),
-        image_url=get_image_cdn_url("airspy", gameData["iconImageId"])
+        game_data=dict(game_data),
+        image_url=get_image_cdn_url("airspy", game_data["iconImageId"])
     )
 
 @bp.route('/games/chart/<game_id>')
 def game_chart(game_id):
-    gameData = get_matching_row("game", {"id": game_id})
-    data = get_dashboard_data(gameData["gameStats"])
+    game_data = get_matching_row("game", {"id": game_id})
+    data = get_dashboard_data(game_data["gameStats"])
     return jsonify(dict(data["chart_data"]))
 
 @bp.route('/games/n/<game_name>')
@@ -57,22 +57,22 @@ def organizations():
 
 @bp.route('/organizations/<organization_id>')
 def organization(organization_id):
-    orgData = get_matching_row("organization", {"id": organization_id})
-    data = get_dashboard_data(orgData["orgStats"])
-    
+    org_data = get_matching_row("organization", {"id": organization_id})
+    data = get_dashboard_data(org_data["orgStats"])
+
     return render_template(
         'airspy/organizations/view.html',
         chart_url=url_for("airspy.organization_chart", organization_id=organization_id),
         ath_data=data["ath_data"],
-        org_data=dict(orgData),
+        org_data=dict(org_data),
         games=get_organization_games(organization_id),
-        image_url=get_image_cdn_url("airspy", orgData["iconImageId"])
+        image_url=get_image_cdn_url("airspy", org_data["iconImageId"])
     )
 
 @bp.route('/organizations/chart/<organization_id>')
 def organization_chart(organization_id):
-    orgData = get_matching_row("organization", {"id": organization_id})
-    data = get_dashboard_data(orgData["orgStats"])
+    org_data = get_matching_row("organization", {"id": organization_id})
+    data = get_dashboard_data(org_data["orgStats"])
     return jsonify(dict(data["chart_data"]))
 
 @bp.route('/organizations/n/<organization_name>')
@@ -83,13 +83,8 @@ def organization_by_name(organization_name):
 @bp.route('/search')
 def search():
     query = request.args.get('q', '').strip().lower()
-    current_app.logger.info(query)
-    search_items = get_search_items()
-    current_app.logger.info(search_items)
-    
     if not query:
         return jsonify([])
 
-    matches = [item for item in search_items if query in item["title"].lower()]
-    current_app.logger.info(matches)
+    matches = [item for item in get_search_items() if query in item["title"].lower()]
     return jsonify(matches)
