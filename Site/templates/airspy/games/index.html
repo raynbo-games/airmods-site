@@ -1,22 +1,22 @@
 {% extends "layout.html" %}
 
-{% block head %}
-<link rel="stylesheet" type="text/css" href="{{ cdn_style('grid') }}" />
-{% endblock %}
-
 {% block content %}
 
 <h1>Airship Games</h1>
 
-<div class="grid-wrapper">
-    <div class="grid">
-        {% for game in games %}
-        <a href="{{ game.url }}" class="card" rel="noopener noreferrer">
-            <img src="{{ game.image_url }}" alt="{{ game.name }}">
-            <span>{{ game.name }}</span>
+<div class="row">
+    {% for game in games %}
+    <div class="col-xs-12 col-sm-6 col-md-3">
+        <a href="{{ game.url }}" class="grid-link" rel="noopener noreferrer">
+            <div class="grid-card text-center">
+                <div class="grid-img-wrapper">
+                    <img src="{{ game.image_url }}" class="grid-img" alt="{{ game.name }} Icon">
+                </div>
+                <h3>{{ game.name }}</h3>
+            </div>
         </a>
-        {% endfor %}
     </div>
+    {% endfor %}
 </div>
 
 {% endblock %}

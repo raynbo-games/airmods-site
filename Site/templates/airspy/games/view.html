@@ -7,43 +7,45 @@
 <div class="dashboard-wrapper">
     <h2>Game Statistics</h2>
     <h3>All Time Highs</h3>
-    <p id="ath">Loading...</p>
+    <div id="ath" class="ath-stats">Loading...</div>
     <div class="chart-filter-tabs">
         <h3>Charts</h3>
-        <button class="tab-btn active" onclick="switchTimeframe('day', this)">Day</button>
-        <button class="tab-btn" onclick="switchTimeframe('month', this)">Month</button>
-        <button class="tab-btn" onclick="switchTimeframe('year', this)">Year</button>
+        <div class="tab-btn-group">
+            <button class="tab-btn active" onclick="switchTimeframe('day', this)">Day</button>
+            <button class="tab-btn" onclick="switchTimeframe('month', this)">Month</button>
+            <button class="tab-btn" onclick="switchTimeframe('year', this)">Year</button>
+        </div>
     </div>
 
     <div class="graphs-grid">
         <div class="graph-card">
             <h4 id="title-0">Loading...</h4>
-            <canvas id="canvas-0"></canvas>
+            <div class="graph-canvas-wrapper"><canvas id="canvas-0"></canvas></div>
         </div>
         <div class="graph-card">
             <h4 id="title-1">Loading...</h4>
-            <canvas id="canvas-1"></canvas>
+            <div class="graph-canvas-wrapper"><canvas id="canvas-1"></canvas></div>
         </div>
         <div class="graph-card">
             <h4 id="title-2">Loading...</h4>
-            <canvas id="canvas-2"></canvas>
+            <div class="graph-canvas-wrapper"><canvas id="canvas-2"></canvas></div>
         </div>
         <div class="graph-card">
             <h4 id="title-3">Loading...</h4>
-            <canvas id="canvas-3"></canvas>
+            <div class="graph-canvas-wrapper"><canvas id="canvas-3"></canvas></div>
         </div>
     </div>
 </div>
 {% endblock %}
 
 {% block scripts %}
-<script src="{{ cdn_script('Chart') }}"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.4/Chart.min.js"></script>
 <script>
     const chart_url = "{{ chart_url }}";
     const ath_data = {{ ath_data | tojson }};
     const game_data = {{ game_data | tojson }};
     const image_url = "{{ image_url }}";
 </script>
-<script src="{{ cdn_script('stats-chart') }}"></script>
-<script src="{{ cdn_script('game-data') }}"></script>
+<script src="{{ url_for('static', filename='scripts/stats-chart.js') }}"></script>
+<script src="{{ url_for('static', filename='scripts/game-data.js') }}"></script>
 {% endblock %}

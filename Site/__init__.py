@@ -8,6 +8,7 @@ load_dotenv()
 def create_app():
     app = Flask(__name__, instance_relative_config=True)
     app.logger.setLevel(logging.INFO)
+    app.url_map.strict_slashes = False
     oauth = OAuth(app)
     google = oauth.register(
         name='google',

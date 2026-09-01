@@ -2,16 +2,23 @@
 
 {% block content %}
 
-<h1>User View</h1>
-<p>Username: {{ data.username }}</p>
-<p>User ID: {{ data.id }}</p>
-<p>Email: {{ data.email }}</p>
-<p>Auth Level: {{ data.auth }}</p>
+<h1>{{ data.username }}</h1>
+
+<div class="info-stats-grid">
+    <div class="info-stat"><span class="info-stat-label">Username</span><span class="info-stat-value">{{ data.username }}</span></div>
+    <div class="info-stat"><span class="info-stat-label">User ID</span><span class="info-stat-value">{{ data.id }}</span></div>
+    <div class="info-stat"><span class="info-stat-label">Email</span><span class="info-stat-value">{{ data.email }}</span></div>
+    <div class="info-stat"><span class="info-stat-label">Auth Level</span><span class="info-stat-value">{{ data.auth }}</span></div>
+</div>
 
 {% if data.auth < user.auth and user.auth > 1 %}
-
-Actions: {% if data.auth != -1 %}<a href="{{ url_for("admin.ban_user", user_id=data.id) }}">Ban</a>{% else %}<a href="{{ url_for("admin.unban_user", user_id=data.id) }}">Unban</a>{% endif %}
-
+<div class="info-chips">
+    {% if data.auth != -1 %}
+    <a href="{{ url_for('admin.ban_user', user_id=data.id) }}" class="info-chip info-chip-warning">Ban User</a>
+    {% else %}
+    <a href="{{ url_for('admin.unban_user', user_id=data.id) }}" class="info-chip info-chip-badge">Unban User</a>
+    {% endif %}
+</div>
 {% endif %}
 
 {% endblock %}

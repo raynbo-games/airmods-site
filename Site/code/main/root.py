@@ -11,14 +11,6 @@ def home():
         title="Home",
     )
 
-@bp.route('/about')
-def about():
-    """Renders the about page."""
-    return render_template(
-        'root/about.html',
-        title="About",
-    )
-
 @bp.route('/tos')
 def tos():
     """Renders the tos page."""

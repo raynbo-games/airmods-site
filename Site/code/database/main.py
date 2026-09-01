@@ -70,6 +70,9 @@ def init_app(app):
     app.cli.add_command(update_db_command)
     app.cli.add_command(set_user_auth_command)
 
+    from Site.code.airspy.database import reset_airspy_db_command
+    app.cli.add_command(reset_airspy_db_command)
+
 def get_matching_row(table_name, properties_dict, multiple=False):
     db = get_db()
     cursor = db.cursor()

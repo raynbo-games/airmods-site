@@ -41,9 +41,13 @@ def auth_required(level: AUTH_LEVEL):
 
 @bp.route('/login')
 def login():
+    next_url = request.args.get('next') or url_for('root.home')
+    return render_template('auth/login.html', next_url=next_url)
+
+@bp.route('/login/google')
+def login_google():
     google = current_app.config['GOOGLE']
     next_url = request.args.get('next') or url_for('root.home')
-    print(next_url)
     redirect_uri = url_for('auth.authorize', _external=True)
     return google.authorize_redirect(redirect_uri, state=next_url)
 

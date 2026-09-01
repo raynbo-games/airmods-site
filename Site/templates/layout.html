@@ -4,15 +4,15 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{ title }} - Raynbo Games</title>
-    <link rel="shortcut icon" href="{{ cdn_image('favicon.jpg') }}">
-    <link rel="stylesheet" type="text/css" href="{{ cdn_style('bootstrap.min') }}" />
-    <link rel="stylesheet" type="text/css" href="{{ cdn_style('site') }}" />
-    <script src="{{ cdn_script('modernizr-2.6.2') }}"></script>
+    <link rel="shortcut icon" href="{{ url_for('static', filename='images/favicon.jpg') }}">
+    <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.4.1/css/bootstrap.min.css" />
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='content/global.css') }}" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/modernizr/2.6.2/modernizr.min.js"></script>
     {% block head %}{% endblock %}
 </head>
 
 <body>
-    <div class="navbar navbar-inverse navbar-fixed-top">
+    <div class="navbar navbar-inverse navbar-fixed-top" style="margin-bottom: 0;">
         <div class="container">
             <div class="navbar-header">
                 <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
@@ -20,12 +20,11 @@
                     <span class="icon-bar"></span>
                     <span class="icon-bar"></span>
                 </button>
-                <a href="/" class="navbar-brand">Raynbo Games</a>
+                <a href="{{ url_for('root.home') }}" class="navbar-brand">Raynbo Games</a>
             </div>
 
             <div class="navbar-collapse collapse">
                 <ul class="nav navbar-nav">
-                    <li><a href="{{ url_for('root.about') }}">About</a></li>
                     <li><a href="{{ url_for('airspy.root') }}">Airspy</a></li>
                     <li><a href="{{ url_for('airmods.root') }}">Airmods</a></li>
                     {% if user and user.auth and user.auth >= 1 %}
@@ -42,25 +41,25 @@
                         </div>
                     </form>
                     {% elif user and user.username %}
-                    <p class="navbar-text" style="margin-right: 10px;"><span class="username">{{ user.username }}</span></p>
-                    <li><a href="{{ url_for('auth.logout') }}">Logout</a></li>
+                    <p class="navbar-text">{{ user.username }}</p>
+                    <li><a href="{{ url_for('auth.logout') }}"><span class="glyphicon glyphicon-log-out"></span> Logout</a></li>
                     {% else %}
-                    <li><a href="{{ url_for('auth.login', next=request.path) }}">Login</a></li>
+                    <li><a href="{{ url_for('auth.login', next=request.path) }}"><span class="glyphicon glyphicon-log-in"></span> Login</a></li>
                     {% endif %}
                 </ul>
             </div>
         </div>
     </div>
 
-
+    {% block external %}{% endblock %}
     <div class="container body-content">
         {% block content %}{% endblock %}
         <hr />
         <footer>
-            <div class="centered-content">
+            <div class="text-center">
                 <p>&copy; {{ year }} - Raynbo Games</p>
             </div>
-            <div class="centered-content">
+            <div class="text-center">
                 <p>
                     <a href="{{ url_for('root.privacy') }}">Privacy Policy</a>
                     |
@@ -70,11 +69,25 @@
         </footer>
     </div>
 
-    <script src="{{ cdn_script('jquery-1.10.2') }}"></script>
-    <script src="{{ cdn_script('bootstrap') }}"></script>
-    <script src="{{ cdn_script('respond') }}"></script>
+    <div id="leaving-modal-overlay" class="leaving-modal-overlay">
+        <div class="leaving-card">
+            <div class="leaving-icon">&#8599;</div>
+            <h2>Leaving Raynbo Games</h2>
+            <p class="leaving-message">This link goes to an external site not operated by Raynbo Games.</p>
+            <div class="leaving-destination" id="leaving-modal-destination"></div>
+            <div class="leaving-actions">
+                <a href="#" id="leaving-modal-continue" class="leaving-btn leaving-btn-continue">Continue</a>
+                <button type="button" id="leaving-modal-cancel" class="leaving-btn leaving-btn-cancel">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.4.1/js/bootstrap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/respond.js/1.4.2/respond.min.js"></script>
+    <script src="{{ url_for('static', filename='scripts/external-link-warning.js') }}"></script>
     {% if request.blueprint == 'airspy' %}
-    <script src="{{ cdn_script('search') }}"></script>
+    <script src="{{ url_for('static', filename='scripts/search.js') }}"></script>
     {% endif %}
     {% block scripts %}{% endblock %}
 </body>

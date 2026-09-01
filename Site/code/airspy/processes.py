@@ -1,5 +1,6 @@
 from flask import Flask
 import time, math
+from datetime import datetime, timezone
 from Site.code.airspy.airship_urls import request_games, request_game_id, get_image_url
 from Site.code.airspy.database import update_game, update_organization, update_organization_stats, update_game_stats, get_tick_data, set_tick_data
 from Site.code.config import AIRSPY_UPDATE_TIMEOUT, AIRSPY_SPEED
@@ -19,6 +20,7 @@ def tick_airspy(app: Flask):
 
     missedTicks = math.floor(((time.time() * AIRSPY_SPEED - data["lastTick"]) / 60) / AIRSPY_UPDATE_TIMEOUT)
     tickCount = 1 + missedTicks
+    current_tick_time = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%S.%fZ")
 
     games = request_games()
     if games is None:
@@ -62,23 +64,29 @@ def tick_airspy(app: Flask):
             gameData['gameStats']["plays"].extend([-1] * missedTicks)
             gameData['gameStats']["plays24h"].extend([-1] * missedTicks)
             gameData['gameStats']["uniquePlays24h"].extend([-1] * missedTicks)
+            gameData['gameStats']["timestamps"].extend([None] * missedTicks)
 
         gameData['gameStats']["playerCounts"].append(playerCount)
         gameData['gameStats']["plays"].append(plays)
         gameData['gameStats']["plays24h"].append(plays24h)
         gameData['gameStats']["uniquePlays24h"].append(uniquePlays24h)
+        gameData['gameStats']["timestamps"].append(current_tick_time)
 
         del gameData['gameStats']["playerCounts"][:tickCount]
         del gameData['gameStats']["plays"][:tickCount]
         del gameData['gameStats']["plays24h"][:tickCount]
         del gameData['gameStats']["uniquePlays24h"][:tickCount]
-        
+        del gameData['gameStats']["timestamps"][:tickCount]
+
         if playerCount > gameData["gameStats"]["athPlayerCount"]:
             gameData["gameStats"]["athPlayerCount"] = playerCount
+            gameData["gameStats"]["athPlayerCountAt"] = current_tick_time
         if plays24h > gameData["gameStats"]["athPlays24h"]:
             gameData["gameStats"]["athPlays24h"] = plays24h
+            gameData["gameStats"]["athPlays24hAt"] = current_tick_time
         if uniquePlays24h > gameData["gameStats"]["athUniquePlays24h"]:
             gameData["gameStats"]["athUniquePlays24h"] = uniquePlays24h
+            gameData["gameStats"]["athUniquePlays24hAt"] = current_tick_time
 
         update_game_stats(gameData["id"], gameData['gameStats'])
 
@@ -113,23 +121,29 @@ def tick_airspy(app: Flask):
             orgData['orgStats']["plays"].extend([-1] * missedTicks)
             orgData['orgStats']["plays24h"].extend([-1] * missedTicks)
             orgData['orgStats']["uniquePlays24h"].extend([-1] * missedTicks)
+            orgData['orgStats']["timestamps"].extend([None] * missedTicks)
 
         orgData['orgStats']["playerCounts"].append(playerCount)
         orgData['orgStats']["plays"].append(plays)
         orgData['orgStats']["plays24h"].append(plays24h)
         orgData['orgStats']["uniquePlays24h"].append(uniquePlays24h)
+        orgData['orgStats']["timestamps"].append(current_tick_time)
 
         del orgData['orgStats']["playerCounts"][:tickCount]
         del orgData['orgStats']["plays"][:tickCount]
         del orgData['orgStats']["plays24h"][:tickCount]
         del orgData['orgStats']["uniquePlays24h"][:tickCount]
+        del orgData['orgStats']["timestamps"][:tickCount]
 
         if playerCount > orgData["orgStats"]["athPlayerCount"]:
             orgData["orgStats"]["athPlayerCount"] = playerCount
+            orgData["orgStats"]["athPlayerCountAt"] = current_tick_time
         if plays24h > orgData["orgStats"]["athPlays24h"]:
             orgData["orgStats"]["athPlays24h"] = plays24h
+            orgData["orgStats"]["athPlays24hAt"] = current_tick_time
         if uniquePlays24h > orgData["orgStats"]["athUniquePlays24h"]:
             orgData["orgStats"]["athUniquePlays24h"] = uniquePlays24h
+            orgData["orgStats"]["athUniquePlays24hAt"] = current_tick_time
 
         update_organization_stats(orgData["id"], orgData['orgStats'])
 
@@ -152,6 +166,7 @@ def tick_airspy(app: Flask):
             gameData['gameStats']["dailyPlays"].extend([-1] * missedDays)
             gameData['gameStats']["dailyPlays24h"].extend([-1] * missedDays)
             gameData['gameStats']["dailyUniquePlays24h"].extend([-1] * missedDays)
+            gameData['gameStats']["dailyTimestamps"].extend([None] * missedDays)
 
         filtered = [num for num in gameData['gameStats']["playerCounts"] if num != -1]
         if (len(filtered) >= 1): value = sum(filtered) / len(filtered)
@@ -173,10 +188,14 @@ def tick_airspy(app: Flask):
         else: value = -1
         gameData['gameStats']["dailyUniquePlays24h"].append(value)
 
+        filtered = [t for t in gameData['gameStats']["timestamps"] if t is not None]
+        gameData['gameStats']["dailyTimestamps"].append(filtered[-1] if len(filtered) >= 1 else None)
+
         del gameData['gameStats']["dailyPlayerCounts"][:days]
         del gameData['gameStats']["dailyPlays"][:days]
         del gameData['gameStats']["dailyPlays24h"][:days]
         del gameData['gameStats']["dailyUniquePlays24h"][:days]
+        del gameData['gameStats']["dailyTimestamps"][:days]
 
         update_game_stats(game_id, gameData['gameStats'])
 
@@ -188,6 +207,7 @@ def tick_airspy(app: Flask):
             orgData['orgStats']["dailyPlays"].extend([-1] * missedDays)
             orgData['orgStats']["dailyPlays24h"].extend([-1] * missedDays)
             orgData['orgStats']["dailyUniquePlays24h"].extend([-1] * missedDays)
+            orgData['orgStats']["dailyTimestamps"].extend([None] * missedDays)
 
         filtered = [num for num in orgData['orgStats']["playerCounts"] if num != -1]
         if (len(filtered) >= 1): value = sum(filtered) / len(filtered)
@@ -209,10 +229,14 @@ def tick_airspy(app: Flask):
         else: value = -1
         orgData['orgStats']["dailyUniquePlays24h"].append(value)
 
+        filtered = [t for t in orgData['orgStats']["timestamps"] if t is not None]
+        orgData['orgStats']["dailyTimestamps"].append(filtered[-1] if len(filtered) >= 1 else None)
+
         del orgData['orgStats']["dailyPlayerCounts"][:days]
         del orgData['orgStats']["dailyPlays"][:days]
         del orgData['orgStats']["dailyPlays24h"][:days]
         del orgData['orgStats']["dailyUniquePlays24h"][:days]
+        del orgData['orgStats']["dailyTimestamps"][:days]
 
         update_organization_stats(org_id, orgData['orgStats'])
 
@@ -235,6 +259,7 @@ def tick_airspy(app: Flask):
             gameData['gameStats']["monthlyPlays"].extend([-1] * missedMonths)
             gameData['gameStats']["monthlyPlays24h"].extend([-1] * missedMonths)
             gameData['gameStats']["monthlyUniquePlays24h"].extend([-1] * missedMonths)
+            gameData['gameStats']["monthlyTimestamps"].extend([None] * missedMonths)
 
         filtered = [num for num in gameData['gameStats']["dailyPlayerCounts"] if num != -1]
         if (len(filtered) >= 1): value = sum(filtered) / len(filtered)
@@ -256,10 +281,14 @@ def tick_airspy(app: Flask):
         else: value = -1
         gameData['gameStats']["monthlyUniquePlays24h"].append(value)
 
+        filtered = [t for t in gameData['gameStats']["dailyTimestamps"] if t is not None]
+        gameData['gameStats']["monthlyTimestamps"].append(filtered[-1] if len(filtered) >= 1 else None)
+
         del gameData['gameStats']["monthlyPlayerCounts"][:months]
         del gameData['gameStats']["monthlyPlays"][:months]
         del gameData['gameStats']["monthlyPlays24h"][:months]
         del gameData['gameStats']["monthlyUniquePlays24h"][:months]
+        del gameData['gameStats']["monthlyTimestamps"][:months]
 
         update_game_stats(game_id, gameData['gameStats'])
 
@@ -271,6 +300,7 @@ def tick_airspy(app: Flask):
             orgData['orgStats']["monthlyPlays"].extend([-1] * missedMonths)
             orgData['orgStats']["monthlyPlays24h"].extend([-1] * missedMonths)
             orgData['orgStats']["monthlyUniquePlays24h"].extend([-1] * missedMonths)
+            orgData['orgStats']["monthlyTimestamps"].extend([None] * missedMonths)
 
         filtered = [num for num in orgData['orgStats']["dailyPlayerCounts"] if num != -1]
         if (len(filtered) >= 1): value = sum(filtered) / len(filtered)
@@ -292,10 +322,14 @@ def tick_airspy(app: Flask):
         else: value = -1
         orgData['orgStats']["monthlyUniquePlays24h"].append(value)
 
+        filtered = [t for t in orgData['orgStats']["dailyTimestamps"] if t is not None]
+        orgData['orgStats']["monthlyTimestamps"].append(filtered[-1] if len(filtered) >= 1 else None)
+
         del orgData['orgStats']["monthlyPlayerCounts"][:months]
         del orgData['orgStats']["monthlyPlays"][:months]
         del orgData['orgStats']["monthlyPlays24h"][:months]
         del orgData['orgStats']["monthlyUniquePlays24h"][:months]
+        del orgData['orgStats']["monthlyTimestamps"][:months]
 
         update_organization_stats(org_id, orgData['orgStats'])
 
@@ -311,15 +345,21 @@ default_stats = {
     "plays": [],
     "plays24h": [],
     "uniquePlays24h": [],
+    "timestamps": [],
     "dailyPlayerCounts": [],
     "dailyPlays": [],
     "dailyPlays24h": [],
     "dailyUniquePlays24h": [],
+    "dailyTimestamps": [],
     "monthlyPlayerCounts": [],
     "monthlyPlays": [],
     "monthlyPlays24h": [],
     "monthlyUniquePlays24h": [],
+    "monthlyTimestamps": [],
     "athPlayerCount": 0,
+    "athPlayerCountAt": None,
     "athPlays24h": 0,
+    "athPlays24hAt": None,
     "athUniquePlays24h": 0,
+    "athUniquePlays24hAt": None,
 }

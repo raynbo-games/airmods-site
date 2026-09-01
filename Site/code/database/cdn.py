@@ -32,10 +32,10 @@ def cdn(directory, name, extension):
     return f"{CDN_URL}/static/{directory}/{name}.{extension}"
 
 def cdn_script(name):
-    return cdn("script", name, "js")
+    return cdn("scripts", name, "js")
 
 def cdn_style(name):
-    return cdn("style", name, "css")
+    return cdn("content", name, "css")
 
 def cdn_image(name):
-    return cdn("image", name, "jpg")
+    return cdn("images", name, "jpg")

@@ -55,7 +55,6 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="instance\" />
-    <Folder Include="static\" />
     <Folder Include="Site\" />
     <Folder Include="Site\code\" />
     <Folder Include="Site\code\database\schemas\" />
@@ -74,9 +73,11 @@
     <Folder Include="Site\templates\auth\" />
     <Folder Include="Site\templates\admin\" />
     <Folder Include="Site\templates\root\" />
-    <Folder Include="static\image\" />
-    <Folder Include="static\style\" />
-    <Folder Include="static\script\" />
+    <Folder Include="static\" />
+    <Folder Include="static\content\" />
+    <Folder Include="static\fonts\" />
+    <Folder Include="static\images\" />
+    <Folder Include="static\scripts\" />
   </ItemGroup>
   <ItemGroup>
     <Content Include=".gitattributes" />
@@ -87,31 +88,6 @@
     <Content Include="requirements.txt" />
     <Content Include="Site\code\database\schemas\database.sql" />
     <Content Include="Site\code\database\schemas\update.sql" />
-    <Content Include="static\script\Chart.js" />
-    <Content Include="static\style\bootstrap.css" />
-    <Content Include="static\style\bootstrap.min.css" />
-    <Content Include="static\style\grid.css" />
-    <Content Include="static\style\site.css" />
-    <Content Include="static\image\favicon.jpg" />
-    <Content Include="static\script\bootstrap.js" />
-    <Content Include="static\script\bootstrap.min.js" />
-    <Content Include="static\script\org-data.js" />
-    <Content Include="static\script\jquery-1.10.2.intellisense.js" />
-    <Content Include="static\script\jquery-1.10.2.js" />
-    <Content Include="static\script\jquery-1.10.2.min.js" />
-    <Content Include="static\script\jquery-1.10.2.min.map" />
-    <Content Include="static\script\jquery.validate-vsdoc.js" />
-    <Content Include="static\script\jquery.validate.js" />
-    <Content Include="static\script\jquery.validate.min.js" />
-    <Content Include="static\script\jquery.validate.unobtrusive.js" />
-    <Content Include="static\script\jquery.validate.unobtrusive.min.js" />
-    <Content Include="static\script\modernizr-2.6.2.js" />
-    <Content Include="static\script\respond.js" />
-    <Content Include="static\script\respond.min.js" />
-    <Content Include="static\script\game-data.js" />
-    <Content Include="static\script\stats-chart.js" />
-    <Content Include="static\script\search.js" />
-    <Content Include="static\script\_references.js" />
     <Content Include="Site\templates\admin\user\view.html" />
     <Content Include="Site\templates\admin\user\index.html" />
     <Content Include="Site\templates\airmods\index.html" />
@@ -122,10 +98,46 @@
     <Content Include="Site\templates\airspy\organizations\view.html" />
     <Content Include="Site\templates\auth\create.html" />
     <Content Include="Site\templates\error.html" />
-    <Content Include="Site\templates\root\about.html" />
     <Content Include="Site\templates\root\privacy.html" />
     <Content Include="Site\templates\root\index.html" />
     <Content Include="Site\templates\layout.html" />
+    <Content Include="static\content\bootstrap-theme.css" />
+    <Content Include="static\content\bootstrap-theme.css.map" />
+    <Content Include="static\content\bootstrap-theme.min.css" />
+    <Content Include="static\content\bootstrap-theme.min.css.map" />
+    <Content Include="static\content\bootstrap.css" />
+    <Content Include="static\content\bootstrap.css.map" />
+    <Content Include="static\content\bootstrap.min.css" />
+    <Content Include="static\content\bootstrap.min.css.map" />
+    <Content Include="static\content\global.css" />
+    <Content Include="static\fonts\glyphicons-halflings-regular.eot" />
+    <Content Include="static\fonts\glyphicons-halflings-regular.svg" />
+    <Content Include="static\fonts\glyphicons-halflings-regular.ttf" />
+    <Content Include="static\fonts\glyphicons-halflings-regular.woff" />
+    <Content Include="static\fonts\glyphicons-halflings-regular.woff2" />
+    <Content Include="static\images\black.jpg" />
+    <Content Include="static\images\favicon.jpg" />
+    <Content Include="static\scripts\bootstrap.js" />
+    <Content Include="static\scripts\bootstrap.min.js" />
+    <Content Include="static\scripts\Chart.js" />
+    <Content Include="static\scripts\game-data.js" />
+    <Content Include="static\scripts\jquery-1.10.2.js" />
+    <Content Include="static\scripts\jquery-1.10.2.min.js" />
+    <Content Include="static\scripts\jquery-1.10.2.min.map" />
+    <Content Include="static\scripts\jquery.validate.js" />
+    <Content Include="static\scripts\jquery.validate.min.js" />
+    <Content Include="static\scripts\jquery.validate.unobtrusive.js" />
+    <Content Include="static\scripts\jquery.validate.unobtrusive.min.js" />
+    <Content Include="static\scripts\modernizr-2.6.2.js" />
+    <Content Include="static\scripts\npm.js" />
+    <Content Include="static\scripts\org-data.js" />
+    <Content Include="static\scripts\respond.js" />
+    <Content Include="static\scripts\respond.min.js" />
+    <Content Include="static\scripts\search.js" />
+    <Content Include="static\scripts\stats-chart.js" />
+    <None Include="static\scripts\_references.js" />
+    <None Include="static\scripts\jquery.validate-vsdoc.js" />
+    <None Include="static\scripts\jquery-1.10.2.intellisense.js" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\Python Tools\Microsoft.PythonTools.Web.targets" />
   <!-- Specify pre- and post-build commands in the BeforeBuild and 
