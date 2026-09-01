@@ -1,7 +1,7 @@
 from flask import url_for
 from Site.code.config import AIRSPY_UPDATE_TIMEOUT, AIRSPY_CHART_BUCKET_MINUTES
 from Site.code.database.cdn import get_image_cdn_url
-from Site.code.database.main import get_property_value, get_multiple_property_values
+from Site.code.database.main import get_property_value, get_multiple_property_values, get_matching_row
 
 def get_search_items():
     items = []
@@ -104,6 +104,17 @@ def get_dashboard_data(stats):
 
 def get_game_list():
     game_data = get_multiple_property_values("game", "id", "name", "iconImageId")
+    games = []
+    for data in game_data:
+        games.append({
+            "name": data["name"],
+            "url": url_for("airspy.game", game_id=data["id"]),
+            "image_url": get_image_cdn_url("airspy", data["iconImageId"])
+        })
+    return games
+
+def get_organization_games(organization_id):
+    game_data = get_matching_row("game", {"organizationId": organization_id}, multiple=True)
     games = []
     for data in game_data:
         games.append({

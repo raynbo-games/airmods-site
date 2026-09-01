@@ -4,6 +4,26 @@
 
 <div id="org-info"></div>
 
+<h2>Games</h2>
+{% if games %}
+<div class="row">
+    {% for game in games %}
+    <div class="col-xs-12 col-sm-6 col-md-3">
+        <a href="{{ game.url }}" class="grid-link" rel="noopener noreferrer">
+            <div class="grid-card text-center">
+                <div class="grid-img-wrapper">
+                    <img src="{{ game.image_url }}" class="grid-img" alt="{{ game.name }} Icon">
+                </div>
+                <h3>{{ game.name }}</h3>
+            </div>
+        </a>
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<p class="info-description">This organization has no tracked games yet.</p>
+{% endif %}
+
 <div class="dashboard-wrapper">
     <h2>Organization Statistics</h2>
     <h3>All Time Highs</h3>

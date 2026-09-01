@@ -78,3 +78,12 @@ def update_auth(userID, auth: AUTH_LEVEL):
         (get_auth(auth), userID)
     )
     db.commit()
+
+def update_user_notes(userID, notes):
+    db = get_db()
+    cursor = db.cursor()
+    cursor.execute(
+        'UPDATE "user" SET "notes" = %s WHERE "id" = %s',
+        (notes, userID)
+    )
+    db.commit()

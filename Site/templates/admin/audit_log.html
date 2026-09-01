@@ -1,0 +1,81 @@
+{% extends "layout.html" %}
+
+{% block content %}
+
+<h1>Audit Log</h1>
+
+<form method="GET" class="admin-form-section">
+    <div class="admin-filter-row">
+        <div class="admin-filter-field">
+            <label>Actor</label>
+            <input type="text" name="actor" class="form-control form-dark-input" value="{{ filters.actor }}" placeholder="Username...">
+        </div>
+        <div class="admin-filter-field">
+            <label>Action</label>
+            <select name="action" class="form-control form-dark-input">
+                <option value="">All Actions</option>
+                {% for key, label in actions.items() %}
+                <option value="{{ key }}" {% if filters.action == key %}selected{% endif %}>{{ label }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="admin-filter-field">
+            <label>Since</label>
+            <input type="date" name="since" class="form-control form-dark-input" value="{{ filters.since }}">
+        </div>
+        <div class="admin-filter-field">
+            <label>Until</label>
+            <input type="date" name="until" class="form-control form-dark-input" value="{{ filters.until }}">
+        </div>
+        <div class="admin-filter-field">
+            <label>Reason Contains</label>
+            <input type="text" name="reason" class="form-control form-dark-input" value="{{ filters.reason }}" placeholder="Search reason...">
+        </div>
+    </div>
+    <button type="submit" class="btn btn-primary admin-form-submit">Filter</button>
+    <a href="{{ url_for('admin.audit_log') }}" class="btn btn-default admin-form-submit">Clear</a>
+</form>
+
+{% if entries %}
+<div class="audit-log-table-wrapper">
+    <table class="audit-log-table">
+        <thead>
+            <tr>
+                <th>Time</th>
+                <th>Actor</th>
+                <th>Action</th>
+                <th>Target</th>
+                <th>Reason</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for entry in entries %}
+            <tr>
+                <td class="audit-time" data-timestamp="{{ entry.createdAtIso }}">{{ entry.createdAtIso }}</td>
+                <td>{{ entry.actorUsername }}</td>
+                <td>
+                    {{ actions.get(entry.action, entry.action) }}
+                    {% if entry.details %}<div class="audit-details">{{ entry.details }}</div>{% endif %}
+                </td>
+                <td>
+                    {% if entry.targetUsername %}
+                    <a href="{{ url_for('admin.user', user_id=entry.targetId) }}">{{ entry.targetUsername }}</a>
+                    {% else %}
+                    &mdash;
+                    {% endif %}
+                </td>
+                <td>{{ entry.reason }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% else %}
+<p class="info-description">No matching audit log entries.</p>
+{% endif %}
+
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='scripts/audit-log.js') }}"></script>
+{% endblock %}

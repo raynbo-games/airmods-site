@@ -19,3 +19,5 @@ SET "orgStats" = "orgStats" || jsonb_build_object(
 	'athUniquePlays24hAt', 'null'::jsonb
 )
 WHERE NOT ("orgStats" ? 'timestamps');
+
+ALTER TABLE "user" ADD COLUMN IF NOT EXISTS "notes" TEXT;

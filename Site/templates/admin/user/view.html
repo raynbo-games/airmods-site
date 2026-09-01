@@ -11,13 +11,40 @@
     <div class="info-stat"><span class="info-stat-label">Auth Level</span><span class="info-stat-value">{{ data.auth }}</span></div>
 </div>
 
+{% if data.notes %}
+<div class="admin-form-section">
+    <h3>Notes</h3>
+    <p class="info-description">{{ data.notes }}</p>
+</div>
+{% endif %}
+
 {% if data.auth < user.auth and user.auth > 1 %}
-<div class="info-chips">
-    {% if data.auth != -1 %}
-    <a href="{{ url_for('admin.ban_user', user_id=data.id) }}" class="info-chip info-chip-warning">Ban User</a>
-    {% else %}
-    <a href="{{ url_for('admin.unban_user', user_id=data.id) }}" class="info-chip info-chip-badge">Unban User</a>
-    {% endif %}
+<div class="admin-form-section">
+    <h3>Set Auth Level</h3>
+    <form method="POST" action="{{ url_for('admin.set_user_auth', user_id=data.id) }}" class="admin-form-row" data-requires-reason="changing this user's auth level">
+        <select name="auth" class="form-control form-dark-input">
+            {% for level, level_value in assignable_auth_levels %}
+            <option value="{{ level }}" {% if level_value == data.auth %}selected{% endif %}>{{ level }}</option>
+            {% endfor %}
+        </select>
+        <button type="submit" class="btn btn-primary">Save</button>
+    </form>
+</div>
+
+<div class="admin-form-section">
+    <h3>Rename User</h3>
+    <form method="POST" action="{{ url_for('admin.set_user_username', user_id=data.id) }}" class="admin-form-row" data-requires-reason="renaming this user">
+        <input type="text" name="username" class="form-control form-dark-input" value="{{ data.username }}" autocomplete="off" required>
+        <button type="submit" class="btn btn-primary">Save</button>
+    </form>
+</div>
+
+<div class="admin-form-section">
+    <h3>Notes</h3>
+    <form method="POST" action="{{ url_for('admin.set_user_notes', user_id=data.id) }}" data-requires-reason="updating this user's notes">
+        <textarea name="notes" class="form-control form-dark-input admin-form-textarea" rows="3" placeholder="Add a note about this user...">{{ data.notes or '' }}</textarea>
+        <button type="submit" class="btn btn-primary admin-form-submit">Save Notes</button>
+    </form>
 </div>
 {% endif %}
 

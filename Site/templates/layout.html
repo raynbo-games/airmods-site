@@ -82,10 +82,24 @@
         </div>
     </div>
 
+    <div id="reason-modal-overlay" class="leaving-modal-overlay">
+        <div class="leaving-card">
+            <div class="leaving-icon">&#9998;</div>
+            <h2>Reason Required</h2>
+            <p class="leaving-message">Please provide a reason for <strong id="reason-modal-action-label"></strong>. This will be recorded in the audit log.</p>
+            <input type="text" id="reason-modal-input" class="form-control form-dark-input" placeholder="Enter a reason..." autocomplete="off">
+            <div class="leaving-actions">
+                <button type="button" id="reason-modal-confirm" class="leaving-btn leaving-btn-continue">Confirm</button>
+                <button type="button" id="reason-modal-cancel" class="leaving-btn leaving-btn-cancel">Cancel</button>
+            </div>
+        </div>
+    </div>
+
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.4.1/js/bootstrap.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/respond.js/1.4.2/respond.min.js"></script>
     <script src="{{ url_for('static', filename='scripts/external-link-warning.js') }}"></script>
+    <script src="{{ url_for('static', filename='scripts/reason-modal.js') }}"></script>
     {% if request.blueprint == 'airspy' %}
     <script src="{{ url_for('static', filename='scripts/search.js') }}"></script>
     {% endif %}

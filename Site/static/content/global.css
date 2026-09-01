@@ -569,3 +569,114 @@ a.list-card-item:hover {
     margin: 0;
     width: 100%;
 }
+
+/* Admin inline action forms (set auth, rename, notes) */
+
+.admin-form-section {
+    background-color: #1b1b1b;
+    border-radius: 12px;
+    padding: 18px 22px;
+    margin-bottom: 20px;
+}
+
+.admin-form-section h3 {
+    margin: 0 0 12px 0;
+    color: #ffffff;
+    font-size: 15px;
+}
+
+.admin-form-row {
+    display: flex;
+    gap: 10px;
+}
+
+.admin-form-row select,
+.admin-form-row input {
+    flex: 1;
+}
+
+.admin-form-textarea {
+    width: 100%;
+    resize: vertical;
+}
+
+.admin-form-submit {
+    margin-top: 10px;
+}
+
+#reason-modal-input {
+    width: 100%;
+    margin: 4px 0 20px 0;
+}
+
+/* Audit log filters + table */
+
+.admin-filter-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 14px;
+    margin-bottom: 14px;
+}
+
+.admin-filter-field {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    min-width: 160px;
+}
+
+.admin-filter-field label {
+    font-size: 12px;
+    color: #9d9d9d;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+}
+
+.audit-log-table-wrapper {
+    overflow-x: auto;
+    background-color: #1b1b1b;
+    border-radius: 12px;
+    margin-bottom: 20px;
+}
+
+.audit-log-table {
+    width: 100%;
+    border-collapse: collapse;
+    color: #ffffff;
+    font-size: 13px;
+}
+
+.audit-log-table th,
+.audit-log-table td {
+    padding: 10px 16px;
+    text-align: left;
+    white-space: nowrap;
+}
+
+.audit-log-table td:last-child,
+.audit-log-table th:last-child {
+    white-space: normal;
+}
+
+.audit-log-table th {
+    color: #9d9d9d;
+    text-transform: uppercase;
+    font-size: 11px;
+    letter-spacing: 0.03em;
+    border-bottom: 1px solid #3d3d3d;
+}
+
+.audit-log-table tbody tr:not(:last-child) {
+    border-bottom: 1px solid #2b2b2b;
+}
+
+.audit-log-table a {
+    color: #5bc0de;
+}
+
+.audit-details {
+    color: #9d9d9d;
+    font-size: 12px;
+    margin-top: 2px;
+    white-space: normal;
+}

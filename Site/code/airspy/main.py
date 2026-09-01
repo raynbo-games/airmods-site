@@ -1,5 +1,5 @@
 from flask import Blueprint, render_template, request, redirect, url_for, current_app, jsonify
-from Site.code.airspy.utility import get_search_items, get_dashboard_data, get_game_list, get_organization_list
+from Site.code.airspy.utility import get_search_items, get_dashboard_data, get_game_list, get_organization_list, get_organization_games
 from Site.code.database.cdn import get_image_cdn_url
 from Site.code.database.main import get_matching_row
 
@@ -65,6 +65,7 @@ def organization(organization_id):
         chart_url=url_for("airspy.organization_chart", organization_id=organization_id),
         ath_data=data["ath_data"],
         org_data=dict(orgData),
+        games=get_organization_games(organization_id),
         image_url=get_image_cdn_url("airspy", orgData["iconImageId"])
     )
 
