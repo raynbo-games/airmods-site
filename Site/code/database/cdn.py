@@ -1,7 +1,6 @@
 import boto3, requests, os
 
 CDN_URL = "https://raynbo-games-site-storage.sfo3.cdn.digitaloceanspaces.com"
-STATIC_URL = "https://raynbo-games-site-storage.sfo3.cdn.digitaloceanspaces.com/static"
 
 session = boto3.session.Session()
 client = session.client(
@@ -28,3 +27,15 @@ def upload_to_spaces(directory, image_id, image_url):
     )
     
     return get_image_cdn_url(directory, image_id)
+
+def cdn(directory, name, extension):
+    return f"{CDN_URL}/static/{directory}/{name}.{extension}"
+
+def cdn_script(name):
+    return cdn("script", name, "js")
+
+def cdn_style(name):
+    return cdn("style", name, "css")
+
+def cdn_image(name):
+    return cdn("image", name, "jpg")

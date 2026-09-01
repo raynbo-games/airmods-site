@@ -10,9 +10,9 @@ def tick_airspy_icons(app: Flask):
     game_image_ids = get_property_value("game", "iconImageId")
     organization_image_ids = get_property_value("organization", "iconImageId")
     for image_id in game_image_ids:
-        print(upload_to_spaces("airspy", image_id, get_image_url(image_id)))
+        upload_to_spaces("airspy", image_id, get_image_url(image_id))
     for image_id in organization_image_ids:
-        print(upload_to_spaces("airspy", image_id, get_image_url(image_id)))
+        upload_to_spaces("airspy", image_id, get_image_url(image_id))
 
 def tick_airspy(app: Flask):
     data = get_tick_data()

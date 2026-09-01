@@ -37,13 +37,13 @@
 {% endblock %}
 
 {% block scripts %}
-<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.4/Chart.js"></script>
+<script src="{{ cdn_script('Chart') }}"></script>
 <script>
     const chart_url = "{{ chart_url }}";
     const ath_data = {{ ath_data | tojson }};
     const org_data = {{ org_data | tojson }};
     const image_url = "{{ image_url }}";
 </script>
-<script src="{{ url_for('static', filename='scripts/stats-chart.js') }}"></script>
-<script src="{{ url_for('static', filename='scripts/org-data.js') }}"></script>
+<script src="{{ cdn_script('stats-chart') }}"></script>
+<script src="{{ cdn_script('org-data') }}"></script>
 {% endblock %}
