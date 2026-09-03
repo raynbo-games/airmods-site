@@ -1,0 +1,22 @@
+{% extends "layout.html" %}
+{% block content %}
+<h1>Settings</h1>
+{% include "settings/_tabs.html" %}
+
+<div class="form-card">
+    <h2>Link an Organization</h2>
+    <p class="info-description">Enter the ID of one of your games on Airship. We'll use it to find your organization and start verification.</p>
+
+    <form method="POST" action="{{ url_for('settings.connection_link') }}">
+        <div class="form-group">
+            <div class="input-group">
+                <input type="text" name="game_id" class="form-control input-lg form-dark-input" placeholder="Game ID" autocomplete="off" required>
+                <span class="input-group-btn">
+                    <button type="submit" class="btn btn-primary btn-lg">Continue</button>
+                </span>
+            </div>
+            {% if error %}<div class="form-feedback feedback-error">{{ error }}</div>{% endif %}
+        </div>
+    </form>
+</div>
+{% endblock %}

@@ -25,13 +25,20 @@
 
             <div class="navbar-collapse collapse">
                 <ul class="nav navbar-nav">
-                    <li><a href="{{ url_for('airspy.root') }}">Airspy</a></li>
-                    <li><a href="{{ url_for('airmods.root') }}">Airmods</a></li>
-                    <li><a href="{{ url_for('community.root') }}">Community</a></li>
-                    <li><a href="{{ url_for('roadmap.index') }}">Roadmap</a></li>
-                    {% if user and user.auth and user.auth >= 1 %}
-                    <li><a href="{{ url_for('admin.root') }}">Admin</a></li>
-                    {% endif %}
+                    <li class="dropdown">
+                        <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">Airship <span class="caret"></span></a>
+                        <ul class="dropdown-menu">
+                            <li><a href="{{ url_for('airspy.root') }}">Airspy</a></li>
+                            <li><a href="{{ url_for('airmods.root') }}">Airmods</a></li>
+                        </ul>
+                    </li>
+                    <li class="dropdown">
+                        <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">Community <span class="caret"></span></a>
+                        <ul class="dropdown-menu">
+                            <li><a href="{{ url_for('community.root') }}">Community</a></li>
+                            <li><a href="{{ url_for('roadmap.index') }}">Roadmap</a></li>
+                        </ul>
+                    </li>
                 </ul>
 
                 <ul class="nav navbar-nav navbar-right">
@@ -44,12 +51,25 @@
                     </form>
                     {% endif %}
                     {% if user and user.username %}
-                    <li><a href="{{ url_for('community.inbox') }}" class="inbox-link">
-                        <span class="glyphicon glyphicon-envelope"></span> Inbox
-                        {% if unread_notifications %}<span class="inbox-badge">{{ unread_notifications }}</span>{% endif %}
-                    </a></li>
-                    <p class="navbar-text">{{ user.username }}</p>
-                    <li><a href="{{ url_for('auth.logout') }}"><span class="glyphicon glyphicon-log-out"></span> Logout</a></li>
+                    <li class="dropdown">
+                        <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
+                            {{ user.username }}
+                            {% if unread_notifications %}<span class="inbox-badge">{{ unread_notifications }}</span>{% endif %}
+                            <span class="caret"></span>
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-right">
+                            <li><a href="{{ url_for('community.inbox') }}" class="inbox-link">
+                                <span class="glyphicon glyphicon-envelope"></span> Inbox
+                                {% if unread_notifications %}<span class="inbox-badge">{{ unread_notifications }}</span>{% endif %}
+                            </a></li>
+                            <li><a href="{{ url_for('settings.profile') }}"><span class="glyphicon glyphicon-cog"></span> Settings</a></li>
+                            {% if user.auth and user.auth >= 1 %}
+                            <li><a href="{{ url_for('admin.root') }}"><span class="glyphicon glyphicon-user"></span> Admin</a></li>
+                            {% endif %}
+                            <li role="separator" class="divider"></li>
+                            <li><a href="{{ url_for('auth.logout') }}"><span class="glyphicon glyphicon-log-out"></span> Logout</a></li>
+                        </ul>
+                    </li>
                     {% else %}
                     <li><a href="{{ url_for('auth.login', next=request.path) }}"><span class="glyphicon glyphicon-log-in"></span> Login</a></li>
                     {% endif %}

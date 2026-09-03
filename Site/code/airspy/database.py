@@ -1,5 +1,7 @@
 import click, time
 from Site.code.database.main import get_db, get_matching_row
+from Site.code.database.cdn import upload_to_spaces
+from Site.code.airspy.airship_urls import get_image_url
 from Site.code.config import AIRSPY_SPEED, STORED_TICKS, STORED_DAILY_TICKS, STORED_MONTHLY_TICKS
 from psycopg.types.json import Jsonb
 from datetime import datetime
@@ -40,6 +42,7 @@ def insert_game(raw_data):
         (game_data["id"], game_data["slug"], game_data["slugProperCase"], game_data["name"], game_data["description"], game_data["iconImageId"], organization["id"], game_data["createdAt"], game_data["visibility"], game_data["lastVersionUpdate"], game_data["archivedAt"], game_data["loadingScreenImageId"], game_data["logoImageId"], game_data["videoId"], Jsonb(game_data["links"]), game_data["plays"], game_data["favorites"], game_data["plays24h"], game_data["uniquePlays24h"], Jsonb(game_data["platforms"]), Jsonb(live_stats), Jsonb(default_stats))
     )
     db.commit()
+    upload_to_spaces("airspy", game_data["iconImageId"], get_image_url(game_data["iconImageId"]))
     return f"Inserted game: {game_data["id"]}"
 
 def get_tick_data():
@@ -126,9 +129,9 @@ def update_game(raw_data):
         return f"No changes detected for game: {game_data["id"]}"
 
     set_clause = ", ".join([f'"{column}" = %s' for column in changed_fields.keys()])
-        
-    query_params = list(changed_fields.values()) + [game_data["id"]]
-        
+
+    query_params = [Jsonb(value) if isinstance(value, (dict, list)) else value for value in changed_fields.values()] + [game_data["id"]]
+
     sql_query = f'UPDATE "game" SET {set_clause} WHERE "id" = %s'
     cursor.execute(sql_query, query_params)
 
@@ -156,6 +159,7 @@ def insert_organization(raw_data):
         (raw_data["id"], raw_data["slug"], raw_data["slugProperCase"], raw_data["name"], raw_data["description"], raw_data["iconImageId"], raw_data["createdAt"], raw_data["adminBanned"], Jsonb(default_stats))
     )
     db.commit()
+    upload_to_spaces("airspy", raw_data["iconImageId"], get_image_url(raw_data["iconImageId"]))
 
     return f"Inserted organization: {raw_data["id"]}"
 

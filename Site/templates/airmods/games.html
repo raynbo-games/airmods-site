@@ -1,0 +1,22 @@
+{% extends "layout.html" %}
+{% block content %}
+<h1>Your Games</h1>
+
+{% if games %}
+<div class="row">
+    {% for game in games %}
+    <div class="col-xs-12 col-sm-6 col-md-3">
+        <div class="grid-card text-center">
+            <div class="grid-img-wrapper">
+                <img src="{{ game.image_url }}" class="grid-img" alt="{{ game.name }} Icon">
+            </div>
+            <h3>{{ game.name }}</h3>
+            <a href="{{ game.support_url }}" class="btn btn-primary btn-sm" style="margin-top: 10px;">Add Support</a>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<p class="info-description">You haven't linked any organizations yet. <a href="{{ url_for('settings.connection_link') }}">Link one</a> to see your games here.</p>
+{% endif %}
+{% endblock %}

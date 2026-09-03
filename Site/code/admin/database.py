@@ -18,6 +18,8 @@ AUDIT_ACTIONS = {
     "delete_comment": "Deleted Comment",
     "approve_comment": "Approved Comment",
     "reject_comment": "Rejected Comment",
+    "link_organization": "Linked Airship Organization",
+    "unlink_organization": "Unlinked Airship Organization",
 }
 
 def add_audit_log(actor, target, action, reason, details=None):

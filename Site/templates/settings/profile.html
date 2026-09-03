@@ -1,0 +1,57 @@
+{% extends "layout.html" %}
+{% block content %}
+<h1>Settings</h1>
+{% include "settings/_tabs.html" %}
+
+<div class="form-card">
+    <h2>Profile</h2>
+
+    <form method="POST" action="{{ url_for('settings.profile') }}">
+        <div class="form-group">
+            <label for="username">Username</label>
+            <div class="input-group">
+                <input type="text" id="username" name="username" class="form-control input-lg form-dark-input" value="{{ user.username }}" autocomplete="off" required>
+                <span class="input-group-btn">
+                    <button type="submit" id="submit-btn" class="btn btn-primary btn-lg">Save</button>
+                </span>
+            </div>
+            <div id="feedback" class="form-feedback{% if error %} feedback-error{% endif %}">{{ error or '' }}</div>
+        </div>
+    </form>
+</div>
+
+<script>
+    const usernameInput = document.getElementById('username');
+    const feedbackDiv = document.getElementById('feedback');
+    const submitBtn = document.getElementById('submit-btn');
+    const currentUsername = {{ user.username | tojson }};
+    let debounceTimer;
+
+    usernameInput.addEventListener('input', () => {
+        const username = usernameInput.value.trim();
+
+        if (username.length === 0 || username === currentUsername) {
+            feedbackDiv.textContent = '';
+            feedbackDiv.className = 'form-feedback';
+            submitBtn.disabled = false;
+            return;
+        }
+
+        clearTimeout(debounceTimer);
+        debounceTimer = setTimeout(() => {
+            fetch(`{{ url_for('settings.profile_verify') }}?username=${encodeURIComponent(username)}`)
+                .then(response => response.json())
+                .then(data => {
+                    feedbackDiv.textContent = data.message;
+                    feedbackDiv.className = data.valid ? 'form-feedback feedback-success' : 'form-feedback feedback-error';
+                    submitBtn.disabled = !data.valid;
+                })
+                .catch(() => {
+                    feedbackDiv.textContent = 'Server verification failed. Please try again.';
+                    feedbackDiv.className = 'form-feedback feedback-error';
+                    submitBtn.disabled = true;
+                });
+        }, 300);
+    });
+</script>
+{% endblock %}

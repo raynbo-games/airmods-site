@@ -1,5 +1,98 @@
 body {
     padding-top: 70px;
+    background-color: #141414;
+    color: #cccccc;
+}
+
+h1, h2, h3, h4, h5, h6 {
+    color: #ffffff;
+}
+
+hr {
+    border-top-color: #3d3d3d;
+}
+
+/* Bootstrap component defaults that were never themed - without these, any
+   plain .well/.nav-tabs/.dropdown-menu/.btn-default renders as a light-mode
+   island against the rest of the site's dark cards. */
+
+.well {
+    background-color: #1b1b1b;
+    border-color: #3d3d3d;
+    color: #cccccc;
+    box-shadow: none;
+}
+
+.nav-tabs {
+    border-bottom-color: #3d3d3d;
+}
+
+.nav-tabs > li > a {
+    color: #9d9d9d;
+    background-color: transparent;
+    border-color: transparent;
+}
+
+.nav-tabs > li > a:hover,
+.nav-tabs > li > a:focus {
+    background-color: #2b2b2b;
+    border-color: transparent;
+    color: #ffffff;
+}
+
+.nav-tabs > li.active > a,
+.nav-tabs > li.active > a:hover,
+.nav-tabs > li.active > a:focus {
+    background-color: #1b1b1b;
+    border-color: #3d3d3d #3d3d3d transparent;
+    color: #ffffff;
+}
+
+.dropdown-menu {
+    background-color: #1b1b1b;
+    border: 1px solid #3d3d3d;
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.4);
+}
+
+.dropdown-menu > li > a {
+    color: #cccccc;
+}
+
+.dropdown-menu > li > a:hover,
+.dropdown-menu > li > a:focus {
+    background-color: #2b2b2b;
+    color: #ffffff;
+}
+
+.dropdown-menu .divider {
+    background-color: #3d3d3d;
+}
+
+.btn-default {
+    background-color: #2b2b2b;
+    border-color: #3d3d3d;
+    color: #ffffff;
+}
+
+.btn-default:hover,
+.btn-default:focus {
+    background-color: #3d3d3d;
+    border-color: #3d3d3d;
+    color: #ffffff;
+}
+
+.btn-primary {
+    background-color: #5bc0de;
+    border-color: #5bc0de;
+    color: #1b1b1b;
+}
+
+.btn-primary:hover,
+.btn-primary:focus {
+    background-color: #5bc0de;
+    border-color: #5bc0de;
+    color: #1b1b1b;
+    opacity: 0.85;
 }
 
 .grid-section-header,
@@ -60,6 +153,12 @@ body {
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+}
+
+.grid-card label {
+    color: #cccccc;
+    font-size: 13px;
+    font-weight: 400;
 }
 
 .grid-link:hover .grid-card,
@@ -437,6 +536,29 @@ a.list-card-item:hover {
     color: #ffffff;
 }
 
+.form-card h3 {
+    margin: 0 0 8px 0;
+    font-weight: 300;
+    color: #ffffff;
+}
+
+.form-card label {
+    display: block;
+    margin-bottom: 6px;
+    color: #cccccc;
+    font-size: 13px;
+}
+
+.connection-cards-row {
+    margin-bottom: 20px;
+}
+
+.connection-cards-row .form-card {
+    max-width: none;
+    margin: 0 0 20px 0;
+    height: 100%;
+}
+
 .form-dark-input {
     background-color: #2b2b2b;
     border: 1px solid #3d3d3d;
@@ -460,6 +582,7 @@ a.list-card-item:hover {
     margin-top: 10px;
     font-weight: 500;
     font-size: 13px;
+    color: #cccccc;
 }
 
 .feedback-success {

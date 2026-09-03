@@ -147,3 +147,10 @@ CREATE TABLE IF NOT EXISTS "roadmap_comment_vote" (
 	"userId" VARCHAR(50) NOT NULL,
 	PRIMARY KEY ("commentId", "userId")
 );
+
+CREATE TABLE IF NOT EXISTS "organization_link" (
+	"userId" VARCHAR(50) NOT NULL,
+	"organizationId" TEXT NOT NULL,
+	"linkedAt" TIMESTAMP NOT NULL,
+	PRIMARY KEY ("userId", "organizationId")
+);

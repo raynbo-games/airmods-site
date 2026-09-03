@@ -1,0 +1,10 @@
+{% extends "layout.html" %}
+{% block content %}
+<div class="hero-card">
+    <h1>Add Airmods Support For {{ game_data.name }}</h1>
+    <p>
+        Adding support for games is a work in progress. Please stay tuned for updates!
+    </p>
+    <a href="{{ url_for('airmods.games') }}" class="btn btn-default">Back to Your Games</a>
+</div>
+{% endblock %}

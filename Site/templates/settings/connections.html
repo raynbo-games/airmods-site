@@ -1,0 +1,33 @@
+{% extends "layout.html" %}
+{% block content %}
+<h1>Settings</h1>
+{% include "settings/_tabs.html" %}
+
+<h2>Linked Organizations</h2>
+<p class="info-description">Link an Airship organization you own to manage its games from this site.</p>
+
+{% if organizations %}
+<div class="row">
+    {% for org in organizations %}
+    <div class="col-xs-12 col-sm-6 col-md-3">
+        <div class="grid-card text-center">
+            <a href="{{ org.url }}" class="grid-link" rel="noopener noreferrer">
+                <div class="grid-img-wrapper">
+                    <img src="{{ org.image_url }}" class="grid-img" alt="{{ org.name }} Icon">
+                </div>
+                <h3>{{ org.name }}</h3>
+            </a>
+            {% if org.hidden %}<p class="info-description">Hidden from Airspy</p>{% endif %}
+            <form method="POST" action="{{ url_for('settings.connection_unlink', organization_id=org.id) }}" style="margin-top: 10px;">
+                <button type="submit" class="btn btn-danger btn-sm">Unlink</button>
+            </form>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<p class="info-description">You haven't linked any organizations yet.</p>
+{% endif %}
+
+<a href="{{ url_for('settings.connection_link') }}" class="btn btn-primary">Link a new organization</a>
+{% endblock %}
