@@ -7,4 +7,50 @@
     </p>
     <a href="{{ url_for('airmods.games') }}" class="btn btn-default">Back to Your Games</a>
 </div>
+
+<div class="admin-form-section" style="text-align: left;">
+    <h3>API Tokens</h3>
+    <p class="info-description">Tokens authenticate requests to the Airmods API for this game once it's live. Treat them like passwords &mdash; anyone with one can act as this game.</p>
+
+    {% if new_token %}
+    <div class="form-feedback feedback-success" style="margin-bottom: 14px;">
+        Copy this token now &mdash; you won't be able to see it again.
+        <code class="token-value">{{ new_token }}</code>
+    </div>
+    {% endif %}
+
+    {% if tokens %}
+    <div class="list-card">
+        {% for token in tokens %}
+        <div class="token-row">
+            <div>
+                <div class="token-name">{{ token.name }}</div>
+                <div class="suggestion-meta">
+                    Created <span class="audit-time" data-timestamp="{{ token.createdAtIso }}">{{ token.createdAtIso }}</span>
+                    {% if token.lastUsedAtIso %} &middot; Last used <span class="audit-time" data-timestamp="{{ token.lastUsedAtIso }}">{{ token.lastUsedAtIso }}</span>{% endif %}
+                </div>
+            </div>
+            <form method="POST" action="{{ url_for('airmods.revoke_token', game_id=game_data.id, token_id=token.id) }}">
+                <button type="submit" class="btn btn-danger btn-sm">Revoke</button>
+            </form>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <p class="info-description">No tokens yet.</p>
+    {% endif %}
+
+    <form method="POST" action="{{ url_for('airmods.create_token', game_id=game_data.id) }}">
+        <div class="input-group">
+            <input type="text" name="name" class="form-control form-dark-input" placeholder="Token name (e.g. CI build token)" autocomplete="off" required>
+            <span class="input-group-btn">
+                <button type="submit" class="btn btn-primary">Create Token</button>
+            </span>
+        </div>
+    </form>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='scripts/audit-log.js') }}"></script>
 {% endblock %}

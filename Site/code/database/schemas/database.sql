@@ -154,3 +154,13 @@ CREATE TABLE IF NOT EXISTS "organization_link" (
 	"linkedAt" TIMESTAMP NOT NULL,
 	PRIMARY KEY ("userId", "organizationId")
 );
+
+CREATE TABLE IF NOT EXISTS "game_api_token" (
+	"id" SERIAL PRIMARY KEY,
+	"gameId" TEXT NOT NULL,
+	"userId" VARCHAR(50) NOT NULL,
+	"name" TEXT NOT NULL,
+	"tokenHash" TEXT NOT NULL UNIQUE,
+	"createdAt" TIMESTAMP NOT NULL,
+	"lastUsedAt" TIMESTAMP
+);

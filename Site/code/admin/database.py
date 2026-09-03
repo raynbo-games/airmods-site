@@ -20,6 +20,8 @@ AUDIT_ACTIONS = {
     "reject_comment": "Rejected Comment",
     "link_organization": "Linked Airship Organization",
     "unlink_organization": "Unlinked Airship Organization",
+    "create_api_token": "Created Airmods API Token",
+    "revoke_api_token": "Revoked Airmods API Token",
 }
 
 def add_audit_log(actor, target, action, reason, details=None):
