@@ -19,9 +19,9 @@ def create_app():
             'scope': 'openid email profile'
         }
     )
-
+    
     app.config.from_mapping(
-        SECRET_KEY="MooCow2804",
+        SECRET_KEY=os.environ.get('FLASK_SECRET_KEY'),
         DATABASE_URL = os.environ.get('DATABASE_URL'),
         GOOGLE = google,
     )
@@ -39,6 +39,9 @@ def create_app():
 
     import Site.code.auth.main as auth
     app.register_blueprint(auth.bp)
+
+    import Site.code.settings.main as settings
+    app.register_blueprint(settings.bp)
 
     import Site.code.admin.main as admin
     app.register_blueprint(admin.bp)

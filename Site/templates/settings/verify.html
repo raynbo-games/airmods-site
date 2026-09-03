@@ -1,0 +1,54 @@
+{% extends "layout.html" %}
+{% block content %}
+<div class="form-card text-center">
+    <h2>Verify {{ organization.name }}</h2>
+    <p class="info-description">
+        Set this QR code as your organization's icon in the Airship dashboard, then wait a moment.
+        this page checks automatically.
+    </p>
+
+    <img src="{{ qr_url }}" alt="Verification QR code" style="max-width: 260px; margin: 20px auto; display: block;">
+
+    <div id="verify-status" class="form-feedback">Waiting for your organization's icon to update...</div>
+
+    <a href="{{ qr_url }}" download="airship-verification-qr.png" class="btn btn-primary">Save Image</a>
+    <a href="{{ connections_url }}" class="btn btn-default">Cancel</a>
+</div>
+
+<script>
+    const confirmUrl = "{{ confirm_url }}";
+    const token = {{ token | tojson }};
+    const statusDiv = document.getElementById('verify-status');
+    const expiresAt = Date.now() + {{ max_age }} * 1000;
+
+    function poll() {
+        if (Date.now() > expiresAt) {
+            statusDiv.textContent = 'This verification link has expired. Please start over.';
+            statusDiv.className = 'form-feedback feedback-error';
+            return;
+        }
+
+        fetch(confirmUrl, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: `token=${encodeURIComponent(token)}`
+        })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    statusDiv.textContent = 'Verified! Redirecting...';
+                    statusDiv.className = 'form-feedback feedback-success';
+                    window.location.href = data.redirect;
+                } else if (data.status === 'expired') {
+                    statusDiv.textContent = 'This verification link has expired. Please start over.';
+                    statusDiv.className = 'form-feedback feedback-error';
+                } else {
+                    setTimeout(poll, 5000);
+                }
+            })
+            .catch(() => setTimeout(poll, 5000));
+    }
+
+    setTimeout(poll, 5000);
+</script>
+{% endblock %}

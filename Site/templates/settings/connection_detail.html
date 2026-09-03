@@ -1,0 +1,55 @@
+{% extends "layout.html" %}
+{% block content %}
+<h1>{{ organization.name }}</h1>
+{% include "settings/_tabs.html" %}
+
+<div class="row connection-cards-row">
+    <div class="col-xs-12 col-sm-6">
+        <div class="form-card">
+            <h3>Add a Game</h3>
+            <p class="info-description">Add another game ID owned by this organization. New games Airspy detects under this organization on its own are picked up here automatically.</p>
+            <form method="POST" action="{{ url_for('settings.connection_add_game', organization_id=organization.id) }}">
+                <div class="input-group">
+                    <input type="text" name="game_id" class="form-control form-dark-input" placeholder="Game ID" autocomplete="off" required>
+                    <span class="input-group-btn">
+                        <button type="submit" class="btn btn-primary">Add Game</button>
+                    </span>
+                </div>
+            </form>
+        </div>
+    </div>
+    <div class="col-xs-12 col-sm-6">
+        <div class="form-card">
+            <h3>Organization Visibility</h3>
+            <p class="info-description">This will automatically hide all games under this organization.</p>
+            <label>
+                <input type="checkbox" name="org_visible" form="visibility-form" {% if not organization.hiddenFromAirspy %}checked{% endif %}>
+                Visible on Airspy
+            </label>
+        </div>
+    </div>
+</div>
+
+<form id="visibility-form" method="POST" action="{{ url_for('settings.connection_detail', organization_id=organization.id) }}">
+    <h2>Games</h2>
+    <p class="info-description">Uncheck a game to hide it from Airspy's public pages.</p>
+
+    <div class="row">
+        {% for game in games %}
+        <div class="col-xs-12 col-sm-6 col-md-3">
+            <div class="grid-card text-center">
+                <div class="grid-img-wrapper">
+                    <img src="{{ game.image_url }}" class="grid-img" alt="{{ game.name }} Icon">
+                </div>
+                <h3>{{ game.name }}</h3>
+                <label>
+                    <input type="checkbox" name="visible" value="{{ game.id }}" {% if not game.hidden %}checked{% endif %}>
+                    Visible on Airspy
+                </label>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    <button type="submit" class="btn btn-primary">Save</button>
+</form>
+{% endblock %}

@@ -1,21 +1,21 @@
 from flask import url_for
 from Site.code.config import AIRSPY_UPDATE_TIMEOUT, AIRSPY_CHART_BUCKET_MINUTES
 from Site.code.database.cdn import get_image_cdn_url
-from Site.code.database.main import get_property_value, get_multiple_property_values, get_matching_row
+from Site.code.database.main import get_matching_row
 
 def get_search_items():
     items = []
-    game_names = get_property_value("game", "name")
-    for name in game_names:
+    game_rows = get_matching_row("game", {"hiddenFromAirspy": False}, multiple=True)
+    for row in game_rows:
         items.append({
-            "title": f"Game: {name}",
-            "url": url_for("airspy.game_by_name", game_name=name)
+            "title": f"Game: {row['name']}",
+            "url": url_for("airspy.game_by_name", game_name=row["name"])
         })
-    org_names = get_property_value("organization", "name")
-    for name in org_names:
+    org_rows = get_matching_row("organization", {"hiddenFromAirspy": False}, multiple=True)
+    for row in org_rows:
         items.append({
-            "title": f"Org:  {name}",
-            "url": url_for("airspy.organization_by_name", organization_name=name)
+            "title": f"Org:  {row['name']}",
+            "url": url_for("airspy.organization_by_name", organization_name=row["name"])
         })
     return items
 
@@ -104,7 +104,7 @@ def get_dashboard_data(stats):
     }
 
 def get_game_list():
-    game_data = get_multiple_property_values("game", "id", "name", "iconImageId")
+    game_data = get_matching_row("game", {"hiddenFromAirspy": False}, multiple=True)
     games = []
     for data in game_data:
         games.append({
@@ -115,7 +115,7 @@ def get_game_list():
     return games
 
 def get_organization_games(organization_id):
-    game_data = get_matching_row("game", {"organizationId": organization_id}, multiple=True)
+    game_data = get_matching_row("game", {"organizationId": organization_id, "hiddenFromAirspy": False}, multiple=True)
     games = []
     for data in game_data:
         games.append({
@@ -126,7 +126,7 @@ def get_organization_games(organization_id):
     return games
 
 def get_organization_list():
-    organization_data = get_multiple_property_values("organization", "id", "name", "iconImageId")
+    organization_data = get_matching_row("organization", {"hiddenFromAirspy": False}, multiple=True)
     organizations = []
     for data in organization_data:
         organizations.append({

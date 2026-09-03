@@ -1,0 +1,4 @@
+<ul class="nav nav-tabs" style="margin-bottom: 20px;">
+    <li class="{{ 'active' if request.endpoint == 'settings.profile' else '' }}"><a href="{{ url_for('settings.profile') }}">Profile</a></li>
+    <li class="{{ 'active' if request.endpoint and request.endpoint.startswith('settings.connection') else '' }}"><a href="{{ url_for('settings.connections') }}">Connections</a></li>
+</ul>

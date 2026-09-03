@@ -147,3 +147,20 @@ CREATE TABLE IF NOT EXISTS "roadmap_comment_vote" (
 	"userId" VARCHAR(50) NOT NULL,
 	PRIMARY KEY ("commentId", "userId")
 );
+
+CREATE TABLE IF NOT EXISTS "organization_link" (
+	"userId" VARCHAR(50) NOT NULL,
+	"organizationId" TEXT NOT NULL,
+	"linkedAt" TIMESTAMP NOT NULL,
+	PRIMARY KEY ("userId", "organizationId")
+);
+
+CREATE TABLE IF NOT EXISTS "game_api_token" (
+	"id" SERIAL PRIMARY KEY,
+	"gameId" TEXT NOT NULL,
+	"userId" VARCHAR(50) NOT NULL,
+	"name" TEXT NOT NULL,
+	"tokenHash" TEXT NOT NULL UNIQUE,
+	"createdAt" TIMESTAMP NOT NULL,
+	"lastUsedAt" TIMESTAMP
+);

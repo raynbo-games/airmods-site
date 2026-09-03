@@ -2,9 +2,11 @@
 
 {% block content %}
 
-<h1>Oops a error has occured!</h1>
-<p>Refer to the message below and contact us for more information at <a href="mailto:info@raynbo.games">info@raynbo.games</a></p>
-<p>CODE: {{ error_code }}</p>
-<p>MESSAGE: {{ error_message }}</p>
+<div class="hero-card">
+    <h1>Oops, an error has occurred!</h1>
+    <p>Refer to the message below and contact us for more information at <a href="mailto:info@raynbo.games">info@raynbo.games</a></p>
+    <p>CODE: {{ error_code }}</p>
+    <p>MESSAGE: {{ error_message }}</p>
+</div>
 
 {% endblock %}

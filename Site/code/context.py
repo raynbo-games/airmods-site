@@ -1,5 +1,5 @@
 from datetime import datetime
-from flask import render_template
+from flask import render_template, current_app
 from werkzeug.exceptions import HTTPException
 from Site.code.auth.main import get_user
 from Site.code.database.cdn import cdn, cdn_script, cdn_style, cdn_image
@@ -14,12 +14,9 @@ def init_context(app):
 
     @app.errorhandler(Exception)
     def handle_exception(e):
-        if isinstance(e, HTTPException):
-            error_code = e.code
-            error_message = e.description
-        else:
-            error_code = 500
-            error_message = "Internal Server Error"
+        error_code = getattr(e, 'code', 500)
+        error_message = getattr(e, 'description', 'An unknown error has occured')
+        current_app.log_exception(e)
         
         return render_template('error.html', error_code=error_code, error_message=error_message), error_code
 
