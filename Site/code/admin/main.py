@@ -1,10 +1,13 @@
 from datetime import timezone
 from flask import Blueprint, redirect, render_template, url_for, abort, request
 from Site.code.admin.database import AUDIT_ACTIONS, add_audit_log, get_audit_log
+from Site.code.airspy.database import get_all_games, get_airspy_settings, set_airspy_settings
 from Site.code.auth.database import AUTH_LEVEL_VALUES, get_auth, update_auth, update_username, update_user_notes, verify_username
 from Site.code.auth.main import auth_required, get_user
 from Site.code.community.webhook import get_community_config, set_community_config
+from Site.code.database.cdn import get_image_cdn_url
 from Site.code.database.main import get_matching_row, get_multiple_property_values
+from Site.code.settings.database import set_game_hidden
 
 bp = Blueprint('admin', __name__, url_prefix='/admin')
 
@@ -106,6 +109,56 @@ def audit_log():
         entries.append(entry)
 
     return render_template('admin/audit_log.html', entries=entries, filters=filters, actions=AUDIT_ACTIONS)
+
+@bp.route('/airspy/games')
+@auth_required("MODERATOR")
+def airspy_games():
+    games = [{
+        "id": g["id"],
+        "name": g["name"],
+        "organizationName": g["organizationName"],
+        "image_url": get_image_cdn_url("airspy", g["iconImageId"]),
+        "lastVersionUpdate": g["lastVersionUpdate"],
+        "hidden": g["hiddenFromAirspy"],
+    } for g in get_all_games()]
+    site_updated_after = get_airspy_settings().get("gamesUpdatedAfter") or ""
+    return render_template('admin/airspy/games.html', games=games, site_updated_after=site_updated_after)
+
+@bp.route('/airspy/settings/updated-after', methods=['POST'])
+@auth_required("ADMIN")
+def set_airspy_updated_after():
+    reason = request.form.get("reason", "").strip()
+    if not reason:
+        abort(400, "A reason is required for this action")
+
+    updated_after = request.form.get("updated_after", "").strip()
+    settings = get_airspy_settings()
+    settings["gamesUpdatedAfter"] = updated_after or None
+    set_airspy_settings(settings)
+    add_audit_log(
+        get_user(), None, "set_airspy_updated_after_cutoff", reason,
+        details=f"Set public Airspy 'updated after' cutoff to {updated_after or 'none (show all games)'}"
+    )
+    return redirect(url_for("admin.airspy_games"))
+
+@bp.route('/airspy/games/<game_id>/hide', methods=['POST'])
+@auth_required("ADMIN")
+def set_airspy_game_hidden(game_id):
+    game = get_matching_row("game", {"id": game_id})
+    if not game:
+        abort(404)
+
+    reason = request.form.get("reason", "").strip()
+    if not reason:
+        abort(400, "A reason is required for this action")
+
+    hidden = request.form.get("hidden") == "1"
+    set_game_hidden(game_id, game["organizationId"], hidden)
+    add_audit_log(
+        get_user(), None, "hide_airspy_game" if hidden else "unhide_airspy_game", reason,
+        details=f"{'Hid' if hidden else 'Unhid'} game {game['name']} ({game_id}) from Airspy"
+    )
+    return redirect(url_for("admin.airspy_games", updated_after=request.form.get("updated_after", "")))
 
 @bp.route('/community-settings', methods=['GET', 'POST'])
 @auth_required("DEVELOPER")

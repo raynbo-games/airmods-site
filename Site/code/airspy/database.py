@@ -78,6 +78,30 @@ def set_tick_data(tick_data):
     )
     db.commit()
 
+def get_airspy_settings():
+    settings = get_matching_row("json", {"id": "airspy_settings"})
+    if settings:
+        return settings["data"]
+
+    db = get_db()
+    cursor = db.cursor()
+    settings = {"gamesUpdatedAfter": None}
+    cursor.execute(
+        'INSERT INTO "json" ("id", "data") VALUES (%s, %s)',
+        ("airspy_settings", Jsonb(settings))
+    )
+    db.commit()
+    return settings
+
+def set_airspy_settings(settings):
+    db = get_db()
+    cursor = db.cursor()
+    cursor.execute(
+        'UPDATE "json" SET "data" = %s WHERE "id" = %s',
+        (Jsonb(settings), "airspy_settings")
+    )
+    db.commit()
+
 def organize_game_data(raw_data):
     game_data = raw_data["game"]
     live_stats = game_data["liveStats"]
@@ -198,6 +222,18 @@ def update_organization_stats(org_id, stats):
     cursor = db.cursor()
     cursor.execute(f'UPDATE "organization" SET "orgStats" = %s WHERE id = %s', (Jsonb(stats), org_id))
     db.commit()
+
+def get_all_games():
+    """Admin listing of every tracked game, including ones hidden from Airspy."""
+    db = get_db()
+    cursor = db.cursor()
+    query = (
+        'SELECT "game"."id", "game"."name", "game"."iconImageId", "game"."hiddenFromAirspy", '
+        '"game"."organizationId", "game"."lastVersionUpdate", "organization"."name" AS "organizationName" '
+        'FROM "game" JOIN "organization" ON "game"."organizationId" = "organization"."id" '
+        'ORDER BY "game"."lastVersionUpdate" DESC'
+    )
+    return cursor.execute(query).fetchall()
 
 def reset_airspy_data():
     db = get_db()

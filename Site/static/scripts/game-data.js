@@ -6,8 +6,9 @@ function formatDate(value) {
 
 document.addEventListener("DOMContentLoaded", () => {
     let links = "";
-    for (const [key, value] of Object.entries(game_data["links"])) {
-        links += `<a href="${value}" class="info-chip" target="_blank" rel="noopener noreferrer">${key}</a>`;
+    for (const link of game_data["links"]) {
+        const label = link.type ? link.type.charAt(0) + link.type.slice(1).toLowerCase() : "Link";
+        links += `<a href="${link.url}" class="info-chip" target="_blank" rel="noopener noreferrer">${label}</a>`;
     }
 
     const platforms = game_data["platforms"].join(", ") || "None";

@@ -16,6 +16,12 @@
     <a href="{{ url_for('community.review') }}">View Review Queue &#8594;</a>
 </div>
 
+<div class="project-card">
+    <h3>Airspy Games</h3>
+    <p>Hide or unhide any tracked game from the public Airspy site and filter by last update time.</p>
+    <a href="{{ url_for('admin.airspy_games') }}">Manage Airspy Games &#8594;</a>
+</div>
+
 {% if user.auth > 1 %}
 <div class="project-card">
     <h3>Audit Log</h3>

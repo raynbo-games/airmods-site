@@ -22,6 +22,9 @@ AUDIT_ACTIONS = {
     "unlink_organization": "Unlinked Airship Organization",
     "create_api_token": "Created Airmods API Token",
     "revoke_api_token": "Revoked Airmods API Token",
+    "hide_airspy_game": "Hid Airspy Game",
+    "unhide_airspy_game": "Unhid Airspy Game",
+    "set_airspy_updated_after_cutoff": "Set Airspy Updated-After Cutoff",
 }
 
 def add_audit_log(actor, target, action, reason, details=None):

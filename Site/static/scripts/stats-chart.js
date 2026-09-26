@@ -9,6 +9,11 @@ function formatTimestamp(value) {
     return date.toLocaleString(undefined, { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" });
 }
 
+function formatValue(value) {
+    if (Number.isInteger(value)) return value;
+    return Math.round(value * 100) / 100;
+}
+
 function formatChartLabel(value, currentTimeframe) {
     if (!value) return null;
     const date = new Date(value);
@@ -34,12 +39,18 @@ function initCharts() {
         const graphInfo = dataset.graphs[i];
 
         const filteredLabels = [];
+        const filteredFullLabels = [];
         const filteredValues = [];
 
         graphInfo.values.forEach((val, idx) => {
             if (val !== -1) {
-                const label = formatChartLabel(dataset.labels[idx], timeframe);
-                filteredLabels.push(label || `Point ${idx + 1}`);
+                const fullLabel = formatChartLabel(dataset.labels[idx], timeframe) || `Point ${idx + 1}`;
+                // On the Day tab (1 point per minute), only label the axis every
+                // 30 minutes to avoid clutter - the exact time is still always
+                // available in the tooltip via filteredFullLabels.
+                const showAxisLabel = timeframe !== "day" || idx % 30 === 0;
+                filteredLabels.push(showAxisLabel ? fullLabel : "");
+                filteredFullLabels.push(fullLabel);
                 filteredValues.push(val);
             }
         });
@@ -74,8 +85,11 @@ function initCharts() {
                     legend: { display: false },
                     tooltip: {
                         callbacks: {
+                            title: function (context) {
+                                return filteredFullLabels[context[0].dataIndex] || "";
+                            },
                             label: function (context) {
-                                const value = context.parsed.y;
+                                const value = formatValue(context.parsed.y);
                                 return ` ${value}${graphInfo.unit}`;
                             }
                         }
@@ -84,7 +98,10 @@ function initCharts() {
                 scales: {
                     x: {
                         grid: { color: '#2d2d2d' },
-                        ticks: { color: '#aaaaaa' }
+                        ticks: {
+                            color: '#aaaaaa',
+                            autoSkip: timeframe !== "day"
+                        }
                     },
                     y: {
                         min: 0,
@@ -97,11 +114,7 @@ function initCharts() {
                             stepSize: 1,
                             precision: 0,
                             callback: function (value) {
-                                if (Number.isInteger(value)) {
-                                    return value;
-                                } else {
-                                    return Math.round(value)
-                                }
+                                return formatValue(value);
                             }
                         }
                     }

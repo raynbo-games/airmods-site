@@ -835,6 +835,13 @@ a.list-card-item:hover {
     white-space: normal;
 }
 
+.admin-game-icon {
+    width: 32px;
+    height: 32px;
+    border-radius: 6px;
+    object-fit: cover;
+}
+
 /* Inbox nav link + unread badge */
 
 .inbox-link {

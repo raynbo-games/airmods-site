@@ -1,0 +1,52 @@
+{% extends "layout.html" %}
+
+{% block content %}
+
+<h1>Airspy Games</h1>
+
+<div class="admin-form-section">
+    <h3>Public Site Cutoff</h3>
+    <p class="info-description">Games last updated before this date are hidden from the public Airspy games list, organization pages, and search - separate from individually hiding a game below. Leave blank to show all games.</p>
+    <form method="POST" action="{{ url_for('admin.set_airspy_updated_after') }}" class="admin-form-row" data-requires-reason="changing the public Airspy 'updated after' cutoff">
+        <input type="date" name="updated_after" class="form-control form-dark-input" value="{{ site_updated_after }}">
+        <button type="submit" class="btn btn-primary">Save</button>
+    </form>
+</div>
+
+{% if games %}
+<div class="audit-log-table-wrapper">
+    <table class="audit-log-table">
+        <thead>
+            <tr>
+                <th></th>
+                <th>Name</th>
+                <th>Organization</th>
+                <th>Last Updated</th>
+                <th>Status</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for game in games %}
+            <tr>
+                <td><img src="{{ game.image_url }}" alt="{{ game.name }} Icon" class="admin-game-icon"></td>
+                <td><a href="{{ url_for('airspy.game', game_id=game.id) }}">{{ game.name }}</a></td>
+                <td>{{ game.organizationName }}</td>
+                <td>{{ game.lastVersionUpdate }}</td>
+                <td>{{ "Hidden" if game.hidden else "Visible" }}</td>
+                <td>
+                    <form method="POST" action="{{ url_for('admin.set_airspy_game_hidden', game_id=game.id) }}" data-requires-reason="{{ 'unhiding' if game.hidden else 'hiding' }} {{ game.name }} from Airspy">
+                        <input type="hidden" name="hidden" value="{{ '0' if game.hidden else '1' }}">
+                        <button type="submit" class="btn btn-default">{{ "Unhide" if game.hidden else "Hide" }}</button>
+                    </form>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% else %}
+<p class="info-description">No games match this filter.</p>
+{% endif %}
+
+{% endblock %}
