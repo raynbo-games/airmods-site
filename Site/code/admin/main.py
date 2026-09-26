@@ -1,7 +1,12 @@
 import uuid
 from datetime import timezone
-from flask import Blueprint, redirect, render_template, url_for, abort, request
+from flask import Blueprint, redirect, render_template, url_for, abort, request, jsonify
 from Site.code.admin.database import AUDIT_ACTIONS, add_audit_log, get_audit_log
+from Site.code.admin.digitalocean import (
+    is_configured as do_is_configured, get_apps as do_get_apps, get_app_deployments as do_get_app_deployments,
+    get_app_run_logs as do_get_app_run_logs, get_databases as do_get_databases, get_balance as do_get_balance,
+    get_latest_invoice_items as do_get_latest_invoice_items, get_live_database_stats as do_get_live_database_stats
+)
 from Site.code.airspy.database import get_all_games, get_airspy_settings, set_airspy_settings
 from Site.code.auth.database import AUTH_LEVEL_VALUES, get_auth, update_auth, update_username, update_user_notes, verify_username
 from Site.code.auth.main import auth_required, get_user
@@ -230,3 +235,32 @@ def test_webhook(webhook_id):
 
     sent = send_test_notifications(webhook["url"])
     return redirect(url_for("admin.community_settings", tested=sent, tested_name=webhook["name"]))
+
+@bp.route('/infrastructure')
+@auth_required("DEVELOPER")
+def infrastructure():
+    if not do_is_configured():
+        return render_template('admin/infrastructure.html', configured=False)
+
+    apps = do_get_apps()
+    for app in apps:
+        app["_deployments"] = do_get_app_deployments(app["id"], limit=5)
+
+    latest_invoice, invoice_items = do_get_latest_invoice_items()
+
+    return render_template(
+        'admin/infrastructure.html', configured=True,
+        apps=apps,
+        databases=do_get_databases(),
+        balance=do_get_balance(),
+        live_db_stats=do_get_live_database_stats(),
+        latest_invoice=latest_invoice,
+        invoice_items=invoice_items,
+    )
+
+@bp.route('/infrastructure/apps/<app_id>/logs')
+@auth_required("DEVELOPER")
+def infrastructure_app_logs(app_id):
+    component_name = request.args.get("component_name") or None
+    logs = do_get_app_run_logs(app_id, component_name=component_name)
+    return jsonify({"logs": logs or "No logs available right now - the app may not have an active deployment, or logs may still be spinning up."})

@@ -36,6 +36,12 @@
     <p>Configure the Discord webhook, notification triggers, and the auto-moderation blocked word list.</p>
     <a href="{{ url_for('admin.community_settings') }}">Configure Community Settings &#8594;</a>
 </div>
+
+<div class="project-card">
+    <h3>Infrastructure</h3>
+    <p>Live DigitalOcean status, deployments, logs, database stats, and billing for the app, database, and CDN.</p>
+    <a href="{{ url_for('admin.infrastructure') }}">View Infrastructure &#8594;</a>
+</div>
 {% endif %}
 
 {% endblock %}
