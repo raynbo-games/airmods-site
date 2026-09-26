@@ -20,6 +20,7 @@ AUDIT_ACTIONS = {
     "reject_comment": "Rejected Comment",
     "link_organization": "Linked Airship Organization",
     "unlink_organization": "Unlinked Airship Organization",
+    "link_game": "Linked Airship Game",
     "create_api_token": "Created Airmods API Token",
     "revoke_api_token": "Revoked Airmods API Token",
     "hide_airspy_game": "Hid Airspy Game",
@@ -38,7 +39,7 @@ def add_audit_log(actor, target, action, reason, details=None):
 
     action_label = AUDIT_ACTIONS.get(action, action)
     target_note = f" on {target['username']}" if target else ""
-    send_discord_notification("AuditLog", f"🛠️ **{actor['username']}** {action_label}{target_note} — _{reason}_")
+    send_discord_notification(action, f"🛠️ **{actor['username']}** {action_label}{target_note} — _{reason}_")
 
 def get_audit_log(filters=None, limit=200):
     filters = filters or {}

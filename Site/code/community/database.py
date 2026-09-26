@@ -18,7 +18,7 @@ def create_suggestion(author, title, body):
     db.commit()
 
     if status == "visible":
-        send_discord_notification("NewPost", f"\U0001F4A1 **{author['username']}** posted a new suggestion: *{title}*")
+        send_discord_notification("new_post", f"\U0001F4A1 **{author['username']}** posted a new suggestion: *{title}*")
 
     return suggestion_id, status
 
@@ -105,7 +105,7 @@ def create_comment(author, suggestion, body, parent_comment=None):
     db.commit()
 
     if status == "visible":
-        send_discord_notification("Comment", f"\U0001F4AC **{author['username']}** commented on *{suggestion['title']}*")
+        send_discord_notification("comment", f"\U0001F4AC **{author['username']}** commented on *{suggestion['title']}*")
         if parent_comment:
             if parent_comment["authorId"] != author["id"]:
                 add_notification(

@@ -104,7 +104,7 @@ def add_box(slug):
     y = request.form.get('y', 40, type=int)
     create_box(roadmap["id"], title, description, status, x, y)
     touch_roadmap(roadmap["id"])
-    send_discord_notification("RoadmapNewStep", f"\U0001F5FA️ **{get_user()['username']}** added a new step to *{roadmap['name']}*: **{title}**")
+    send_discord_notification("roadmap_new_step", f"\U0001F5FA️ **{get_user()['username']}** added a new step to *{roadmap['name']}*: **{title}**")
     return redirect(url_for('roadmap.view', slug=slug))
 
 @bp.route('/<slug>/boxes/<int:box_id>', methods=['POST'])
@@ -123,7 +123,7 @@ def edit_box(slug, box_id):
 
     update_box(box_id, title, description, status)
     touch_roadmap(roadmap["id"])
-    send_discord_notification("RoadmapEditedStep", f"✏️ **{get_user()['username']}** edited step *{title}* on *{roadmap['name']}*")
+    send_discord_notification("roadmap_edited_step", f"✏️ **{get_user()['username']}** edited step *{title}* on *{roadmap['name']}*")
     return redirect(url_for('roadmap.view', slug=slug))
 
 @bp.route('/<slug>/boxes/<int:box_id>/position', methods=['POST'])
@@ -257,7 +257,7 @@ def add_box_comment(slug, box_id):
 
     comment_id = create_box_comment(box_id, get_user(), body, parent_comment_id)
     comment = get_box_comment(comment_id)
-    send_discord_notification("RoadmapComment", f"\U0001F4AC **{comment['authorUsername']}** commented on step *{box['title']}* ({roadmap['name']})")
+    send_discord_notification("roadmap_comment", f"\U0001F4AC **{comment['authorUsername']}** commented on step *{box['title']}* ({roadmap['name']})")
     return jsonify({
         "ok": True,
         "comment": {

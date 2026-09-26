@@ -1,10 +1,11 @@
+import uuid
 from datetime import timezone
 from flask import Blueprint, redirect, render_template, url_for, abort, request
 from Site.code.admin.database import AUDIT_ACTIONS, add_audit_log, get_audit_log
 from Site.code.airspy.database import get_all_games, get_airspy_settings, set_airspy_settings
 from Site.code.auth.database import AUTH_LEVEL_VALUES, get_auth, update_auth, update_username, update_user_notes, verify_username
 from Site.code.auth.main import auth_required, get_user
-from Site.code.community.webhook import get_community_config, set_community_config
+from Site.code.community.webhook import get_community_config, set_community_config, get_notification_events, NOTIFICATION_GROUPS
 from Site.code.database.cdn import get_image_cdn_url
 from Site.code.database.main import get_matching_row, get_multiple_property_values
 from Site.code.settings.database import set_game_hidden
@@ -163,20 +164,48 @@ def set_airspy_game_hidden(game_id):
 @bp.route('/community-settings', methods=['GET', 'POST'])
 @auth_required("DEVELOPER")
 def community_settings():
+    config = get_community_config()
+    events = get_notification_events()
+
     if request.method == 'POST':
-        config = {
-            "discordWebhookUrl": request.form.get("discordWebhookUrl", "").strip(),
-            "notifyAuditLog": request.form.get("notifyAuditLog") == "on",
-            "notifyNewPost": request.form.get("notifyNewPost") == "on",
-            "notifyEditedPost": request.form.get("notifyEditedPost") == "on",
-            "notifyComment": request.form.get("notifyComment") == "on",
-            "notifyRoadmapNewStep": request.form.get("notifyRoadmapNewStep") == "on",
-            "notifyRoadmapEditedStep": request.form.get("notifyRoadmapEditedStep") == "on",
-            "notifyRoadmapComment": request.form.get("notifyRoadmapComment") == "on",
+        webhooks = []
+        for webhook in config["webhooks"]:
+            wid = webhook["id"]
+            if request.form.get(f"webhook_delete_{wid}") == "on":
+                continue
+            webhooks.append({
+                "id": wid,
+                "name": request.form.get(f"webhook_name_{wid}", "").strip() or webhook["name"],
+                "url": request.form.get(f"webhook_url_{wid}", "").strip(),
+            })
+
+        new_name = request.form.get("new_webhook_name", "").strip()
+        new_url = request.form.get("new_webhook_url", "").strip()
+        if new_name and new_url:
+            webhooks.append({"id": str(uuid.uuid4()), "name": new_name, "url": new_url})
+
+        valid_webhook_ids = {webhook["id"] for webhook in webhooks}
+
+        notifications = {}
+        for event_key in events:
+            webhook_id = request.form.get(f"notify_webhook_{event_key}", "").strip()
+            if webhook_id not in valid_webhook_ids:
+                webhook_id = None
+            enabled = request.form.get(f"notify_enabled_{event_key}") == "on" and webhook_id is not None
+            notifications[event_key] = {"enabled": enabled, "webhookId": webhook_id}
+
+        set_community_config({
+            "webhooks": webhooks,
+            "notifications": notifications,
             "automodEnabled": request.form.get("automodEnabled") == "on",
             "automodWords": [w.strip() for w in request.form.get("automodWords", "").splitlines() if w.strip()],
-        }
-        set_community_config(config)
+        })
         return redirect(url_for("admin.community_settings"))
 
-    return render_template('admin/community_settings.html', config=get_community_config())
+    grouped_keys = {key for _, keys in NOTIFICATION_GROUPS for key in keys}
+    notification_groups = [(label, [(key, events[key]) for key in keys if key in events]) for label, keys in NOTIFICATION_GROUPS]
+    other_events = [(key, label) for key, label in events.items() if key not in grouped_keys]
+    if other_events:
+        notification_groups.append(("Other", other_events))
+
+    return render_template('admin/community_settings.html', config=config, notification_groups=notification_groups)

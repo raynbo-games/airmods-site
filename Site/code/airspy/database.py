@@ -2,6 +2,7 @@ import click, time
 from Site.code.database.main import get_db, get_matching_row
 from Site.code.database.cdn import upload_to_spaces
 from Site.code.airspy.airship_urls import get_image_url
+from Site.code.community.webhook import send_discord_notification
 from Site.code.config import AIRSPY_SPEED, STORED_TICKS, STORED_DAILY_TICKS, STORED_MONTHLY_TICKS
 from psycopg.types.json import Jsonb
 from datetime import datetime
@@ -43,6 +44,7 @@ def insert_game(raw_data):
     )
     db.commit()
     upload_to_spaces("airspy", game_data["iconImageId"], get_image_url(game_data["iconImageId"]))
+    send_discord_notification("airspy_game_created", f"\U0001F195 New Airspy game tracked: **{game_data['name']}** ({organization['name']})")
     return f"Inserted game: {game_data["id"]}"
 
 def get_tick_data():
@@ -160,6 +162,10 @@ def update_game(raw_data):
     cursor.execute(sql_query, query_params)
 
     db.commit()
+
+    if "lastVersionUpdate" in changed_fields:
+        send_discord_notification("airspy_game_version_updated", f"\U0001F504 **{game_data['name']}** was updated (new version)")
+
     return f"Updated game: {game_data["id"]}, {changed_fields}"
 
 
@@ -184,6 +190,7 @@ def insert_organization(raw_data):
     )
     db.commit()
     upload_to_spaces("airspy", raw_data["iconImageId"], get_image_url(raw_data["iconImageId"]))
+    send_discord_notification("airspy_organization_created", f"\U0001F195 New Airspy organization tracked: **{raw_data['name']}**")
 
     return f"Inserted organization: {raw_data["id"]}"
 

@@ -167,7 +167,7 @@ def edit_suggestion(suggestion_id):
     actor = get_user()
     target = {"id": suggestion["authorId"], "username": suggestion["authorUsername"]}
     add_audit_log(actor, target, "edit_suggestion", reason, details=f'Suggestion "{old_title}" edited by a moderator')
-    send_discord_notification("EditedPost", f"✏️ **{actor['username']}** edited suggestion *{title}*")
+    send_discord_notification("edited_post", f"✏️ **{actor['username']}** edited suggestion *{title}*")
 
     if suggestion["authorId"] != actor["id"]:
         add_notification(
@@ -289,7 +289,7 @@ def approve_suggestion(suggestion_id):
     actor = get_user()
     target = {"id": suggestion["authorId"], "username": suggestion["authorUsername"]}
     add_audit_log(actor, target, "approve_suggestion", "Passed manual review", details=f'Suggestion "{suggestion["title"]}" approved')
-    send_discord_notification("NewPost", f"\U0001F4A1 **{suggestion['authorUsername']}** posted a new suggestion: *{suggestion['title']}*")
+    send_discord_notification("new_post", f"\U0001F4A1 **{suggestion['authorUsername']}** posted a new suggestion: *{suggestion['title']}*")
 
     return redirect(url_for('community.review'))
 
@@ -320,7 +320,7 @@ def approve_comment(comment_id):
     actor = get_user()
     target = {"id": comment["authorId"], "username": comment["authorUsername"]}
     add_audit_log(actor, target, "approve_comment", "Passed manual review", details="Comment approved")
-    send_discord_notification("Comment", f"\U0001F4AC **{comment['authorUsername']}** commented (approved after review)")
+    send_discord_notification("comment", f"\U0001F4AC **{comment['authorUsername']}** commented (approved after review)")
 
     return redirect(url_for('community.review'))
 

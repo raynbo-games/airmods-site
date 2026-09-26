@@ -184,6 +184,11 @@ def connection_add_game(organization_id):
 
     update_game(raw_data)
     upload_to_spaces("airspy", raw_data["game"]["iconImageId"], get_image_url(raw_data["game"]["iconImageId"]))
+    add_audit_log(
+        get_user(), None, "link_game",
+        "Self-service Airship game link",
+        details=f"Linked game {raw_data['game']['name']} ({game_id}) to organization {organization_id}"
+    )
     return redirect(url_for('settings.connection_detail', organization_id=organization_id))
 
 @bp.route('/connections/<organization_id>', methods=['GET', 'POST'])
