@@ -3,7 +3,7 @@ from flask import Blueprint, render_template, redirect, url_for, request, abort
 from Site.code.auth.database import get_auth
 from Site.code.auth.main import login_required, auth_required, get_user
 from Site.code.admin.database import add_audit_log
-from Site.code.community.webhook import send_discord_notification
+from Site.code.community.webhook import send_discord_notification, build_embed
 from Site.code.community.database import (
     create_suggestion, get_suggestion, get_suggestions, get_pending_suggestions,
     update_suggestion, set_suggestion_status, delete_suggestion,
@@ -167,7 +167,8 @@ def edit_suggestion(suggestion_id):
     actor = get_user()
     target = {"id": suggestion["authorId"], "username": suggestion["authorUsername"]}
     add_audit_log(actor, target, "edit_suggestion", reason, details=f'Suggestion "{old_title}" edited by a moderator')
-    send_discord_notification("edited_post", f"✏️ **{actor['username']}** edited suggestion *{title}*")
+    embed = build_embed("✏️ Suggestion Edited", fields=[("Moderator", actor["username"]), ("Title", title, False)])
+    send_discord_notification("edited_post", embed=embed)
 
     if suggestion["authorId"] != actor["id"]:
         add_notification(
@@ -289,7 +290,8 @@ def approve_suggestion(suggestion_id):
     actor = get_user()
     target = {"id": suggestion["authorId"], "username": suggestion["authorUsername"]}
     add_audit_log(actor, target, "approve_suggestion", "Passed manual review", details=f'Suggestion "{suggestion["title"]}" approved')
-    send_discord_notification("new_post", f"\U0001F4A1 **{suggestion['authorUsername']}** posted a new suggestion: *{suggestion['title']}*")
+    embed = build_embed("\U0001F4A1 New Suggestion Posted", fields=[("Author", suggestion["authorUsername"]), ("Title", suggestion["title"], False)])
+    send_discord_notification("new_post", embed=embed)
 
     return redirect(url_for('community.review'))
 
@@ -320,7 +322,8 @@ def approve_comment(comment_id):
     actor = get_user()
     target = {"id": comment["authorId"], "username": comment["authorUsername"]}
     add_audit_log(actor, target, "approve_comment", "Passed manual review", details="Comment approved")
-    send_discord_notification("comment", f"\U0001F4AC **{comment['authorUsername']}** commented (approved after review)")
+    embed = build_embed("\U0001F4AC New Comment (Approved After Review)", fields=[("Author", comment["authorUsername"])])
+    send_discord_notification("comment", embed=embed)
 
     return redirect(url_for('community.review'))
 

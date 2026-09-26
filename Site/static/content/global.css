@@ -970,6 +970,20 @@ a.list-card-item:hover {
     white-space: nowrap;
 }
 
+.webhook-row .btn {
+    flex-shrink: 0;
+}
+
+.test-result-banner {
+    background-color: #1b2f1b;
+    border: 1px solid #3d6b3d;
+    border-radius: 12px;
+    padding: 12px 18px;
+    margin-bottom: 20px;
+    color: #b7e6b7;
+    font-size: 14px;
+}
+
 /* Community: suggestion list + vote widget */
 
 .suggestion-list {

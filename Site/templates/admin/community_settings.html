@@ -3,14 +3,19 @@
 {% block content %}
 <h1>Community Settings</h1>
 
+{% if tested_count is not none %}
+<div class="test-result-banner">Sent {{ tested_count }} test message{{ '' if tested_count == 1 else 's' }} to {{ tested_name }}.</div>
+{% endif %}
+
 <form method="POST" action="{{ url_for('admin.community_settings') }}">
     <div class="admin-form-section">
         <h3>Webhooks</h3>
-        <p class="info-description">Named webhook destinations. Add as many as you need, then pick one per notification below.</p>
+        <p class="info-description">Named webhook destinations. Add as many as you need, then pick one per notification below. "Test" sends a sample message for every event straight to that webhook.</p>
         {% for webhook in config.webhooks %}
         <div class="webhook-row">
             <input type="text" name="webhook_name_{{ webhook.id }}" class="form-control form-dark-input" value="{{ webhook.name }}" placeholder="Name">
             <input type="text" name="webhook_url_{{ webhook.id }}" class="form-control form-dark-input" value="{{ webhook.url }}" placeholder="https://discord.com/api/webhooks/...">
+            <button type="submit" form="test-webhook-{{ webhook.id }}" formnovalidate class="btn btn-default">Test</button>
             <label class="webhook-row-delete"><input type="checkbox" name="webhook_delete_{{ webhook.id }}"> Delete</label>
         </div>
         {% endfor %}
@@ -66,4 +71,8 @@
 
     <button type="submit" class="btn btn-primary">Save Settings</button>
 </form>
+
+{% for webhook in config.webhooks %}
+<form id="test-webhook-{{ webhook.id }}" method="POST" action="{{ url_for('admin.test_webhook', webhook_id=webhook.id) }}"></form>
+{% endfor %}
 {% endblock %}

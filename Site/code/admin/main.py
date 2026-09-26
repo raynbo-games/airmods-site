@@ -5,7 +5,7 @@ from Site.code.admin.database import AUDIT_ACTIONS, add_audit_log, get_audit_log
 from Site.code.airspy.database import get_all_games, get_airspy_settings, set_airspy_settings
 from Site.code.auth.database import AUTH_LEVEL_VALUES, get_auth, update_auth, update_username, update_user_notes, verify_username
 from Site.code.auth.main import auth_required, get_user
-from Site.code.community.webhook import get_community_config, set_community_config, get_notification_events, NOTIFICATION_GROUPS
+from Site.code.community.webhook import get_community_config, set_community_config, get_notification_events, NOTIFICATION_GROUPS, send_test_notifications
 from Site.code.database.cdn import get_image_cdn_url
 from Site.code.database.main import get_matching_row, get_multiple_property_values
 from Site.code.settings.database import set_game_hidden
@@ -138,7 +138,8 @@ def set_airspy_updated_after():
     set_airspy_settings(settings)
     add_audit_log(
         get_user(), None, "set_airspy_updated_after_cutoff", reason,
-        details=f"Set public Airspy 'updated after' cutoff to {updated_after or 'none (show all games)'}"
+        details=f"Set public Airspy 'updated after' cutoff to {updated_after or 'none (show all games)'}",
+        extra_fields=[("Cutoff", updated_after or "None (show all games)")]
     )
     return redirect(url_for("admin.airspy_games"))
 
@@ -155,9 +156,15 @@ def set_airspy_game_hidden(game_id):
 
     hidden = request.form.get("hidden") == "1"
     set_game_hidden(game_id, game["organizationId"], hidden)
+    organization = get_matching_row("organization", {"id": game["organizationId"]})
     add_audit_log(
         get_user(), None, "hide_airspy_game" if hidden else "unhide_airspy_game", reason,
-        details=f"{'Hid' if hidden else 'Unhid'} game {game['name']} ({game_id}) from Airspy"
+        details=f"{'Hid' if hidden else 'Unhid'} game {game['name']} ({game_id}) from Airspy",
+        thumbnail_url=get_image_cdn_url("airspy", game["iconImageId"]),
+        extra_fields=[
+            ("Game", game["name"]),
+            ("Organization", organization["name"] if organization else game["organizationId"]),
+        ]
     )
     return redirect(url_for("admin.airspy_games", updated_after=request.form.get("updated_after", "")))
 
@@ -208,4 +215,18 @@ def community_settings():
     if other_events:
         notification_groups.append(("Other", other_events))
 
-    return render_template('admin/community_settings.html', config=config, notification_groups=notification_groups)
+    return render_template(
+        'admin/community_settings.html', config=config, notification_groups=notification_groups,
+        tested_count=request.args.get("tested", type=int), tested_name=request.args.get("tested_name")
+    )
+
+@bp.route('/community-settings/test/<webhook_id>', methods=['POST'])
+@auth_required("DEVELOPER")
+def test_webhook(webhook_id):
+    config = get_community_config()
+    webhook = next((w for w in config["webhooks"] if w["id"] == webhook_id), None)
+    if not webhook or not webhook.get("url"):
+        abort(404)
+
+    sent = send_test_notifications(webhook["url"])
+    return redirect(url_for("admin.community_settings", tested=sent, tested_name=webhook["name"]))

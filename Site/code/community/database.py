@@ -1,6 +1,6 @@
 from datetime import datetime, timezone
 from Site.code.database.main import get_db, get_matching_row
-from Site.code.community.webhook import check_automod, send_discord_notification
+from Site.code.community.webhook import check_automod, send_discord_notification, build_embed
 
 def now_utc():
     return datetime.now(timezone.utc).replace(tzinfo=None)
@@ -18,7 +18,8 @@ def create_suggestion(author, title, body):
     db.commit()
 
     if status == "visible":
-        send_discord_notification("new_post", f"\U0001F4A1 **{author['username']}** posted a new suggestion: *{title}*")
+        embed = build_embed("\U0001F4A1 New Suggestion Posted", fields=[("Author", author["username"]), ("Title", title, False)])
+        send_discord_notification("new_post", embed=embed)
 
     return suggestion_id, status
 
@@ -105,7 +106,8 @@ def create_comment(author, suggestion, body, parent_comment=None):
     db.commit()
 
     if status == "visible":
-        send_discord_notification("comment", f"\U0001F4AC **{author['username']}** commented on *{suggestion['title']}*")
+        embed = build_embed("\U0001F4AC New Comment", fields=[("Author", author["username"]), ("On", suggestion["title"])])
+        send_discord_notification("comment", embed=embed)
         if parent_comment:
             if parent_comment["authorId"] != author["id"]:
                 add_notification(

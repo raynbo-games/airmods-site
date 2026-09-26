@@ -152,7 +152,9 @@ def connection_link_confirm(organization_id):
     add_audit_log(
         get_user(), None, "link_organization",
         "Self-service Airship organization link",
-        details=f"Linked organization {org['name']} ({org['id']})"
+        details=f"Linked organization {org['name']} ({org['id']})",
+        thumbnail_url=get_image_cdn_url("airspy", org["iconImageId"]),
+        extra_fields=[("Organization", org["name"])]
     )
     return jsonify({"status": "success", "redirect": url_for("settings.connections")})
 
@@ -167,7 +169,9 @@ def connection_unlink(organization_id):
     add_audit_log(
         get_user(), None, "unlink_organization",
         "Self-service Airship organization unlink",
-        details=f"Unlinked organization {org['name'] if org else organization_id} ({organization_id})"
+        details=f"Unlinked organization {org['name'] if org else organization_id} ({organization_id})",
+        thumbnail_url=get_image_cdn_url("airspy", org["iconImageId"]) if org else None,
+        extra_fields=[("Organization", org["name"] if org else organization_id)]
     )
     return redirect(url_for('settings.connections'))
 
@@ -187,7 +191,12 @@ def connection_add_game(organization_id):
     add_audit_log(
         get_user(), None, "link_game",
         "Self-service Airship game link",
-        details=f"Linked game {raw_data['game']['name']} ({game_id}) to organization {organization_id}"
+        details=f"Linked game {raw_data['game']['name']} ({game_id}) to organization {organization_id}",
+        thumbnail_url=get_image_cdn_url("airspy", raw_data["game"]["iconImageId"]),
+        extra_fields=[
+            ("Game", raw_data["game"]["name"]),
+            ("Organization", raw_data["game"]["organization"]["name"]),
+        ]
     )
     return redirect(url_for('settings.connection_detail', organization_id=organization_id))
 

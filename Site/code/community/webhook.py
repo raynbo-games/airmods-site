@@ -1,7 +1,21 @@
+import time
 import uuid
 import requests
 from psycopg.types.json import Jsonb
 from Site.code.database.main import get_db, get_matching_row
+from Site.code.database.cdn import get_image_cdn_url
+
+# Audit-logged actions whose real add_audit_log() call passes a target user
+# (the account being changed, or a suggestion/comment's author) - used so
+# test previews include a sample Target field exactly where the real
+# notification would have one.
+_AUDIT_ACTIONS_WITH_TARGET = {
+    "set_user_auth", "set_user_notes", "set_user_username",
+    "hide_suggestion", "unhide_suggestion", "edit_suggestion", "delete_suggestion",
+    "approve_suggestion", "reject_suggestion",
+    "hide_comment", "unhide_comment", "edit_comment", "delete_comment",
+    "approve_comment", "reject_comment",
+}
 
 CONFIG_ID = "community_config"
 
@@ -112,7 +126,25 @@ def set_community_config(config):
     )
     db.commit()
 
-def send_discord_notification(event_key, message):
+DISCORD_EMBED_COLOR = 0x5BC0DE  # matches the site's accent color
+
+def build_embed(title, description=None, fields=None, thumbnail_url=None, color=DISCORD_EMBED_COLOR):
+    """Build a Discord embed dict. fields is a list of (name, value) or
+    (name, value, inline) tuples; inline defaults to True."""
+    embed = {"title": title[:256], "color": color}
+    if description:
+        embed["description"] = description[:4096]
+    if fields:
+        embed["fields"] = [{
+            "name": str(field[0])[:256],
+            "value": str(field[1])[:1024],
+            "inline": field[2] if len(field) > 2 else True,
+        } for field in fields if field[1]]
+    if thumbnail_url:
+        embed["thumbnail"] = {"url": thumbnail_url}
+    return embed
+
+def send_discord_notification(event_key, message=None, embed=None):
     config = get_community_config()
     setting = config["notifications"].get(event_key)
     if not setting or not setting.get("enabled"):
@@ -122,10 +154,121 @@ def send_discord_notification(event_key, message):
     if not webhook or not webhook.get("url"):
         return
 
+    payload = {}
+    if message:
+        payload["content"] = message[:2000]
+    if embed:
+        payload["embeds"] = [embed]
+    if not payload:
+        return
+
     try:
-        requests.post(webhook["url"], json={"content": message[:2000]}, timeout=5)
+        requests.post(webhook["url"], json=payload, timeout=5)
     except requests.RequestException:
         pass
+
+def _sample_game():
+    """A random real tracked game (name, icon URL, organization name), or
+    made-up placeholder data if none are tracked yet."""
+    db = get_db()
+    cursor = db.cursor()
+    cursor.execute('SELECT * FROM "game" ORDER BY random() LIMIT 1')
+    row = cursor.fetchone()
+    if row:
+        organization = get_matching_row("organization", {"id": row["organizationId"]})
+        icon_url = get_image_cdn_url("airspy", row["iconImageId"]) if row["iconImageId"] else None
+        return row["name"], icon_url, organization["name"] if organization else "Sample Organization"
+    return "Catch a Fish!", None, "Sample Organization"
+
+def _sample_organization():
+    """A random real tracked organization (name, icon URL), or made-up
+    placeholder data if none are tracked yet."""
+    db = get_db()
+    cursor = db.cursor()
+    cursor.execute('SELECT * FROM "organization" ORDER BY random() LIMIT 1')
+    row = cursor.fetchone()
+    if row:
+        icon_url = get_image_cdn_url("airspy", row["iconImageId"]) if row["iconImageId"] else None
+        return row["name"], icon_url
+    return "Sample Organization", None
+
+def build_preview_embed(event_key):
+    """Build the embed for event_key in exactly the format the real
+    notification would use, populated with a random real game/org from the
+    database (or made-up data if none exist yet). Used by the notification
+    settings page's per-webhook "Test" button."""
+    from Site.code.admin.database import AUDIT_ACTIONS, build_audit_embed
+
+    if event_key in AUDIT_ACTIONS:
+        target_username = "SampleUser" if event_key in _AUDIT_ACTIONS_WITH_TARGET else None
+        thumbnail_url = None
+        extra_fields = None
+
+        if event_key in ("link_organization", "unlink_organization"):
+            org_name, org_icon = _sample_organization()
+            thumbnail_url = org_icon
+            extra_fields = [("Organization", org_name)]
+        elif event_key in ("link_game", "hide_airspy_game", "unhide_airspy_game"):
+            game_name, game_icon, game_org_name = _sample_game()
+            thumbnail_url = game_icon
+            extra_fields = [("Game", game_name), ("Organization", game_org_name)]
+        elif event_key == "set_airspy_updated_after_cutoff":
+            extra_fields = [("Cutoff", "2026-01-01")]
+
+        return build_audit_embed(
+            "SampleAdmin", event_key, "This is a sample reason for testing.",
+            target_username=target_username, details="Sample details for this action.",
+            thumbnail_url=thumbnail_url, extra_fields=extra_fields
+        )
+
+    if event_key == "airspy_game_created":
+        game_name, game_icon, game_org_name = _sample_game()
+        return build_embed("\U0001F195 New Airspy Game Tracked", fields=[("Game", game_name), ("Organization", game_org_name)], thumbnail_url=game_icon)
+
+    if event_key == "airspy_game_version_updated":
+        game_name, game_icon, game_org_name = _sample_game()
+        return build_embed("\U0001F504 Airspy Game Updated", fields=[("Game", game_name), ("Organization", game_org_name)], thumbnail_url=game_icon)
+
+    if event_key == "airspy_organization_created":
+        org_name, org_icon = _sample_organization()
+        return build_embed("\U0001F195 New Airspy Organization Tracked", fields=[("Organization", org_name)], thumbnail_url=org_icon)
+
+    if event_key == "new_post":
+        return build_embed("\U0001F4A1 New Suggestion Posted", fields=[("Author", "SampleUser"), ("Title", "Sample Suggestion Title", False)])
+
+    if event_key == "edited_post":
+        return build_embed("✏️ Suggestion Edited", fields=[("Moderator", "SampleAdmin"), ("Title", "Sample Suggestion Title", False)])
+
+    if event_key == "comment":
+        return build_embed("\U0001F4AC New Comment", fields=[("Author", "SampleUser"), ("On", "Sample Suggestion Title")])
+
+    if event_key == "roadmap_new_step":
+        return build_embed("\U0001F5FA️ New Roadmap Step", fields=[("User", "SampleAdmin"), ("Roadmap", "Sample Roadmap"), ("Step", "Sample Step Title", False)])
+
+    if event_key == "roadmap_edited_step":
+        return build_embed("✏️ Roadmap Step Edited", fields=[("User", "SampleAdmin"), ("Roadmap", "Sample Roadmap"), ("Step", "Sample Step Title", False)])
+
+    if event_key == "roadmap_comment":
+        return build_embed("\U0001F4AC Roadmap Comment", fields=[("Author", "SampleUser"), ("Roadmap", "Sample Roadmap"), ("Step", "Sample Step Title", False)])
+
+    return build_embed(event_key, description="No preview available for this event.")
+
+def send_test_notifications(webhook_url):
+    """POST a realistic sample embed for every known notification event
+    straight to webhook_url, ignoring each event's configured
+    enabled/webhookId - used by the admin settings page's "Test" button to
+    preview real formatting for a single webhook without waiting for each
+    real event to fire."""
+    sent = 0
+    for event_key in get_notification_events():
+        embed = build_preview_embed(event_key)
+        try:
+            requests.post(webhook_url, json={"embeds": [embed]}, timeout=5)
+            sent += 1
+        except requests.RequestException:
+            pass
+        time.sleep(0.4)
+    return sent
 
 def check_automod(text):
     config = get_community_config()
