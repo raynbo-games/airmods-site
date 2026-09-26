@@ -1,11 +1,38 @@
 from flask import Flask
 import time, math
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from Site.code.airspy.airship_urls import request_games, request_game_id, get_image_url
 from Site.code.airspy.database import update_game, update_organization, update_organization_stats, update_game_stats, get_tick_data, set_tick_data
 from Site.code.config import AIRSPY_UPDATE_TIMEOUT, AIRSPY_SPEED
 from Site.code.database.cdn import upload_to_spaces
 from Site.code.database.main import get_matching_row, get_property_value
+
+def last_known_value(values, fallback=0):
+    """Scan backward for the last real (non -1) reading in a series, so a
+    gap can be carried forward instead of left as a sentinel."""
+    for value in reversed(values):
+        if value != -1:
+            return value
+    return fallback
+
+def backfill_gap(stats, count, player_count_key, carry_forward_keys, timestamps_key, last_timestamp_dt, step_seconds):
+    """Fill `count` synthetic entries for a coverage gap (a failed ping, or
+    downtime spanning one or more ticks/days/months): 0 for the player count
+    key, since we can't assume anyone is still online, and the last known
+    value carried forward for the other (cumulative/rolling) keys, so the
+    gap doesn't show up as a misleading drop to zero on a chart. Each
+    backfilled slot still gets a real, precisely-computed timestamp (rather
+    than None) since a gap's position always corresponds to an exact moment
+    at the series' fixed cadence, ending at last_timestamp_dt."""
+    if count <= 0:
+        return
+    stats[player_count_key].extend([0] * count)
+    for key in carry_forward_keys:
+        stats[key].extend([last_known_value(stats[key])] * count)
+    stats[timestamps_key].extend([
+        (last_timestamp_dt - timedelta(seconds=step_seconds * (count - 1 - i))).strftime("%Y-%m-%dT%H:%M:%S.%fZ")
+        for i in range(count)
+    ])
 
 def tick_airspy_icons(app: Flask):
     """Scheduled task: mirror every tracked game/organization icon to the CDN."""
@@ -23,7 +50,9 @@ def tick_airspy(app: Flask):
 
     missed_ticks = math.floor(((time.time() * AIRSPY_SPEED - data["lastTick"]) / 60) / AIRSPY_UPDATE_TIMEOUT)
     tick_count = 1 + missed_ticks
-    current_tick_time = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%S.%fZ")
+    now_dt = datetime.now(timezone.utc)
+    current_tick_time = now_dt.strftime("%Y-%m-%dT%H:%M:%S.%fZ")
+    tick_step_seconds = 60 * AIRSPY_UPDATE_TIMEOUT
 
     games = request_games()
     if games is None:
@@ -54,15 +83,11 @@ def tick_airspy(app: Flask):
             app.logger.warning(f"Failed to fetch game data for game_id: {game_id}")
 
             # A failed fetch still counts as tick_count ticks having passed for this
-            # game - back it off with -1 placeholders like the missed_ticks case,
+            # game - back it off with placeholders like the missed_ticks case,
             # otherwise this game's arrays fall out of alignment with the shared
             # clock and its data desyncs from every other game's.
             game_data = get_matching_row("game", {"id": game_id})
-            game_data['gameStats']["playerCounts"].extend([-1] * tick_count)
-            game_data['gameStats']["plays"].extend([-1] * tick_count)
-            game_data['gameStats']["plays24h"].extend([-1] * tick_count)
-            game_data['gameStats']["uniquePlays24h"].extend([-1] * tick_count)
-            game_data['gameStats']["timestamps"].extend([None] * tick_count)
+            backfill_gap(game_data['gameStats'], tick_count, "playerCounts", ["plays", "plays24h", "uniquePlays24h"], "timestamps", now_dt, tick_step_seconds)
 
             del game_data['gameStats']["playerCounts"][:tick_count]
             del game_data['gameStats']["plays"][:tick_count]
@@ -81,12 +106,16 @@ def tick_airspy(app: Flask):
         plays24h = raw_data["game"]["plays24h"]
         uniquePlays24h = raw_data["game"]["uniquePlays24h"]
 
+        # "plays" is a lifetime total that should never decrease - a lower
+        # reading is a bad/glitched response, not a real drop, so keep the
+        # last known value instead of storing a visually misleading dip.
+        last_plays = last_known_value(game_data['gameStats']["plays"])
+        if plays < last_plays:
+            app.logger.warning(f"Ignoring anomalous plays drop for game_id {game_id}: {plays} < {last_plays}")
+            plays = last_plays
+
         if missed_ticks > 0:
-            game_data['gameStats']["playerCounts"].extend([-1] * missed_ticks)
-            game_data['gameStats']["plays"].extend([-1] * missed_ticks)
-            game_data['gameStats']["plays24h"].extend([-1] * missed_ticks)
-            game_data['gameStats']["uniquePlays24h"].extend([-1] * missed_ticks)
-            game_data['gameStats']["timestamps"].extend([None] * missed_ticks)
+            backfill_gap(game_data['gameStats'], missed_ticks, "playerCounts", ["plays", "plays24h", "uniquePlays24h"], "timestamps", now_dt - timedelta(seconds=tick_step_seconds), tick_step_seconds)
 
         game_data['gameStats']["playerCounts"].append(playerCount)
         game_data['gameStats']["plays"].append(plays)
@@ -139,11 +168,7 @@ def tick_airspy(app: Flask):
         uniquePlays24h = current["orgStats"]["uniquePlays24h"]
 
         if missed_ticks > 0:
-            org_data['orgStats']["playerCounts"].extend([-1] * missed_ticks)
-            org_data['orgStats']["plays"].extend([-1] * missed_ticks)
-            org_data['orgStats']["plays24h"].extend([-1] * missed_ticks)
-            org_data['orgStats']["uniquePlays24h"].extend([-1] * missed_ticks)
-            org_data['orgStats']["timestamps"].extend([None] * missed_ticks)
+            backfill_gap(org_data['orgStats'], missed_ticks, "playerCounts", ["plays", "plays24h", "uniquePlays24h"], "timestamps", now_dt - timedelta(seconds=tick_step_seconds), tick_step_seconds)
 
         org_data['orgStats']["playerCounts"].append(playerCount)
         org_data['orgStats']["plays"].append(plays)
@@ -184,11 +209,7 @@ def tick_airspy(app: Flask):
         game_data = get_matching_row("game", {"id": game_id})
 
         if missed_days > 0:
-            game_data['gameStats']["dailyPlayerCounts"].extend([-1] * missed_days)
-            game_data['gameStats']["dailyPlays"].extend([-1] * missed_days)
-            game_data['gameStats']["dailyPlays24h"].extend([-1] * missed_days)
-            game_data['gameStats']["dailyUniquePlays24h"].extend([-1] * missed_days)
-            game_data['gameStats']["dailyTimestamps"].extend([None] * missed_days)
+            backfill_gap(game_data['gameStats'], missed_days, "dailyPlayerCounts", ["dailyPlays", "dailyPlays24h", "dailyUniquePlays24h"], "dailyTimestamps", now_dt - timedelta(days=1), 86400)
 
         filtered = [num for num in game_data['gameStats']["playerCounts"] if num != -1]
         if (len(filtered) >= 1): value = sum(filtered) / len(filtered)
@@ -225,11 +246,7 @@ def tick_airspy(app: Flask):
         org_data = get_matching_row("organization", {"id": org_id})
 
         if missed_days > 0:
-            org_data['orgStats']["dailyPlayerCounts"].extend([-1] * missed_days)
-            org_data['orgStats']["dailyPlays"].extend([-1] * missed_days)
-            org_data['orgStats']["dailyPlays24h"].extend([-1] * missed_days)
-            org_data['orgStats']["dailyUniquePlays24h"].extend([-1] * missed_days)
-            org_data['orgStats']["dailyTimestamps"].extend([None] * missed_days)
+            backfill_gap(org_data['orgStats'], missed_days, "dailyPlayerCounts", ["dailyPlays", "dailyPlays24h", "dailyUniquePlays24h"], "dailyTimestamps", now_dt - timedelta(days=1), 86400)
 
         filtered = [num for num in org_data['orgStats']["playerCounts"] if num != -1]
         if (len(filtered) >= 1): value = sum(filtered) / len(filtered)
@@ -277,11 +294,7 @@ def tick_airspy(app: Flask):
         game_data = get_matching_row("game", {"id": game_id})
 
         if missed_months > 0:
-            game_data['gameStats']["monthlyPlayerCounts"].extend([-1] * missed_months)
-            game_data['gameStats']["monthlyPlays"].extend([-1] * missed_months)
-            game_data['gameStats']["monthlyPlays24h"].extend([-1] * missed_months)
-            game_data['gameStats']["monthlyUniquePlays24h"].extend([-1] * missed_months)
-            game_data['gameStats']["monthlyTimestamps"].extend([None] * missed_months)
+            backfill_gap(game_data['gameStats'], missed_months, "monthlyPlayerCounts", ["monthlyPlays", "monthlyPlays24h", "monthlyUniquePlays24h"], "monthlyTimestamps", now_dt - timedelta(seconds=2592000), 2592000)
 
         filtered = [num for num in game_data['gameStats']["dailyPlayerCounts"] if num != -1]
         if (len(filtered) >= 1): value = sum(filtered) / len(filtered)
@@ -318,11 +331,7 @@ def tick_airspy(app: Flask):
         org_data = get_matching_row("organization", {"id": org_id})
 
         if missed_months > 0:
-            org_data['orgStats']["monthlyPlayerCounts"].extend([-1] * missed_months)
-            org_data['orgStats']["monthlyPlays"].extend([-1] * missed_months)
-            org_data['orgStats']["monthlyPlays24h"].extend([-1] * missed_months)
-            org_data['orgStats']["monthlyUniquePlays24h"].extend([-1] * missed_months)
-            org_data['orgStats']["monthlyTimestamps"].extend([None] * missed_months)
+            backfill_gap(org_data['orgStats'], missed_months, "monthlyPlayerCounts", ["monthlyPlays", "monthlyPlays24h", "monthlyUniquePlays24h"], "monthlyTimestamps", now_dt - timedelta(seconds=2592000), 2592000)
 
         filtered = [num for num in org_data['orgStats']["dailyPlayerCounts"] if num != -1]
         if (len(filtered) >= 1): value = sum(filtered) / len(filtered)
