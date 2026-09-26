@@ -1,0 +1,125 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<h1>Infrastructure</h1>
+
+{% if not configured %}
+<div class="admin-form-section">
+    <h3>Not Configured</h3>
+    <p class="info-description">Set the <code>DIGITALOCEAN_API_TOKEN</code> environment variable (a DigitalOcean Personal Access Token, generated under API &gt; Tokens in the DO control panel) to enable this dashboard.</p>
+</div>
+{% else %}
+
+<div class="admin-form-section">
+    <h3>Billing</h3>
+    {% if balance %}
+    <div class="info-stats-grid">
+        <div class="info-stat"><span class="info-stat-label">Account Balance</span><span class="info-stat-value">${{ "%.2f"|format(balance.account_balance|float) }}</span></div>
+        <div class="info-stat"><span class="info-stat-label">Month-to-Date Usage</span><span class="info-stat-value">${{ "%.2f"|format(balance.month_to_date_usage|float) }}</span></div>
+        <div class="info-stat"><span class="info-stat-label">Month-to-Date Balance</span><span class="info-stat-value">${{ "%.2f"|format(balance.month_to_date_balance|float) }}</span></div>
+    </div>
+    {% else %}
+    <p class="info-description">Could not load billing balance.</p>
+    {% endif %}
+
+    {% if latest_invoice %}
+    <h4>Latest Invoice ({{ latest_invoice.invoice_period }}) &mdash; ${{ "%.2f"|format(latest_invoice.amount|float) }}</h4>
+    <div class="audit-log-table-wrapper">
+        <table class="audit-log-table">
+            <thead><tr><th>Product</th><th>Description</th><th>Amount</th></tr></thead>
+            <tbody>
+                {% for item in invoice_items %}
+                <tr>
+                    <td>{{ item.product }}</td>
+                    <td>{{ item.description }}</td>
+                    <td>${{ "%.2f"|format(item.amount|float) }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% endif %}
+</div>
+
+<div class="admin-form-section">
+    <h3>Web Services (Apps)</h3>
+    {% if apps %}
+    {% for app in apps %}
+    {% set deployment = app.active_deployment %}
+    {% set phase = deployment.phase if deployment else 'UNKNOWN' %}
+    {% set service = app.spec.services[0] if app.spec and app.spec.services else none %}
+    <div class="infra-card">
+        <div class="infra-card-header">
+            <h4>{{ (app.spec.name if app.spec else none) or app.id }}</h4>
+            <span class="info-chip {{ 'info-chip-badge' if phase == 'ACTIVE' else ('info-chip-warning' if phase == 'ERROR' else '') }}">{{ phase }}</span>
+        </div>
+        <div class="info-stats-grid">
+            <div class="info-stat"><span class="info-stat-label">Region</span><span class="info-stat-value">{{ app.region or '—' }}</span></div>
+            <div class="info-stat"><span class="info-stat-label">Instances</span><span class="info-stat-value">{{ service.instance_count if service else '—' }}</span></div>
+            <div class="info-stat"><span class="info-stat-label">Instance Size</span><span class="info-stat-value">{{ service.instance_size_slug if service else '—' }}</span></div>
+            <div class="info-stat"><span class="info-stat-label">Live URL</span><span class="info-stat-value">{% if app.live_url %}<a href="{{ app.live_url }}" target="_blank" rel="noopener noreferrer">{{ app.live_url }}</a>{% else %}—{% endif %}</span></div>
+        </div>
+
+        {% if app._deployments %}
+        <div class="audit-log-table-wrapper">
+            <table class="audit-log-table">
+                <thead><tr><th>Deployed</th><th>Phase</th><th>Cause</th></tr></thead>
+                <tbody>
+                    {% for d in app._deployments %}
+                    <tr>
+                        <td>{{ d.created_at }}</td>
+                        <td>{{ d.phase }}</td>
+                        <td>{{ d.cause }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% endif %}
+
+        <button type="button" class="btn btn-default infra-logs-btn" data-app-id="{{ app.id }}">View Recent Logs</button>
+        <pre class="infra-log-output" id="logs-{{ app.id }}" hidden></pre>
+    </div>
+    {% endfor %}
+    {% else %}
+    <p class="info-description">No apps found on this account.</p>
+    {% endif %}
+</div>
+
+<div class="admin-form-section">
+    <h3>Databases</h3>
+
+    {% if live_db_stats %}
+    <h4>This Site's Database (Live)</h4>
+    <div class="info-stats-grid">
+        <div class="info-stat"><span class="info-stat-label">Size</span><span class="info-stat-value">{{ live_db_stats.size }}</span></div>
+        <div class="info-stat"><span class="info-stat-label">Active Connections</span><span class="info-stat-value">{{ live_db_stats.connections }} / {{ live_db_stats.max_connections }}</span></div>
+    </div>
+    {% endif %}
+
+    {% if databases %}
+    {% for cluster in databases %}
+    <div class="infra-card">
+        <div class="infra-card-header">
+            <h4>{{ cluster.name }}</h4>
+            <span class="info-chip {{ 'info-chip-badge' if cluster.status == 'online' else 'info-chip-warning' }}">{{ cluster.status }}</span>
+        </div>
+        <div class="info-stats-grid">
+            <div class="info-stat"><span class="info-stat-label">Engine</span><span class="info-stat-value">{{ cluster.engine }} {{ cluster.version }}</span></div>
+            <div class="info-stat"><span class="info-stat-label">Region</span><span class="info-stat-value">{{ cluster.region }}</span></div>
+            <div class="info-stat"><span class="info-stat-label">Size</span><span class="info-stat-value">{{ cluster.size }}</span></div>
+            <div class="info-stat"><span class="info-stat-label">Nodes</span><span class="info-stat-value">{{ cluster.num_nodes }}</span></div>
+        </div>
+    </div>
+    {% endfor %}
+    {% else %}
+    <p class="info-description">No database clusters found on this account.</p>
+    {% endif %}
+</div>
+
+{% endif %}
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='scripts/infrastructure.js') }}"></script>
+{% endblock %}

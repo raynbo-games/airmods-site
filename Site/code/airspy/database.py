@@ -1,7 +1,8 @@
 import click, time
 from Site.code.database.main import get_db, get_matching_row
-from Site.code.database.cdn import upload_to_spaces
+from Site.code.database.cdn import upload_to_spaces, get_image_cdn_url
 from Site.code.airspy.airship_urls import get_image_url
+from Site.code.community.webhook import send_discord_notification, build_embed
 from Site.code.config import AIRSPY_SPEED, STORED_TICKS, STORED_DAILY_TICKS, STORED_MONTHLY_TICKS
 from psycopg.types.json import Jsonb
 from datetime import datetime
@@ -43,6 +44,12 @@ def insert_game(raw_data):
     )
     db.commit()
     upload_to_spaces("airspy", game_data["iconImageId"], get_image_url(game_data["iconImageId"]))
+    embed = build_embed(
+        "\U0001F195 New Airspy Game Tracked",
+        fields=[("Game", game_data["name"]), ("Organization", organization["name"])],
+        thumbnail_url=get_image_cdn_url("airspy", game_data["iconImageId"])
+    )
+    send_discord_notification("airspy_game_created", embed=embed)
     return f"Inserted game: {game_data["id"]}"
 
 def get_tick_data():
@@ -75,6 +82,30 @@ def set_tick_data(tick_data):
     cursor.execute(
         'UPDATE "json" SET "data" = %s WHERE "id" = %s',
         (Jsonb(tick_data), "airship_tick_data")
+    )
+    db.commit()
+
+def get_airspy_settings():
+    settings = get_matching_row("json", {"id": "airspy_settings"})
+    if settings:
+        return settings["data"]
+
+    db = get_db()
+    cursor = db.cursor()
+    settings = {"gamesUpdatedAfter": None}
+    cursor.execute(
+        'INSERT INTO "json" ("id", "data") VALUES (%s, %s)',
+        ("airspy_settings", Jsonb(settings))
+    )
+    db.commit()
+    return settings
+
+def set_airspy_settings(settings):
+    db = get_db()
+    cursor = db.cursor()
+    cursor.execute(
+        'UPDATE "json" SET "data" = %s WHERE "id" = %s',
+        (Jsonb(settings), "airspy_settings")
     )
     db.commit()
 
@@ -136,6 +167,15 @@ def update_game(raw_data):
     cursor.execute(sql_query, query_params)
 
     db.commit()
+
+    if "lastVersionUpdate" in changed_fields:
+        embed = build_embed(
+            "\U0001F504 Airspy Game Updated",
+            fields=[("Game", game_data["name"]), ("Organization", game_data["organization"]["name"])],
+            thumbnail_url=get_image_cdn_url("airspy", game_data["iconImageId"])
+        )
+        send_discord_notification("airspy_game_version_updated", embed=embed)
+
     return f"Updated game: {game_data["id"]}, {changed_fields}"
 
 
@@ -160,6 +200,12 @@ def insert_organization(raw_data):
     )
     db.commit()
     upload_to_spaces("airspy", raw_data["iconImageId"], get_image_url(raw_data["iconImageId"]))
+    embed = build_embed(
+        "\U0001F195 New Airspy Organization Tracked",
+        fields=[("Organization", raw_data["name"])],
+        thumbnail_url=get_image_cdn_url("airspy", raw_data["iconImageId"])
+    )
+    send_discord_notification("airspy_organization_created", embed=embed)
 
     return f"Inserted organization: {raw_data["id"]}"
 
@@ -198,6 +244,18 @@ def update_organization_stats(org_id, stats):
     cursor = db.cursor()
     cursor.execute(f'UPDATE "organization" SET "orgStats" = %s WHERE id = %s', (Jsonb(stats), org_id))
     db.commit()
+
+def get_all_games():
+    """Admin listing of every tracked game, including ones hidden from Airspy."""
+    db = get_db()
+    cursor = db.cursor()
+    query = (
+        'SELECT "game"."id", "game"."name", "game"."iconImageId", "game"."hiddenFromAirspy", '
+        '"game"."organizationId", "game"."lastVersionUpdate", "organization"."name" AS "organizationName" '
+        'FROM "game" JOIN "organization" ON "game"."organizationId" = "organization"."id" '
+        'ORDER BY "game"."lastVersionUpdate" DESC'
+    )
+    return cursor.execute(query).fetchall()
 
 def reset_airspy_data():
     db = get_db()

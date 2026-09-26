@@ -2,7 +2,7 @@ from datetime import timezone
 from flask import Blueprint, render_template, redirect, url_for, request, abort, jsonify
 from Site.code.auth.database import get_auth
 from Site.code.auth.main import auth_required, login_required, get_user
-from Site.code.community.webhook import send_discord_notification
+from Site.code.community.webhook import send_discord_notification, build_embed
 from Site.code.roadmap.database import (
     STATUSES, create_roadmap, get_roadmaps, get_roadmap, rename_roadmap, delete_roadmap, touch_roadmap,
     get_boxes, get_box, create_box, update_box, update_box_position, delete_box,
@@ -104,7 +104,8 @@ def add_box(slug):
     y = request.form.get('y', 40, type=int)
     create_box(roadmap["id"], title, description, status, x, y)
     touch_roadmap(roadmap["id"])
-    send_discord_notification("RoadmapNewStep", f"\U0001F5FA️ **{get_user()['username']}** added a new step to *{roadmap['name']}*: **{title}**")
+    embed = build_embed("\U0001F5FA️ New Roadmap Step", fields=[("User", get_user()["username"]), ("Roadmap", roadmap["name"]), ("Step", title, False)])
+    send_discord_notification("roadmap_new_step", embed=embed)
     return redirect(url_for('roadmap.view', slug=slug))
 
 @bp.route('/<slug>/boxes/<int:box_id>', methods=['POST'])
@@ -123,7 +124,8 @@ def edit_box(slug, box_id):
 
     update_box(box_id, title, description, status)
     touch_roadmap(roadmap["id"])
-    send_discord_notification("RoadmapEditedStep", f"✏️ **{get_user()['username']}** edited step *{title}* on *{roadmap['name']}*")
+    embed = build_embed("✏️ Roadmap Step Edited", fields=[("User", get_user()["username"]), ("Roadmap", roadmap["name"]), ("Step", title, False)])
+    send_discord_notification("roadmap_edited_step", embed=embed)
     return redirect(url_for('roadmap.view', slug=slug))
 
 @bp.route('/<slug>/boxes/<int:box_id>/position', methods=['POST'])
@@ -257,7 +259,8 @@ def add_box_comment(slug, box_id):
 
     comment_id = create_box_comment(box_id, get_user(), body, parent_comment_id)
     comment = get_box_comment(comment_id)
-    send_discord_notification("RoadmapComment", f"\U0001F4AC **{comment['authorUsername']}** commented on step *{box['title']}* ({roadmap['name']})")
+    embed = build_embed("\U0001F4AC Roadmap Comment", fields=[("Author", comment["authorUsername"]), ("Roadmap", roadmap["name"]), ("Step", box["title"], False)])
+    send_discord_notification("roadmap_comment", embed=embed)
     return jsonify({
         "ok": True,
         "comment": {

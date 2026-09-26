@@ -277,6 +277,45 @@ a.info-chip:hover {
     border-color: #6b2e2e;
 }
 
+.infra-card {
+    background-color: #1b1b1b;
+    border-radius: 12px;
+    padding: 16px 20px;
+    margin-bottom: 16px;
+}
+
+.infra-card:last-child {
+    margin-bottom: 0;
+}
+
+.infra-card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    margin-bottom: 12px;
+}
+
+.infra-card-header h4 {
+    margin: 0;
+    color: #ffffff;
+    font-size: 15px;
+}
+
+.infra-log-output {
+    background-color: #0f0f0f;
+    border: 1px solid #2b2b2b;
+    border-radius: 8px;
+    padding: 12px 14px;
+    margin-top: 12px;
+    max-height: 400px;
+    overflow-y: auto;
+    color: #d0d0d0;
+    font-size: 12px;
+    white-space: pre-wrap;
+    word-break: break-word;
+}
+
 .info-stats-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
@@ -835,6 +874,13 @@ a.list-card-item:hover {
     white-space: normal;
 }
 
+.admin-game-icon {
+    width: 32px;
+    height: 32px;
+    border-radius: 6px;
+    object-fit: cover;
+}
+
 /* Inbox nav link + unread badge */
 
 .inbox-link {
@@ -919,6 +965,62 @@ a.list-card-item:hover {
     color: #9d9d9d;
     font-size: 12px;
     margin-top: 2px;
+}
+
+.notify-row-controls {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-shrink: 0;
+}
+
+.notify-webhook-select {
+    min-width: 150px;
+    width: auto;
+}
+
+.webhook-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 0;
+}
+
+.webhook-row:not(:last-child) {
+    border-bottom: 1px solid #2b2b2b;
+}
+
+.webhook-row input[name^="webhook_name_"],
+.webhook-row input[name="new_webhook_name"] {
+    flex: 0 0 160px;
+}
+
+.webhook-row input[name^="webhook_url_"],
+.webhook-row input[name="new_webhook_url"] {
+    flex: 1;
+}
+
+.webhook-row-delete {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    color: #9d9d9d;
+    font-size: 12px;
+    white-space: nowrap;
+}
+
+.webhook-row .btn {
+    flex-shrink: 0;
+}
+
+.test-result-banner {
+    background-color: #1b2f1b;
+    border: 1px solid #3d6b3d;
+    border-radius: 12px;
+    padding: 12px 18px;
+    margin-bottom: 20px;
+    color: #b7e6b7;
+    font-size: 14px;
 }
 
 /* Community: suggestion list + vote widget */

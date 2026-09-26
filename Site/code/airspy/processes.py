@@ -52,6 +52,25 @@ def tick_airspy(app: Flask):
         raw_data = request_game_id(game_id, liveStats=True)
         if raw_data is None:
             app.logger.warning(f"Failed to fetch game data for game_id: {game_id}")
+
+            # A failed fetch still counts as tick_count ticks having passed for this
+            # game - back it off with -1 placeholders like the missed_ticks case,
+            # otherwise this game's arrays fall out of alignment with the shared
+            # clock and its data desyncs from every other game's.
+            game_data = get_matching_row("game", {"id": game_id})
+            game_data['gameStats']["playerCounts"].extend([-1] * tick_count)
+            game_data['gameStats']["plays"].extend([-1] * tick_count)
+            game_data['gameStats']["plays24h"].extend([-1] * tick_count)
+            game_data['gameStats']["uniquePlays24h"].extend([-1] * tick_count)
+            game_data['gameStats']["timestamps"].extend([None] * tick_count)
+
+            del game_data['gameStats']["playerCounts"][:tick_count]
+            del game_data['gameStats']["plays"][:tick_count]
+            del game_data['gameStats']["plays24h"][:tick_count]
+            del game_data['gameStats']["uniquePlays24h"][:tick_count]
+            del game_data['gameStats']["timestamps"][:tick_count]
+
+            update_game_stats(game_data["id"], game_data['gameStats'])
             continue
 
         app.logger.debug(update_game(raw_data))
@@ -177,17 +196,17 @@ def tick_airspy(app: Flask):
         game_data['gameStats']["dailyPlayerCounts"].append(value)
 
         filtered = [num for num in game_data['gameStats']["plays"] if num != -1]
-        if (len(filtered) >= 1): value = filtered[-1]
+        if (len(filtered) >= 1): value = max(filtered)
         else: value = -1
         game_data['gameStats']["dailyPlays"].append(value)
 
         filtered = [num for num in game_data['gameStats']["plays24h"] if num != -1]
-        if (len(filtered) >= 1): value = filtered[-1]
+        if (len(filtered) >= 1): value = max(filtered)
         else: value = -1
         game_data['gameStats']["dailyPlays24h"].append(value)
 
         filtered = [num for num in game_data['gameStats']["uniquePlays24h"] if num != -1]
-        if (len(filtered) >= 1): value = filtered[-1]
+        if (len(filtered) >= 1): value = max(filtered)
         else: value = -1
         game_data['gameStats']["dailyUniquePlays24h"].append(value)
 
@@ -218,17 +237,17 @@ def tick_airspy(app: Flask):
         org_data['orgStats']["dailyPlayerCounts"].append(value)
 
         filtered = [num for num in org_data['orgStats']["plays"] if num != -1]
-        if (len(filtered) >= 1): value = filtered[-1]
+        if (len(filtered) >= 1): value = max(filtered)
         else: value = -1
         org_data['orgStats']["dailyPlays"].append(value)
 
         filtered = [num for num in org_data['orgStats']["plays24h"] if num != -1]
-        if (len(filtered) >= 1): value = filtered[-1]
+        if (len(filtered) >= 1): value = max(filtered)
         else: value = -1
         org_data['orgStats']["dailyPlays24h"].append(value)
 
         filtered = [num for num in org_data['orgStats']["uniquePlays24h"] if num != -1]
-        if (len(filtered) >= 1): value = filtered[-1]
+        if (len(filtered) >= 1): value = max(filtered)
         else: value = -1
         org_data['orgStats']["dailyUniquePlays24h"].append(value)
 
@@ -270,17 +289,17 @@ def tick_airspy(app: Flask):
         game_data['gameStats']["monthlyPlayerCounts"].append(value)
 
         filtered = [num for num in game_data['gameStats']["dailyPlays"] if num != -1]
-        if (len(filtered) >= 1): value = filtered[-1]
+        if (len(filtered) >= 1): value = max(filtered)
         else: value = -1
         game_data['gameStats']["monthlyPlays"].append(value)
 
         filtered = [num for num in game_data['gameStats']["dailyPlays24h"] if num != -1]
-        if (len(filtered) >= 1): value = sum(filtered) / len(filtered)
+        if (len(filtered) >= 1): value = max(filtered)
         else: value = -1
         game_data['gameStats']["monthlyPlays24h"].append(value)
 
         filtered = [num for num in game_data['gameStats']["dailyUniquePlays24h"] if num != -1]
-        if (len(filtered) >= 1): value = sum(filtered) / len(filtered)
+        if (len(filtered) >= 1): value = max(filtered)
         else: value = -1
         game_data['gameStats']["monthlyUniquePlays24h"].append(value)
 
@@ -311,17 +330,17 @@ def tick_airspy(app: Flask):
         org_data['orgStats']["monthlyPlayerCounts"].append(value)
 
         filtered = [num for num in org_data['orgStats']["dailyPlays"] if num != -1]
-        if (len(filtered) >= 1): value = filtered[-1]
+        if (len(filtered) >= 1): value = max(filtered)
         else: value = -1
         org_data['orgStats']["monthlyPlays"].append(value)
 
         filtered = [num for num in org_data['orgStats']["dailyPlays24h"] if num != -1]
-        if (len(filtered) >= 1): value = sum(filtered) / len(filtered)
+        if (len(filtered) >= 1): value = max(filtered)
         else: value = -1
         org_data['orgStats']["monthlyPlays24h"].append(value)
 
         filtered = [num for num in org_data['orgStats']["dailyUniquePlays24h"] if num != -1]
-        if (len(filtered) >= 1): value = sum(filtered) / len(filtered)
+        if (len(filtered) >= 1): value = max(filtered)
         else: value = -1
         org_data['orgStats']["monthlyUniquePlays24h"].append(value)
 
