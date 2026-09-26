@@ -20,7 +20,8 @@ CREATE TABLE IF NOT EXISTS "game" (
 	"uniquePlays24h" INTEGER NOT NULL,
 	"platforms" JSONB NOT NULL,
 	"liveStats" JSONB NOT NULL,
-	"gameStats" JSONB NOT NULL
+	"gameStats" JSONB NOT NULL,
+	"hiddenFromAirspy" BOOLEAN NOT NULL DEFAULT FALSE
 );
 
 CREATE TABLE IF NOT EXISTS "organization" (
@@ -32,6 +33,7 @@ CREATE TABLE IF NOT EXISTS "organization" (
 	"iconImageId" TEXT NOT NULL,
 	"createdAt" TIMESTAMP NOT NULL,
 	"adminBanned" BOOLEAN NOT NULL,
+	"hiddenFromAirspy" BOOLEAN NOT NULL DEFAULT FALSE,
 	"orgStats" JSONB NOT NULL
 );
 

@@ -24,7 +24,7 @@ function formatChartLabel(value, currentTimeframe) {
     if (currentTimeframe === "month") {
         return date.toLocaleDateString(undefined, { month: "short", day: "numeric" });
     }
-    return date.toLocaleDateString(undefined, { month: "short", year: "numeric" });
+    return date.toLocaleDateString(undefined, { month: "short" });
 }
 
 function initCharts() {
@@ -44,12 +44,8 @@ function initCharts() {
 
         graphInfo.values.forEach((val, idx) => {
             if (val !== -1) {
-                const fullLabel = formatChartLabel(dataset.labels[idx], timeframe) || `Point ${idx + 1}`;
-                // On the Day tab (1 point per minute), only label the axis every
-                // 30 minutes to avoid clutter - the exact time is still always
-                // available in the tooltip via filteredFullLabels.
-                const showAxisLabel = timeframe !== "day" || idx % 30 === 0;
-                filteredLabels.push(showAxisLabel ? fullLabel : "");
+                const fullLabel = formatChartLabel(dataset.labels[idx], timeframe) || "Timestamp Error"
+                filteredLabels.push(fullLabel);
                 filteredFullLabels.push(fullLabel);
                 filteredValues.push(val);
             }
@@ -100,7 +96,7 @@ function initCharts() {
                         grid: { color: '#2d2d2d' },
                         ticks: {
                             color: '#aaaaaa',
-                            autoSkip: timeframe !== "day"
+                            autoSkip: false
                         }
                     },
                     y: {

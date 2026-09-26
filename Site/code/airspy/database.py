@@ -3,9 +3,9 @@ from Site.code.database.main import get_db, get_matching_row
 from Site.code.database.cdn import upload_to_spaces, get_image_cdn_url
 from Site.code.airspy.airship_urls import get_image_url
 from Site.code.community.webhook import send_discord_notification, build_embed
-from Site.code.config import AIRSPY_SPEED, STORED_TICKS, STORED_DAILY_TICKS, STORED_MONTHLY_TICKS
+from Site.code.config import AIRSPY_SPEED, AIRSPY_UPDATE_TIMEOUT, STORED_TICKS, STORED_DAILY_TICKS, STORED_MONTHLY_TICKS
 from psycopg.types.json import Jsonb
-from datetime import datetime
+from datetime import datetime, timedelta, timezone
 
 default_stats = {
     "playerCounts": [-1] * STORED_TICKS,
@@ -273,3 +273,115 @@ def reset_airspy_db_command(yes):
 
     reset_airspy_data()
     click.echo('Reset all Airspy data.')
+
+def _leading_gap_length(timestamps):
+    """Index of the first real timestamp in a series. Everything before it
+    is never-ticked default padding (or so early in the game's history it
+    can't be told apart from padding) - it should stay excluded from charts
+    (-1) rather than being turned into a fabricated data point at index 0."""
+    for i, t in enumerate(timestamps):
+        if t is not None:
+            return i
+    return len(timestamps)
+
+def _fix_player_count_series(values, skip):
+    """A -1 (no data) reading becomes 0 - we can't assume anyone was online -
+    except the leading `skip` entries, which are left as -1 (excluded)."""
+    return [-1] * skip + [0 if v == -1 else v for v in values[skip:]]
+
+def _fix_monotonic_series(values, skip):
+    """For a lifetime counter like 'plays' that should never decrease: carry
+    a -1 gap forward, and clamp any anomalous drop back up to the running
+    max, in one forward pass. The leading `skip` entries are left as -1."""
+    fixed = [-1] * skip
+    last = 0
+    for v in values[skip:]:
+        value = last if v == -1 else max(v, last)
+        fixed.append(value)
+        last = value
+    return fixed
+
+def _fix_carry_forward_series(values, skip):
+    """Replace -1 gaps with the last known real reading (0 if none yet). The
+    leading `skip` entries are left as -1."""
+    fixed = [-1] * skip
+    last = 0
+    for v in values[skip:]:
+        if v == -1:
+            fixed.append(last)
+        else:
+            fixed.append(v)
+            last = v
+    return fixed
+
+def _fix_timestamps(timestamps, skip, step_seconds, now_dt):
+    """Synthesize a real timestamp for every gap entry after the leading
+    padding (position i is `(len - 1 - i) * step_seconds` before now, since
+    the series always ends at "now" at a fixed cadence), instead of leaving
+    it None - a plotted gap point needs a real time to label on the chart."""
+    fixed = list(timestamps[:skip])
+    real = timestamps[skip:]
+    n = len(real)
+    for i in range(n):
+        if real[i] is not None:
+            fixed.append(real[i])
+        else:
+            offset = n - 1 - i
+            synthesized = now_dt - timedelta(seconds=step_seconds * offset)
+            fixed.append(synthesized.strftime("%Y-%m-%dT%H:%M:%S.%fZ"))
+    return fixed
+
+def _fix_stats(stats, now_dt):
+    tick_skip = _leading_gap_length(stats["timestamps"])
+    stats["playerCounts"] = _fix_player_count_series(stats["playerCounts"], tick_skip)
+    stats["plays"] = _fix_monotonic_series(stats["plays"], tick_skip)
+    stats["plays24h"] = _fix_carry_forward_series(stats["plays24h"], tick_skip)
+    stats["uniquePlays24h"] = _fix_carry_forward_series(stats["uniquePlays24h"], tick_skip)
+    stats["timestamps"] = _fix_timestamps(stats["timestamps"], tick_skip, 60 * AIRSPY_UPDATE_TIMEOUT, now_dt)
+
+    daily_skip = _leading_gap_length(stats["dailyTimestamps"])
+    stats["dailyPlayerCounts"] = _fix_player_count_series(stats["dailyPlayerCounts"], daily_skip)
+    stats["dailyPlays"] = _fix_monotonic_series(stats["dailyPlays"], daily_skip)
+    stats["dailyPlays24h"] = _fix_carry_forward_series(stats["dailyPlays24h"], daily_skip)
+    stats["dailyUniquePlays24h"] = _fix_carry_forward_series(stats["dailyUniquePlays24h"], daily_skip)
+    stats["dailyTimestamps"] = _fix_timestamps(stats["dailyTimestamps"], daily_skip, 86400, now_dt)
+
+    monthly_skip = _leading_gap_length(stats["monthlyTimestamps"])
+    stats["monthlyPlayerCounts"] = _fix_player_count_series(stats["monthlyPlayerCounts"], monthly_skip)
+    stats["monthlyPlays"] = _fix_monotonic_series(stats["monthlyPlays"], monthly_skip)
+    stats["monthlyPlays24h"] = _fix_carry_forward_series(stats["monthlyPlays24h"], monthly_skip)
+    stats["monthlyUniquePlays24h"] = _fix_carry_forward_series(stats["monthlyUniquePlays24h"], monthly_skip)
+    stats["monthlyTimestamps"] = _fix_timestamps(stats["monthlyTimestamps"], monthly_skip, 2592000, now_dt)
+    return stats
+
+def fix_airspy_data():
+    """Rewrite every tracked game/organization's stats to apply the current
+    gap/anomaly rules retroactively: -1 (no data) becomes 0 for player
+    counts, a carried-forward value for rolling metrics, and the lifetime
+    'plays' counter has any anomalous drop clamped back up. Safe to re-run -
+    already-clean data is left unchanged."""
+    db = get_db()
+    cursor = db.cursor()
+    now_dt = datetime.now(timezone.utc)
+
+    cursor.execute('SELECT "id", "gameStats" FROM "game"')
+    games = cursor.fetchall()
+    for game in games:
+        update_game_stats(game["id"], _fix_stats(game["gameStats"], now_dt))
+
+    cursor.execute('SELECT "id", "orgStats" FROM "organization"')
+    organizations = cursor.fetchall()
+    for organization in organizations:
+        update_organization_stats(organization["id"], _fix_stats(organization["orgStats"], now_dt))
+
+    return len(games), len(organizations)
+
+@click.command('fix-airspy-data')
+@click.option('--yes', is_flag=True, help='Skip the confirmation prompt.')
+def fix_airspy_data_command(yes):
+    if not yes and not click.confirm('This will rewrite gameStats/orgStats for every tracked game and organization to fix legacy gaps and anomalous dips. Continue?'):
+        click.echo('Aborted.')
+        return
+
+    game_count, org_count = fix_airspy_data()
+    click.echo(f'Fixed stats for {game_count} games and {org_count} organizations.')
