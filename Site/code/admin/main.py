@@ -7,6 +7,7 @@ from Site.code.admin.digitalocean import (
     get_app_run_logs as do_get_app_run_logs, get_databases as do_get_databases, get_balance as do_get_balance,
     get_latest_invoice_items as do_get_latest_invoice_items, get_live_database_stats as do_get_live_database_stats
 )
+from Site.code.airspy.compile import compile_all_stats, recompile_after_visibility_change
 from Site.code.airspy.database import get_all_games, get_airspy_settings, set_airspy_settings
 from Site.code.auth.database import AUTH_LEVEL_VALUES, get_auth, update_auth, update_username, update_user_notes, verify_username
 from Site.code.auth.main import auth_required, get_user
@@ -141,6 +142,7 @@ def set_airspy_updated_after():
     settings = get_airspy_settings()
     settings["gamesUpdatedAfter"] = updated_after or None
     set_airspy_settings(settings)
+    compile_all_stats(keep_ath=False)
     add_audit_log(
         get_user(), None, "set_airspy_updated_after_cutoff", reason,
         details=f"Set public Airspy 'updated after' cutoff to {updated_after or 'none (show all games)'}",
@@ -161,6 +163,7 @@ def set_airspy_game_hidden(game_id):
 
     hidden = request.form.get("hidden") == "1"
     set_game_hidden(game_id, game["organizationId"], hidden)
+    recompile_after_visibility_change(game["organizationId"])
     organization = get_matching_row("organization", {"id": game["organizationId"]})
     add_audit_log(
         get_user(), None, "hide_airspy_game" if hidden else "unhide_airspy_game", reason,
@@ -172,6 +175,20 @@ def set_airspy_game_hidden(game_id):
         ]
     )
     return redirect(url_for("admin.airspy_games", updated_after=request.form.get("updated_after", "")))
+
+@bp.route('/airspy/recompile-stats', methods=['POST'])
+@auth_required("ADMIN")
+def recompile_airspy_stats():
+    reason = request.form.get("reason", "").strip()
+    if not reason:
+        abort(400, "A reason is required for this action")
+
+    organization_count = compile_all_stats(keep_ath=False)
+    add_audit_log(
+        get_user(), None, "recompile_airspy_stats", reason,
+        details=f"Recompiled stats for {organization_count} organizations and the global stats from raw game data"
+    )
+    return redirect(url_for("admin.airspy_games"))
 
 @bp.route('/community-settings', methods=['GET', 'POST'])
 @auth_required("DEVELOPER")

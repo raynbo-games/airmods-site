@@ -80,13 +80,28 @@ def get_dashboard_data(stats):
         "ath_data": ath_data
     }
 
-def get_game_list():
+def get_visible_game_rows():
     cutoff = get_games_updated_after_cutoff()
     game_data = get_matching_row("game", {"hiddenFromAirspy": False}, multiple=True)
+    return [data for data in game_data if not (cutoff and data["lastVersionUpdate"] < cutoff)]
+
+def get_global_stats(game_rows, global_stats_data):
+    """Latest reading of each compiled global series, plus favorites summed across visible games."""
+    def latest(key):
+        return next((value for value in reversed(global_stats_data[key]) if value != -1), 0)
+    return {
+        "playerCount": latest("playerCounts"),
+        "plays": latest("plays"),
+        "plays24h": latest("plays24h"),
+        "uniquePlays24h": latest("uniquePlays24h"),
+        "favorites": sum(data["favorites"] or 0 for data in game_rows),
+    }
+
+def get_game_list(game_rows=None):
+    if game_rows is None:
+        game_rows = get_visible_game_rows()
     games = []
-    for data in game_data:
-        if cutoff and data["lastVersionUpdate"] < cutoff:
-            continue
+    for data in game_rows:
         games.append({
             "name": data["name"],
             "url": url_for("airspy.game", game_id=data["id"]),

@@ -39,6 +39,8 @@ Shared infrastructure lives in `Site/code/database/` (Postgres connection + gene
 | `python -m flask --app Site init-db` | Create tables from `code/database/schemas/database.sql`. |
 | `python -m flask --app Site update-db` | Apply `code/database/schemas/update.sql`, then re-run `init-db`. |
 | `python -m flask --app Site wipe-db` | Drop all data via `code/database/schemas/wipe.sql`, then re-run `init-db`. |
+| `python -m flask --app Site fix-airspy-data` | Fixes data errors |
+| `python -m flask --app Site recompile-airspy-stats` | Rebuild organization and global stats from raw game data (same as the admin panel button). |
 | `python -m flask --app Site set-user-auth --username USER_NAME --auth AUTH_LEVEL` | Set a user's auth level directly. |
 | `python -m flask --app Site reset-airspy-db [--yes]` | Delete all tracked Airspy games/organizations/tick data. |
 

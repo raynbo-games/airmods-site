@@ -1,5 +1,6 @@
 from flask import Blueprint, render_template, request, redirect, url_for, current_app, jsonify, abort
-from Site.code.airspy.utility import get_search_items, get_dashboard_data, get_game_list, get_organization_list, get_organization_games
+from Site.code.airspy.utility import get_search_items, get_dashboard_data, get_game_list, get_organization_list, get_organization_games, get_visible_game_rows, get_global_stats
+from Site.code.airspy.compile import get_global_stats_data
 from Site.code.database.cdn import get_image_cdn_url
 from Site.code.database.main import get_matching_row
 
@@ -11,11 +12,21 @@ def inject_airspy_global():
 
 @bp.route('')
 def root():
+    game_rows = get_visible_game_rows()
+    global_stats_data = get_global_stats_data()
     return render_template(
         'airspy/index.html',
-        games=get_game_list(),
-        orgs=get_organization_list()
+        games=get_game_list(game_rows),
+        orgs=get_organization_list(),
+        global_stats=get_global_stats(game_rows, global_stats_data),
+        ath_data=get_dashboard_data(global_stats_data)["ath_data"],
+        chart_url=url_for("airspy.global_chart")
     )
+
+@bp.route('/chart')
+def global_chart():
+    data = get_dashboard_data(get_global_stats_data())
+    return jsonify(dict(data["chart_data"]))
 
 @bp.route('/games')
 def games():
