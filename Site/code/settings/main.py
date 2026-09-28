@@ -5,6 +5,7 @@ from Site.code.admin.database import add_audit_log
 from Site.code.database.main import get_matching_row
 from Site.code.database.cdn import get_image_cdn_url, upload_to_spaces
 from Site.code.airspy.airship_urls import request_game_id, request_image, get_image_url
+from Site.code.airspy.compile import recompile_after_visibility_change
 from Site.code.airspy.database import update_game, update_organization
 from Site.code.settings.database import (
     get_linked_organizations, is_organization_linked_to_user,
@@ -219,9 +220,14 @@ def connection_detail(organization_id):
         # what was checked - there's no "hidden org, visible game" state.
         visible_ids = (set(request.form.getlist('visible')) & game_ids) if org_visible_requested else set()
 
+        visibility_changed = org["hiddenFromAirspy"] != (not org_visible_requested)
         for game_row in games:
-            set_game_hidden(game_row["id"], organization_id, game_row["id"] not in visible_ids)
+            hidden = game_row["id"] not in visible_ids
+            visibility_changed = visibility_changed or game_row["hiddenFromAirspy"] != hidden
+            set_game_hidden(game_row["id"], organization_id, hidden)
         set_organization_hidden(organization_id, not org_visible_requested)
+        if visibility_changed:
+            recompile_after_visibility_change(organization_id)
         return redirect(url_for('settings.connection_detail', organization_id=organization_id))
 
     games = get_matching_row("game", {"organizationId": organization_id}, multiple=True)

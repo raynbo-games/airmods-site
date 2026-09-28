@@ -26,6 +26,7 @@ AUDIT_ACTIONS = {
     "hide_airspy_game": "Hid Airspy Game",
     "unhide_airspy_game": "Unhid Airspy Game",
     "set_airspy_updated_after_cutoff": "Set Airspy Updated-After Cutoff",
+    "recompile_airspy_stats": "Recompiled Airspy Stats",
 }
 
 def build_audit_embed(actor_username, action, reason, target_username=None, details=None, thumbnail_url=None, extra_fields=None):

@@ -6,10 +6,18 @@
 
 <div class="admin-form-section">
     <h3>Public Site Cutoff</h3>
-    <p class="info-description">Games last updated before this date are hidden from the public Airspy games list, organization pages, and search - separate from individually hiding a game below. Leave blank to show all games.</p>
+    <p class="info-description">Games last updated before this date are hidden from the public Airspy games list, organization pages, search, and organization/global stats - separate from individually hiding a game below. Leave blank to show all games.</p>
     <form method="POST" action="{{ url_for('admin.set_airspy_updated_after') }}" class="admin-form-row" data-requires-reason="changing the public Airspy 'updated after' cutoff">
         <input type="date" name="updated_after" class="form-control form-dark-input" value="{{ site_updated_after }}">
         <button type="submit" class="btn btn-primary">Save</button>
+    </form>
+</div>
+
+<div class="admin-form-section">
+    <h3>Recompile Stats</h3>
+    <p class="info-description">Rebuilds every organization's stats and the global stats from the raw game data, leaving out hidden games and games last updated before the cutoff above. All-time highs are recalculated from the stored history. This also runs automatically whenever a game is hidden or unhidden, or the cutoff changes.</p>
+    <form method="POST" action="{{ url_for('admin.recompile_airspy_stats') }}" class="admin-form-row" data-requires-reason="recompiling all Airspy organization and global stats">
+        <button type="submit" class="btn btn-primary">Recompile Stats</button>
     </form>
 </div>
 

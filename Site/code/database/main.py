@@ -91,6 +91,9 @@ def init_app(app):
     app.cli.add_command(reset_airspy_db_command)
     app.cli.add_command(fix_airspy_data_command)
 
+    from Site.code.airspy.compile import recompile_airspy_stats_command
+    app.cli.add_command(recompile_airspy_stats_command)
+
 def get_matching_row(table_name, properties_dict, multiple=False):
     db = get_db()
     cursor = db.cursor()

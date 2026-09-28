@@ -109,6 +109,19 @@ def set_airspy_settings(settings):
     )
     db.commit()
 
+def get_global_stats_row():
+    row = get_matching_row("json", {"id": "airspy_global_stats"})
+    return row["data"] if row else None
+
+def set_global_stats_row(stats):
+    db = get_db()
+    cursor = db.cursor()
+    cursor.execute(
+        'INSERT INTO "json" ("id", "data") VALUES (%s, %s) ON CONFLICT ("id") DO UPDATE SET "data" = EXCLUDED."data"',
+        ("airspy_global_stats", Jsonb(stats))
+    )
+    db.commit()
+
 def organize_game_data(raw_data):
     game_data = raw_data["game"]
     live_stats = game_data["liveStats"]

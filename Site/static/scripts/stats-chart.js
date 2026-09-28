@@ -29,7 +29,8 @@ function formatChartLabel(value, currentTimeframe) {
 
 function initCharts() {
     const dataset = rawDataMap[timeframe];
-    document.getElementById("ath").innerHTML = `
+    const athElement = document.getElementById("ath");
+    if (athElement) athElement.innerHTML = `
         <div class="ath-stat"><span class="ath-stat-label">Player Count</span><span class="ath-stat-value">${ath_data["playerCount"]}</span><span class="ath-stat-time">${formatTimestamp(ath_data["playerCountAt"])}</span></div>
         <div class="ath-stat"><span class="ath-stat-label">Plays (24h)</span><span class="ath-stat-value">${ath_data["plays24h"]}</span><span class="ath-stat-time">${formatTimestamp(ath_data["plays24hAt"])}</span></div>
         <div class="ath-stat"><span class="ath-stat-label">Unique Plays (24h)</span><span class="ath-stat-value">${ath_data["uniquePlays24h"]}</span><span class="ath-stat-time">${formatTimestamp(ath_data["uniquePlays24hAt"])}</span></div>

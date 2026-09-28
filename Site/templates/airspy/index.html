@@ -10,6 +10,38 @@
     </p>
 </div>
 
+<div class="ath-stats">
+    <div class="ath-stat"><span class="ath-stat-label">Games Tracked</span><span class="ath-stat-value">{{ "{:,}".format(games|length) }}</span></div>
+    <div class="ath-stat"><span class="ath-stat-label">Organizations Tracked</span><span class="ath-stat-value">{{ "{:,}".format(orgs|length) }}</span></div>
+    <div class="ath-stat"><span class="ath-stat-label">Players Online</span><span class="ath-stat-value">{{ "{:,}".format(global_stats.playerCount) }}</span></div>
+    <div class="ath-stat"><span class="ath-stat-label">Plays (24h)</span><span class="ath-stat-value">{{ "{:,}".format(global_stats.plays24h) }}</span></div>
+    <div class="ath-stat"><span class="ath-stat-label">Unique Plays (24h)</span><span class="ath-stat-value">{{ "{:,}".format(global_stats.uniquePlays24h) }}</span></div>
+    <div class="ath-stat"><span class="ath-stat-label">Total Plays</span><span class="ath-stat-value">{{ "{:,}".format(global_stats.plays) }}</span></div>
+    <div class="ath-stat"><span class="ath-stat-label">Total Favorites</span><span class="ath-stat-value">{{ "{:,}".format(global_stats.favorites) }}</span></div>
+</div>
+
+<div class="dashboard-wrapper">
+    <h3>All Time Highs</h3>
+    <div id="ath" class="ath-stats">Loading...</div>
+    <div class="chart-filter-tabs">
+        <h3>Global Charts</h3>
+        <div class="tab-btn-group">
+            <button class="tab-btn active" onclick="switchTimeframe('day', this)">Day</button>
+            <button class="tab-btn" onclick="switchTimeframe('month', this)">Month</button>
+            <button class="tab-btn" onclick="switchTimeframe('year', this)">Year</button>
+        </div>
+    </div>
+
+    <div class="graphs-grid">
+        {% for i in range(4) %}
+        <div class="graph-card">
+            <h4 id="title-{{ i }}">Loading...</h4>
+            <div class="graph-canvas-wrapper"><canvas id="canvas-{{ i }}"></canvas></div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
 <a href="{{ url_for('airspy.games') }}" class="grid-section-header">
     <h2>Games</h2>
     <span>View all &#8594;</span>
@@ -48,4 +80,13 @@
     {% endfor %}
 </div>
 
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.4/Chart.min.js"></script>
+<script>
+    const chart_url = "{{ chart_url }}";
+    const ath_data = {{ ath_data | tojson }};
+</script>
+<script src="{{ url_for('static', filename='scripts/stats-chart.js') }}"></script>
 {% endblock %}

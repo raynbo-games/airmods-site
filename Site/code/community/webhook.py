@@ -44,7 +44,7 @@ NOTIFICATION_GROUPS = [
     ("Suggestions", ["hide_suggestion", "unhide_suggestion", "edit_suggestion", "delete_suggestion", "approve_suggestion", "reject_suggestion"]),
     ("Comments", ["hide_comment", "unhide_comment", "edit_comment", "delete_comment", "approve_comment", "reject_comment"]),
     ("Airspy (Self-Service)", ["link_organization", "unlink_organization", "link_game"]),
-    ("Airspy (Admin)", ["hide_airspy_game", "unhide_airspy_game", "set_airspy_updated_after_cutoff"]),
+    ("Airspy (Admin)", ["hide_airspy_game", "unhide_airspy_game", "set_airspy_updated_after_cutoff", "recompile_airspy_stats"]),
     ("Airspy (Sync)", ["airspy_game_created", "airspy_organization_created", "airspy_game_version_updated"]),
     ("Airmods", ["create_api_token", "revoke_api_token"]),
 ]
