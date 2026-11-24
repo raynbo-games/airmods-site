@@ -1,13 +1,18 @@
 # Raynbo Games Site
 
-The website for Raynbo Games — a Flask app that tracks live stats for Airship games/organizations (Airspy), and hosts a community suggestions board and a visual roadmap planner.
+This is an Archived project for Raynbo Games' old site, before the Airship platform by Easy Games was discontinued.
+
+In this project, users could view stats for games on the Airship platform over time and visualize analytics data in line charts using Airspy.
+Airmods was also managed via this site; however, Airship was discontinued before Airmods was finished.
+
+AI was utilized in this project for the creation of documentation and basic utilities.
 
 ## Feature areas
 
 Each area is a Flask blueprint under `Site/code/`, paired with its own `database.py` for DB access:
 
 - **root** (`main/`) — home page, ToS redirect, privacy policy.
-- **airspy** (`airspy/`) — polls the Airship API on a scheduler, stores tick-by-tick player count / play stats per game and organization, and renders dashboards with charts (day/month/year, all-time-highs).
+- **airspy** (`airspy/`) — polls the Airship API on a scheduler, stores tick-by-tick player count/play stats per game and organization, and renders dashboards with charts (day/month/year, all-time-highs).
 - **airmods** (`airmods/`) — placeholder landing page.
 - **auth** (`auth/`) — Google OAuth login, account creation, and auth-level gating (`BANNED`/`USER`/`MODERATOR`/`ADMIN`/`DEVELOPER`/`OWNER`/`SYSTEM`).
 - **admin** (`admin/`) — user management, audit log, Discord webhook/automod configuration.
@@ -58,5 +63,5 @@ Shared infrastructure lives in `Site/code/database/` (Postgres connection + gene
 - Python locals and function names are `snake_case`. The one exception: a local variable that mirrors a field name from the Airship API or a database column (e.g. `liveStats`, `gameStats`) keeps that field's original casing for traceability — never rename those.
 - Database columns and JSON keys are `camelCase`, matching either the Postgres schema or the external Airship API. Don't rename them.
 - JS locals and function names are `camelCase`.
-- Don't write inline comments explaining individual lines. Only add a short one- or two-line docstring/comment directly above a function definition, and only when its behavior isn't obvious from its name and signature.
+- Don't write inline comments explaining individual lines. Only add a short one-line or two-line docstring/comment directly above a function definition, and only when its behavior isn't obvious from its name and signature.
 - Vendored third-party files (jQuery, Bootstrap, Chart.js, Modernizr, Respond, `npm.js`) under `Site/static/scripts/` are untouched dependencies — don't restyle or reformat them.
